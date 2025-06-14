@@ -1,6 +1,7 @@
 import HighlightText from '@root/app/_components/Table/HighlightText';
 import SkeletonCell from '@root/app/_components/Table/SkeletonCell';
 import DayMealsCell from '@root/app/specific/components/Orders/ByDay/DayMealsCell';
+import DayTools from '@root/app/specific/components/Orders/ByDay/DayTools';
 import { MealType, type OrderGroupedByDayCustomTable } from '@root/types/specific';
 import { format } from 'date-fns-tz';
 // import { type FC } from 'react';
@@ -94,6 +95,10 @@ const useOrderGroupedByDayDataGrid = ({
                 //     component: <MealCount count={dinnerDietCount} />,
                 //     key: 'dinnerDietCount'
                 // },
+                {
+                    component: <DayTools dayId={id} />,
+                    key: 'dayTools'
+                },
                 {
                     component: <HighlightText
                         className="whitespace-nowrap font-medium text-gray-900 dark:text-white flex justify-center"

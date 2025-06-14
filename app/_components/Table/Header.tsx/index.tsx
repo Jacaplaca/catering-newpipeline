@@ -9,7 +9,7 @@ const TableHeader: FunctionComponent<{
     search?: (value: string) => void
     dictionary: Record<string, string>
     children?: JSX.Element | JSX.Element[] | null
-    title: string
+    title?: string
     searchPlaceholder?: string
 }> = ({
     search,
@@ -21,11 +21,11 @@ const TableHeader: FunctionComponent<{
 
         return (
             <div className="px-4 rounded-t-lg bg-neutral-50 dark:bg-darkmode-table-darker border-b dark:border-neutral-700">
-                <div className="flex items-center justify-between space-x-4 pt-3">
+                {title && <div className="flex items-center justify-between space-x-4 pt-3">
                     <div className="flex flex-1 items-center space-x-3">
                         <h5 className="font-semibold dark:text-white">{t(dictionary, title)}</h5>
                     </div>
-                </div>
+                </div>}
                 <div className="flex flex-col-reverse items-start justify-between py-3 md:flex-row md:space-x-4">
                     {search ? <div className="flex w-auto flex-col space-y-3 md:flex-row md:items-center md:space-y-0 lg:w-2/3">
                         <div className="w-auto flex-1 md:mr-4 md:max-w-sm">

@@ -37,7 +37,11 @@ export const clientEditValidator = z.object({
     country: z.string().optional(),
     contactPerson: z.string().optional(),
     notes: z.string().optional(),
-    tags: z.array(z.string()),
+    // tags: z.array(z.string()),
+    deliveryRoute: z.object({
+        id: z.string(),
+        name: z.string(),
+    }).nullable(),
     firstOrderDeadline: z.string().optional(),
     secondOrderDeadline: z.string().optional(),
     allowWeekendOrder: z.boolean().optional(),

@@ -20,7 +20,8 @@ const defaultValues = {
     diet: {
         code: '',
         description: '',
-    }
+    },
+    allergens: []
 };
 
 const useCustomerRow = ({
@@ -45,14 +46,41 @@ const useCustomerRow = ({
             { enabled: Boolean(expandedRowId) }
         );
 
-    function chooseClient(id: string | null, allItems: { id: string, name: string, code: string }[]) {
-        if (!id) {
+    function chooseClient(item: { id: string, name: string, code: string | number } | null) {
+        if (!item) {
             form.setValue('client', { name: '', id: '', code: '' }, { shouldValidate: true, shouldDirty: true });
             return;
         }
-        const client = allItems.find(item => item.id === id)
-        form.setValue('client', { name: client?.name ?? '', id: client?.id ?? '', code: client?.code ?? '' }, { shouldValidate: true, shouldDirty: true });
+        form.setValue('client', { name: item.name, id: item.id, code: String(item.code) }, { shouldValidate: true, shouldDirty: true });
     }
+
+    // function chooseAllergens(id: string | null, allItems: { id: string, name: string }[]) {
+    //     if (!id) {
+    //         form.setValue('allergens', [], { shouldValidate: true, shouldDirty: true });
+    //         return;
+    //     }
+
+    //     const currentAllergens = form.getValues('allergens') ?? [];
+    //     const allergenExists = currentAllergens.some(item => item.id === id);
+
+    //     if (allergenExists) {
+    //         // Remove allergen if it already exists
+    //         const updatedAllergens = currentAllergens.filter(item => item.id !== id);
+    //         form.setValue('allergens', updatedAllergens, { shouldValidate: true, shouldDirty: true });
+    //     } else {
+    //         // Add allergen if it doesn't exist
+    //         const allergen = allItems.find(item => item.id === id);
+    //         if (allergen) {
+    //             form.setValue('allergens', [...currentAllergens, allergen], { shouldValidate: true, shouldDirty: true });
+    //         }
+    //     }
+    // }
+
+    // function deselectAllergen(id: string) {
+    //     const currentAllergens = form.getValues('allergens') ?? [];
+    //     const updatedAllergens = currentAllergens.filter(item => item.id !== id);
+    //     form.setValue('allergens', updatedAllergens, { shouldValidate: true, shouldDirty: true });
+    // }
 
     const [consumerData, setConsumerData] = useState<ConsumerCustomTable | null>(null);
 
@@ -79,7 +107,8 @@ const useCustomerRow = ({
                 diet: {
                     code: consumerData?.diet?.code ?? '',
                     description: consumerData?.diet?.description ?? '',
-                }
+                },
+                allergens: consumerData?.allergens ?? []
             };
             form.reset(consumer);
             setDefaultForm(consumer);
@@ -147,7 +176,11 @@ const useCustomerRow = ({
         formData: defaultForm,
         clients: {
             chooseClient,
-        }
+        },
+        // allergens: {
+        //     chooseAllergens,
+        //     deselectAllergen,
+        // }
     };
 };
 

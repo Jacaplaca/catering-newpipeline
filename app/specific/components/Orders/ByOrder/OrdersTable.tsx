@@ -19,7 +19,7 @@ import { useSession } from 'next-auth/react';
 import { OrderStatus, RoleType } from '@prisma/client';
 import ClientDropdown from '@root/app/specific/components/ui/Dropdown/Client';
 import OrderStatusSelect from '@root/app/specific/components/ui/OrderStatusSelect';
-import TagSearch from '@root/app/specific/components/ui/TagSearch';
+// import TagSearch from '@root/app/specific/components/ui/TagSearch';
 import TableToast from '@root/app/_components/Table/Toast';
 import OrderExpandedRow from '@root/app/specific/components/Orders/ByOrder/ExpandedRow';
 import useBreakpoint from '@root/app/hooks/useBreakpoint';
@@ -126,13 +126,13 @@ const OrdersTable: FunctionComponent = () => {
 
                     {isManagerOrKitchen && <ClientDropdown
                         dictionary={dictionary}
-                        select={chooseClient}
+                        onSelect={chooseClient}
                         selected={clientForFilter}
                     />}
-                    {isManagerOrKitchen && <TagSearch
+                    {/* {isManagerOrKitchen && <TagSearch
                         updateTagId={updateTagId}
                         dictionary={dictionary}
-                    />}
+                    />} */}
                     <OrderStatusSelect
                         dictionary={dictionary}
                         status={statusForFilter}

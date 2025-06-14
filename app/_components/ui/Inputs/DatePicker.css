@@ -123,3 +123,19 @@
 .dark .react-datepicker__quarter-text--keyboard-selected {
      @apply bg-neutral-600 text-white rounded; /* Ciemny tryb - podobnie jak dla dnia */
 }
+
+.non-working-day {
+  @apply bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-300;
+}
+
+/* Optional: More specific styling for a non-working day that is also "selected" by the user */
+.react-datepicker__day.non-working-day.react-datepicker__day--selected, /* For custom user-selected non-working days */
+.react-datepicker__day--selected.non-working-day /* For the main `selected` prop if it happens to be a non-working day */
+ {
+  @apply bg-red-300 dark:bg-red-700 font-bold;
+}
+
+/* Ensure weekends (which are also non-working-day) that are disabled look appropriately styled */
+.react-datepicker__day--disabled.non-working-day {
+   @apply bg-red-100 dark:bg-red-900 text-red-400 dark:text-red-500 opacity-70;
+}

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type UpdateMessageType } from '@root/app/hooks/useMessage';
 import translate from '@root/app/lib/lang/translate';
-import useTags from '@root/app/specific/components/Clients/ExpandedRow/useTags';
+// import useTags from '@root/app/specific/components/Clients/ExpandedRow/useTags';
 import { api } from '@root/app/trpc/react';
 import { clientEditValidator } from '@root/app/validators/specific/client';
 import { type ClientCustomTable } from '@root/types/specific';
@@ -60,7 +60,7 @@ const useClientFilesRow = ({
         country: '',
         contactPerson: '',
         notes: '',
-        tags: [],
+        // tags: [],
     };
 
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -82,7 +82,7 @@ const useClientFilesRow = ({
                 country: clientData?.info.country ?? '',
                 contactPerson: clientData?.info.contactPerson ?? '',
                 notes: clientData?.info.notes ?? '',
-                tags: clientData?.tags.map((tag) => tag.tag.name) ?? [],
+                // tags: clientData?.tags.map((tag) => tag.tag.name) ?? [],
             };
             form.reset(client);
         }
@@ -109,7 +109,7 @@ const useClientFilesRow = ({
         onSuccess: async () => {
             await utils.specific.client.getFull.invalidate();
             await utils.specific.client.getOne.invalidate();
-            await utils.specific.tag.getInfinite.invalidate();
+            // await utils.specific.tag.getInfinite.invalidate();
             updateMessage('saved');
         },
         onError: (error) => {
@@ -122,14 +122,14 @@ const useClientFilesRow = ({
         form.reset(defaultValues);
     };
 
-    const tags = useTags({
-        tagsLocal: form.getValues().tags,
-        setTagsLocal: (tags: string[]) => {
-            console.log(tags);
-            form.setValue('tags', tags, { shouldDirty: true });
-            void form.trigger();
-        },
-    });
+    // const tags = useTags({
+    //     tagsLocal: form.getValues().tags,
+    //     setTagsLocal: (tags: string[]) => {
+    //         console.log(tags);
+    //         form.setValue('tags', tags, { shouldDirty: true });
+    //         void form.trigger();
+    //     },
+    // });
 
     useEffect(() => {
         resetMessage();
@@ -143,7 +143,7 @@ const useClientFilesRow = ({
         form,
         onSubmit: form.handleSubmit(onSubmit),
         isFetching: fullClientFetching,
-        tags
+        // tags
     };
 };
 

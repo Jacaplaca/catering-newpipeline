@@ -12,15 +12,17 @@ import { type FunctionComponent } from 'react';
 const renderSettingsComponent = ({
     roleId,
     dictionary,
-    clientId
+    clientId,
+    lang
 }: {
     roleId?: RoleType
     dictionary: Record<string, string>
     clientId?: string
+    lang: LocaleApp
 }) => {
     switch (roleId) {
         case 'manager':
-            return <ManagerSettings dictionary={dictionary} />;
+            return <ManagerSettings dictionary={dictionary} lang={lang} />;
         case 'superAdmin':
             return <SuperAdmin dictionary={dictionary}>
             </SuperAdmin>;

@@ -128,6 +128,7 @@ type CateringSettings {
     logoDark String?
     phone String?
     email String?
+    nonWorkingDays String[]
 }
 
 model Catering {
@@ -141,11 +142,19 @@ model Catering {
     managers Manager[]
     diets Diet[]    
     consumers Consumer[]
-    tags Tag[]
+    // tags Tag[]
     settings CateringSettings
     name String?
     orders Order[]
     files ClientFile[]
+    deliveryRoutes DeliveryRoute[]
+    allergens Allergen[]
+    foodCategories FoodCategory[]
+    food Food[]
+    regularMenu RegularMenu[]
+    consumerFoods ConsumerFood[]
+    meals Meal[]
+    exclusions Exclusion[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -193,11 +202,25 @@ model Client {
     name String? //editable by client
     consumers Consumer[]
     orders Order[]
-    tags TagClient[]
+    // tags TagClient[]
     files ClientFile[]
+    deliveryRouteId String?
+    deliveryRoute DeliveryRoute? @relation(fields: [deliveryRouteId], references: [id])
     deactivated Boolean @default(false)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model DeliveryRoute {
+    id String @id @default(cuid()) @map("_id")
+    code String
+    name String
+    // description String?
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    clients Client[]
+
+    @@unique([cateringId, code])
 }
 
 enum TagType {
@@ -205,27 +228,27 @@ enum TagType {
     all
 }
 
-model Tag {
-    id String @id @default(cuid()) @map("_id")
-    name String @unique
-    clients TagClient[]
-    cateringId String
-    catering Catering @relation(fields: [cateringId], references: [id])
-    type TagType
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
+// model Tag {
+//     id String @id @default(cuid()) @map("_id")
+//     name String @unique
+//     clients TagClient[]
+//     cateringId String
+//     catering Catering @relation(fields: [cateringId], references: [id])
+//     type TagType
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+// }
 
-model TagClient {
-    id String @id @default(cuid()) @map("_id")
-    tagId String
-    tag Tag @relation(fields: [tagId], references: [id])
-    clientId String
-    client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+// model TagClient {
+//     id String @id @default(cuid()) @map("_id")
+//     tagId String
+//     tag Tag @relation(fields: [tagId], references: [id])
+//     clientId String
+//     client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+// }
 
 model Dietician {
     id String @id @default(cuid()) @map("_id")
@@ -279,6 +302,9 @@ model Consumer {
 
     lunchOrdersBeforeDeadline OrderConsumerLunchBeforeDeadline[]
     dinnerOrdersBeforeDeadline OrderConsumerDinnerBeforeDeadline[]
+
+    allergens ConsumerAllergen[]
+    foodReplacements ConsumerFood[]
 
     deactivated Boolean @default(false)
 
@@ -634,6 +660,167 @@ model ClientFile {
     editedById String?
     editedBy User? @relation(fields: [editedById], references: [id])
 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Allergen {
+    id String @id @default(cuid()) @map("_id")
+    name String
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    
+    consumers ConsumerAllergen[]
+    foods     FoodAllergen[]
+    exclusions ExclusionAllergen[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model ConsumerAllergen {
+    id String @id @default(cuid()) @map("_id")
+    consumerId String
+    consumer Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+    allergenId String
+    allergen Allergen @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([consumerId, allergenId])
+}
+
+model FoodCategory {
+    id        String   @id @default(cuid()) @map("_id")
+    name      String   @unique
+    foods     Food[]
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Food {
+    id             String        @id @default(cuid()) @map("_id")
+    name           String
+    ingredients    String?
+    foodCategoryId String?
+    foodCategory   FoodCategory? @relation(fields: [foodCategoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+    allergens      FoodAllergen[]
+    meals MealFood[]
+    consumerFoods    ConsumerFood[]
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+}
+
+model FoodAllergen {
+    id         String   @id @default(cuid()) @map("_id")
+    foodId     String
+    food       Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+    allergenId String
+    allergen   Allergen @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([foodId, allergenId])
+}
+
+model RegularMenu {
+    id String @id @default(cuid()) @map("_id")
+    day DeliveryDay
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    consumerFoods ConsumerFood[] 
+}
+
+model Meal {
+    id String @id @default(cuid()) @map("_id")
+    name String
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    foods MealFood[]
+    consumerFoods ConsumerFood[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model MealFood {
+    id String @id @default(cuid()) @map("_id")
+    mealId String
+    meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+    foodId String
+    food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Exclusion {
+    id             String        @id @default(cuid()) @map("_id")
+    name           String
+    allergens      ExclusionAllergen[]
+    consumerFoods  ConsumerFoodExclusion[]
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+}
+
+model ExclusionAllergen {
+    id         String   @id @default(cuid()) @map("_id")
+    exclusionId     String
+    exclusion       Exclusion     @relation(fields: [exclusionId], references: [id], onDelete: Cascade)
+    allergenId String
+    allergen   Allergen @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([exclusionId, allergenId])
+}
+
+model ConsumerFoodExclusion {
+    id             String       @id @default(cuid()) @map("_id")
+    consumerFoodId String
+    consumerFood   ConsumerFood @relation(fields: [consumerFoodId], references: [id], onDelete: Cascade)
+    exclusionId    String
+    exclusion      Exclusion    @relation(fields: [exclusionId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([consumerFoodId, exclusionId])
+}
+
+// enum DishType {
+//     breakfast
+//     lunch
+//     dinner
+//     sandwich
+//     soup
+// }
+
+model ConsumerFood {
+    id String @id @default(cuid()) @map("_id")
+    regularMenuId String
+    regularMenu RegularMenu @relation(fields: [regularMenuId], references: [id], onDelete: Cascade)
+    // dishType DishType
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    consumerId String
+    consumer Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+    foodId String
+    food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+    mealId     String
+    meal       Meal    @relation(fields: [mealId], references: [id], onDelete: Cascade)
+    exclusions ConsumerFoodExclusion[]
+    comment String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

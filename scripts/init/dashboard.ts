@@ -2,8 +2,8 @@ import { PrismaClient } from "@prisma/client";
 const db = new PrismaClient();
 import dashboard from '@root/app/assets/dashboard.json';
 
-async function initDashboard() {
-  if (process.env.RESET === 'yes') {
+async function initDashboard(reset = false) {
+  if (process.env.RESET === 'yes' || reset) {
     await db.setting.deleteMany({
       where: {
         group: 'navigation', name: 'dashboard'

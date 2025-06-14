@@ -6,6 +6,7 @@
     "no": "Nie",
     "per_page": "Na stronę",
     "page": "Strona {} z {}",
+    "page_only": "Strona",
     "showing": "{} do {} z {}",
     "of": "z",
     "show_only": "Pokaż tylko:",

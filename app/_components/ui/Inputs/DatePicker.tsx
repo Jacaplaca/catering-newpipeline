@@ -11,15 +11,16 @@ type DatePickerProps = {
     locale: LocaleApp;
     selected: string;
     minDate: Date;
-    CustomInput: JSX.Element;
+    CustomInput?: JSX.Element;
     onSelect: (date: Date | null) => void;
     dateFormat?: string;
     filterDate?: (date: Date) => boolean;
     maxDate?: Date;
     dayClassName?: (date: Date) => string;
+    alwaysOpen?: boolean;
 }
 
-const DatePicker: FC<DatePickerProps> = ({ locale, selected, minDate, CustomInput, onSelect, dateFormat, filterDate, maxDate, dayClassName }) => {
+const DatePicker: FC<DatePickerProps> = ({ locale, selected, minDate, CustomInput, onSelect, dateFormat, filterDate, maxDate, dayClassName, alwaysOpen = false }) => {
 
     return (
         <div>
@@ -37,6 +38,7 @@ const DatePicker: FC<DatePickerProps> = ({ locale, selected, minDate, CustomInpu
                 onSelect={onSelect}
                 dateFormat={dateFormat}
                 dayClassName={dayClassName}
+                inline={alwaysOpen}
                 renderCustomHeader={({
                     date,
                     decreaseMonth,

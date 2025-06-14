@@ -17,7 +17,7 @@ import MyButton from '@root/app/_components/ui/buttons/MyButton';
 import ClientExpandedRow from '@root/app/specific/components/Clients/ExpandedRow';
 import { Table } from 'flowbite-react';
 import Invite from '@root/app/_components/Dashboard/Settings/Invite';
-import TagSearch from '@root/app/specific/components/ui/TagSearch';
+// import TagSearch from '@root/app/specific/components/ui/TagSearch';
 import TableToast from '@root/app/_components/Table/Toast';
 
 const ClientsTable: FunctionComponent = () => {
@@ -41,7 +41,7 @@ const ClientsTable: FunctionComponent = () => {
             getConfirmationData,
             actions
         },
-        filter: { tags: { updateTagId } },
+        // filter: { tags: { updateTagId } },
         message
     } = useClientTableContext();
 
@@ -91,10 +91,10 @@ const ClientsTable: FunctionComponent = () => {
                         disabled={!showActions}
                         dictionary={dictionary}
                     />
-                    <TagSearch
+                    {/* <TagSearch
                         updateTagId={updateTagId}
                         dictionary={dictionary}
-                    />
+                    /> */}
                 </QuickFilterRow>
                 <Table
                     theme={tableTheme}

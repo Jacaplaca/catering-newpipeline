@@ -4,7 +4,7 @@ import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { db } from '@root/app/server/db';
 import { getClientsCount as countValidator } from '@root/app/validators/specific/client';
 
-const count = createCateringProcedure([RoleType.manager])
+const count = createCateringProcedure([RoleType.manager, RoleType.dietician])
     .input(countValidator)
     .query(async ({ input, ctx }) => {
         const { session: { catering } } = ctx;

@@ -1,8 +1,7 @@
 import { type UpdateMessageType } from '@root/app/hooks/useMessage';
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
-import { getNextWorkingDay } from '@root/app/lib/date/getNextWorkingDay';
+import { getNextWorkingDay, isWeekend } from '@root/app/specific/lib/dayInfo';
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
-import isWorkingDay from '@root/app/specific/lib/isWorkingDay';
 import { api } from '@root/app/trpc/react';
 import { MealType, type OrderForEdit, type OrdersCustomTable } from '@root/types/specific';
 import { type Session } from 'next-auth';
@@ -114,7 +113,7 @@ const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, cli
 
         if (!cateringSettings?.timeZone) return;
 
-        const nextWorkingDay = getNextWorkingDay(currentDate, cateringSettings?.timeZone);
+        const nextWorkingDay = getNextWorkingDay(currentDate, cateringSettings);
         return {
             year: nextWorkingDay.getFullYear(),
             month: nextWorkingDay.getMonth(),
@@ -134,8 +133,8 @@ const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, cli
         if (orderedDates && cateringSettings?.timeZone) {
             const nextDay = getNextDay();
             const currentTime = getCurrentTime();
-            const isWeekend = !isWorkingDay(currentTime, cateringSettings?.timeZone);
-            if (isWeekend && !cateringSettings.allowWeekendOrder) {
+            const isWeekendDay = isWeekend(currentTime, { timeZone: cateringSettings?.timeZone });
+            if (isWeekendDay && !cateringSettings.allowWeekendOrder) {
                 setHideNewOrder(true);
             } else if (nextDay) {
                 const nextDayString = `${nextDay.year}-${String(nextDay.month + 1).padStart(2, '0')}-${String(nextDay.day).padStart(2, '0')}`;
@@ -146,7 +145,7 @@ const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, cli
                 setHideNewOrder(false);
             }
         }
-    }, [orderedDates, cateringSettings?.timeZone]);
+    }, [orderedDates, cateringSettings]);
 
     const getNextAvailableDate = () => {
         const nextDay = getNextDay();

@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { type DeliveryRoute } from '@prisma/client';
 import { type UpdateMessageType } from '@root/app/hooks/useMessage';
 import translate from '@root/app/lib/lang/translate';
-import useTags from '@root/app/specific/components/Clients/ExpandedRow/useTags';
+// import useTags from '@root/app/specific/components/Clients/ExpandedRow/useTags';
 import { api } from '@root/app/trpc/react';
 import { clientEditValidator } from '@root/app/validators/specific/client';
 import { type ClientCustomTable } from '@root/types/specific';
@@ -30,23 +31,27 @@ const useClientRow = ({
 
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
-    const { data: fullClient, isFetching: fullClientFetching } = api.specific.client.getFull.useQuery(
-        { id: expandedRowId ?? '' },
-        { enabled: Boolean(expandedRowId) }
-    );
 
-    const { data: client } = api.specific.client.getOne.useQuery(
+
+    // const { data: fullClient, isFetching: fullClientFetching } = api.specific.client.getOne.useQuery(
+    //     { id: expandedRowId ?? '' },
+    //     { enabled: Boolean(expandedRowId) }
+    // );
+
+    const { data: client, isFetching: fullClientFetching } = api.specific.client.getOne.useQuery(
         { id: expandedRowId ?? '' },
         { enabled: true }
     );
 
-    const [clientData, setClientData] = useState<typeof fullClient | null>(null);
+    const [clientData, setClientData] = useState<typeof client | null>(null);
+
+
 
     useEffect(() => {
-        if (fullClient) {
-            setClientData(fullClient);
+        if (client) {
+            setClientData(client);
         }
-    }, [fullClient]);
+    }, [client]);
 
     const defaultValues = {
         id: '',
@@ -60,9 +65,10 @@ const useClientRow = ({
         country: '',
         contactPerson: '',
         notes: '',
-        tags: [],
+        // tags: [],
         firstOrderDeadline: '',
         secondOrderDeadline: '',
+        deliveryRoute: null,
         allowWeekendOrder: false,
     };
 
@@ -85,8 +91,9 @@ const useClientRow = ({
                 country: clientData?.info.country ?? '',
                 contactPerson: clientData?.info.contactPerson ?? '',
                 notes: clientData?.info.notes ?? '',
-                tags: clientData?.tags.map((tag) => tag.tag.name) ?? [],
+                // tags: clientData?.tags.map((tag) => tag.tag.name) ?? [],
                 firstOrderDeadline: clientData?.info.firstOrderDeadline ?? '',
+                deliveryRoute: clientData?.deliveryRoute ?? null,
                 secondOrderDeadline: clientData?.info.secondOrderDeadline ?? '',
                 allowWeekendOrder: clientData?.info.allowWeekendOrder ?? false,
             };
@@ -115,7 +122,7 @@ const useClientRow = ({
         onSuccess: async () => {
             await utils.specific.client.getFull.invalidate();
             await utils.specific.client.getOne.invalidate();
-            await utils.specific.tag.getInfinite.invalidate();
+            // await utils.specific.tag.getInfinite.invalidate();
             updateMessage('saved');
         },
         onError: (error) => {
@@ -128,14 +135,19 @@ const useClientRow = ({
         form.reset(defaultValues);
     };
 
-    const tags = useTags({
-        tagsLocal: form.getValues().tags,
-        setTagsLocal: (tags: string[]) => {
-            console.log(tags);
-            form.setValue('tags', tags, { shouldDirty: true });
-            void form.trigger();
-        },
-    });
+    // const tags = useTags({
+    //     tagsLocal: form.getValues().tags,
+    //     setTagsLocal: (tags: string[]) => {
+    //         console.log(tags);
+    //         form.setValue('tags', tags, { shouldDirty: true });
+    //         void form.trigger();
+    //     },
+    // });
+
+    const chooseDeliveryRoute = (item: { id: string, name: string }) => {
+        form.setValue('deliveryRoute', item, { shouldDirty: true });
+        void form.trigger();
+    }
 
     useEffect(() => {
         resetMessage();
@@ -144,12 +156,13 @@ const useClientRow = ({
     return {
         onRowClick,
         expandedRowId,
-        client: fullClient,
+        client,
         updateClient,
         form,
         onSubmit: form.handleSubmit(onSubmit),
         isFetching: fullClientFetching,
-        tags
+        // tags,
+        chooseDeliveryRoute
     };
 };
 

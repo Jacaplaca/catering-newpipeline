@@ -31,6 +31,7 @@ export const consumerEditValidator = z.object({
         code: z.string().optional(),
         description: z.string().optional(),
     }).optional(),
+    allergens: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
 });
 
 export const getConsumerValid = z.object({

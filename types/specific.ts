@@ -1,19 +1,35 @@
-import { type Client, type Diet, type Dietician, type ClientInfo, type OrderStatus, type Consumer, type DeliveryDay } from '@prisma/client';
+import { type Client, type Diet, type Dietician, type ClientInfo, type OrderStatus, type Consumer, type DeliveryDay, type DeliveryRoute, type Allergen, type FoodCategory, type ConsumerFood, type RegularMenu, type Food, type ConsumerAllergen, type FoodAllergen, type ConsumerFoodExclusion, type Exclusion, type ExclusionAllergen, type Meal } from '@prisma/client';
 import { type TableTypeValues } from '@root/app/validators/settings';
-import { type orderForEditValid } from '@root/app/validators/specific/order';
-import { type z } from 'zod';
 
 export const clientSortNames = ['name', 'email', 'code', "info.name", "info.email", "info.phone",
-    "info.address", "info.city", "info.zip", "info.contactPerson", "info.country",
+    "info.address", "info.city", "info.zip", "info.contactPerson", "info.country", "deliveryRoute.code",
     // 'settings.lastOrderTime'
 ] as const;
 
 export type ClientsSortName = typeof clientSortNames[number];
 
+export const routeSortNames = ['name', 'code'] as const;
+export type RouteSortName = typeof routeSortNames[number];
+
+export const allergenSortNames = ['name'] as const;
+export type AllergenSortName = typeof allergenSortNames[number];
+
+export const mealSortNames = ['name'] as const;
+export type MealSortName = typeof mealSortNames[number];
+
+export const foodCategorySortNames = ['name'] as const;
+export type FoodCategorySortName = typeof foodCategorySortNames[number];
+
 export const clientFilesSortNames = ['name', 'code'] as const;
 
 export type ClientFilesSortName = typeof clientFilesSortNames[number];
 export const usersSortNames = ['name', 'email'] as const;
+
+export const foodSortNames = ['name', 'foodCategory.name'] as const;
+export type FoodSortName = typeof foodSortNames[number];
+
+export const exclusionSortNames = ['name'] as const;
+export type ExclusionSortName = typeof exclusionSortNames[number];
 
 export type UsersSortName = typeof usersSortNames[number];
 
@@ -38,6 +54,7 @@ export type ClientCustomTable = {
     deactivated: boolean;
     createdAt: Date;
     updatedAt: Date;
+    deliveryRoute: DeliveryRoute;
 
 };
 
@@ -60,6 +77,7 @@ export type ConsumerCustomTable = {
     dietician: Dietician;
     deactivated?: boolean;
     createdAt: { $date: Date };
+    allergens: Allergen[];
 };
 
 export const ordersSortNames = ['deliveryDay', 'status', 'client.name', 'client.code'] as const;
@@ -198,3 +216,56 @@ export type ClientFilesCustomTable = {
 };
 
 export type OrderMealPopulated = { consumer: Consumer & { diet: Diet } }
+
+export type FoodCustomTable = {
+    id: string;
+    name: string;
+    ingredients: string | null;
+    foodCategory: FoodCategory | null;
+    allergens: Allergen[];
+}
+
+export type FoodCustomObject = {
+    id: string,
+    name: string,
+    ingredients: string | null,
+    mealId: string | null,
+    allergens: {
+        id: string,
+        name: string,
+    }[]
+}
+
+export type ExclusionCustomTable = {
+    id: string,
+    name: string,
+    allergens: Allergen[],
+}
+
+export type RegularMenuCustomObject = {
+    id: string,
+    day: {
+        year: number,
+        month: number,
+        day: number,
+    },
+    foods: FoodCustomObject[],
+}
+
+export type ClientFoodAssignment =
+    ConsumerFood & {
+        regularMenu: RegularMenu;
+        consumer: Consumer & {
+            allergens: Array<ConsumerAllergen & { allergen: Allergen }>;
+        };
+        food: Food & {
+            allergens: Array<FoodAllergen & { allergen: Allergen }>;
+        };
+        meal: Meal;
+        exclusions: Array<ConsumerFoodExclusion & {
+            exclusion: Exclusion & {
+                allergens: Array<ExclusionAllergen & { allergen: Allergen }>;
+            };
+        }>;
+    };
+// ... existing code ...

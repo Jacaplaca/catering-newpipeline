@@ -8,6 +8,7 @@ export const managerSettingsValidator = z.object({
     //     .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, "settings:order_deadline_validation")
     firstOrderDeadline: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, "settings:order_deadline_validation"),
     secondOrderDeadline: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, "settings:order_deadline_validation"),
+    nonWorkingDays: z.array(z.string()),
 });
 
 export const clientSettingsValidator = z.object({

@@ -17,7 +17,7 @@ const ConsumerExpandedRow = () => {
 
     return (<Wrapper>
         <Form {...form} >
-            <form onSubmit={onSubmit} className='relative max-w-[1200px] ' >
+            <form onSubmit={onSubmit} className='relative w-full ' >
                 <ConsumerInputs />
                 <Buttons
                     cancelLabel={expandedRowId ? translate(dictionary, 'shared:cancel') : undefined}

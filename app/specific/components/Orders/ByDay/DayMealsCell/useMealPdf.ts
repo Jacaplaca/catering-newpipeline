@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 const useMealPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) => {
     const [dayId, setDayId] = useState<string | null>(null);
     const [mealType, setMealType] = useState<MealType | null>(null);
-
     const [isLoading, setIsLoading] = useState(false);
 
     const { data: pdfData, error: pdfError } = api.specific.order.dayPdf.useQuery(

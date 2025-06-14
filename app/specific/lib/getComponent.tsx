@@ -8,6 +8,12 @@ import Consumers from '@root/app/specific/components/Consumers'
 import Orders from '@root/app/specific/components/Orders'
 import ClientFiles from '@root/app/specific/components/ClientFiles'
 import Documents from '@root/app/specific/components/Documents'
+import Routes from '@root/app/specific/components/Routes'
+import Allergens from '@root/app/specific/components/Allergens'
+import Food from '@root/app/specific/components/Food'
+import FoodMenu from '@root/app/specific/components/FoodMenu'
+import Exclusion from '@root/app/specific/components/Exclusion'
+import Meals from '@root/app/specific/components/Meals'
 
 const getComponent = ({
     key,
@@ -66,9 +72,33 @@ const getComponent = ({
             title: translate(dictionary, 'dashboard:item-client-files-title'),
             component: <ClientFiles lang={lang} pageName={pageName} />,
         },
+        'routes': {
+            title: translate(dictionary, 'dashboard:item-routes-title'),
+            component: <Routes lang={lang} pageName={pageName} />,
+        },
         'documents': {
             title: translate(dictionary, 'dashboard:item-documents-title'),
             component: <Documents lang={lang} pageName={pageName} clientId={searchParams?.clientId} />,
+        },
+        'allergens': {
+            title: translate(dictionary, 'dashboard:item-allergens-title'),
+            component: <Allergens lang={lang} pageName={pageName} />,
+        },
+        'food': {
+            title: translate(dictionary, 'dashboard:item-food-title'),
+            component: <Food lang={lang} pageName={pageName} />,
+        },
+        'food-menu': {
+            title: translate(dictionary, 'dashboard:item-food-menu-title'),
+            component: <FoodMenu lang={lang} pageName={pageName} />,
+        },
+        "exclusions": {
+            title: translate(dictionary, 'dashboard:item-exclusions-title'),
+            component: <Exclusion lang={lang} pageName={pageName} />,
+        },
+        "meals": {
+            title: translate(dictionary, 'dashboard:item-meals-title'),
+            component: <Meals lang={lang} pageName={pageName} />,
         },
     } as Record<string, { title: string, component: JSX.Element }>
 

@@ -1,10 +1,10 @@
 import { OrderStatus } from '@prisma/client';
-import getNextWorkingDay from '@root/app/lib/date/getNextWorkingDay';
+import { getNextWorkingDay } from '@root/app/specific/lib/dayInfo';
 import { db } from '@root/app/server/db';
 
 const removeWrongOrders = async () => {
     console.log("17 >>> removeWrongOrders...");
-    const nextWorkingDay = getNextWorkingDay(new Date(), 'Europe/Warsaw');
+    const nextWorkingDay = getNextWorkingDay(new Date(), { timeZone: 'Europe/Warsaw' });
     const year = nextWorkingDay.getFullYear();
     const month = nextWorkingDay.getMonth();
     const day = nextWorkingDay.getDate();

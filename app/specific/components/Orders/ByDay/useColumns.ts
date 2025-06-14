@@ -45,6 +45,11 @@ const useOrderGroupedByDayColumns = ({
         //     align: 'center'
         // },
         {
+            key: "dayTools",
+            title: '',
+            align: 'center'
+        },
+        {
             key: "sentToCateringAt",
             title: 'orders:sentToCateringAt_column',
             align: 'center'

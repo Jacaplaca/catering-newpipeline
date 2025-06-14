@@ -15,7 +15,6 @@ import { tokenRouter } from '@root/app/server/api/routers/token';
 import { awsRouter } from '@root/app/server/api/routers/aws';
 import { clipboardRouter } from '@root/app/server/api/routers/clipboard';
 import specificRouter from '@root/app/server/api/routers/specific';
-
 export const appRouter = createTRPCRouter({
   article: articleRouter,
   user: userRouter,

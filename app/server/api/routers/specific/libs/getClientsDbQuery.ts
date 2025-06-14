@@ -67,8 +67,17 @@ const getClientsDbQuery = ({
             }
         },
         {
+            $lookup: {
+                from: 'DeliveryRoute',
+                localField: 'deliveryRouteId',
+                foreignField: '_id',
+                as: 'deliveryRoute'
+            }
+        },
+        {
             $addFields: {
-                email: { $first: '$user.email' }
+                email: { $first: '$user.email' },
+                deliveryRoute: { $first: '$deliveryRoute' }
             }
         },
         {
@@ -83,7 +92,8 @@ const getClientsDbQuery = ({
                 createdAt: 1,
                 tags: 1,
                 deactivated: 1,
-                email: 1
+                email: 1,
+                deliveryRoute: 1
             }
         },
         {

@@ -5,7 +5,7 @@ import { type InfiniteData } from '@tanstack/react-query';
 import { type ItemProps } from '@root/app/_components/ui/Inputs/SearchWithResults/Item';
 
 interface UseVirtualizedListProps<T extends { id: string; name: string }> {
-    data: InfiniteData<{ items: T[]; nextCursor: number | undefined; }, number | null | undefined> | undefined;
+    data: InfiniteData<{ items: T[]; nextCursor: number | undefined;[key: string]: unknown }, unknown> | undefined;
     fetchNextPage: () => Promise<unknown>;
     hasNextPage: boolean | undefined;
     isFetchingNextPage: boolean;
@@ -15,11 +15,13 @@ interface UseVirtualizedListProps<T extends { id: string; name: string }> {
     parentRef: React.RefObject<HTMLElement>;
     estimateSize?: number;
     overscan?: number;
-    Item: FunctionComponent<ItemProps>;
-    onResultClick?: (id: string | null, allItems: T[]) => void;
+    Item: FunctionComponent<ItemProps<T>>;
+    onResultClick?: (item: T) => void;
     searchValue?: string;
-    selectedItems?: string[];
     limitChars?: number;
+    hideSelected?: boolean;
+    showSelectionIcon?: boolean;
+    selectedIds?: string[];
 }
 
 interface UseVirtualizedListResult<T extends { id: string; name: string }> {
@@ -30,6 +32,7 @@ interface UseVirtualizedListResult<T extends { id: string; name: string }> {
     isLoading: boolean;
     isEmpty: boolean;
     allItems: T[];
+    selectedObjs: T[] | null;
 }
 
 export function useVirtualizedList<T extends { id: string; name: string }>({
@@ -46,11 +49,20 @@ export function useVirtualizedList<T extends { id: string; name: string }>({
     Item,
     onResultClick,
     searchValue,
-    selectedItems,
-    limitChars = 25
+    limitChars = 25,
+    hideSelected = false,
+    showSelectionIcon = false,
+    selectedIds,
 }: UseVirtualizedListProps<T>): UseVirtualizedListResult<T> {
-    const dataFlat = data?.pages.flatMap(page => page.items);
-    const allItems = useMemo(() => dataFlat ?? [], [dataFlat]);
+    const dataFlat = useMemo(() => data?.pages.flatMap(page => page.items) ?? [], [data]);
+
+    const allItems = useMemo(() => {
+        if (hideSelected && selectedIds) {
+            return dataFlat.filter(item => !selectedIds.includes(item.id));
+        }
+
+        return dataFlat;
+    }, [dataFlat, hideSelected, selectedIds]);
 
     const rowVirtualizer = useVirtualizer({
         count: hasNextPage ? allItems.length + 1 : allItems.length,
@@ -93,14 +105,14 @@ export function useVirtualizedList<T extends { id: string; name: string }>({
             item={item}
             isLoaderRow={isLoaderRow}
             key={virtualRow.index}
-            onClick={id => onResultClick?.(id, allItems)}
+            onClick={(item: T) => onResultClick?.(item)}
             fragment={searchValue}
-            // selectedItems={selectedItems}
             limitChars={limitChars}
-            isSelected={selectedItems?.includes(item?.id ?? '')}
+            isSelected={selectedIds?.includes(item?.id ?? '')}
+            showSelectionIcon={showSelectionIcon}
         />;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [allItems, onResultClick, searchValue, limitChars]);
+    }, [allItems, onResultClick, searchValue, limitChars, selectedIds, showSelectionIcon]);
 
     return {
         rowVirtualizer,
@@ -109,7 +121,8 @@ export function useVirtualizedList<T extends { id: string; name: string }>({
         items: virtualItems.map(renderItem),
         isLoading,
         isEmpty,
-        allItems
+        allItems,
+        selectedObjs: dataFlat.filter(item => selectedIds?.includes(item.id)),
     };
 }
 

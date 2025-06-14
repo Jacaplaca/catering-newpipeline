@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { db } from '@root/app/server/db';
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
 // import isWorkingDay from '@root/app/specific/lib/isWorkingDay';
-import getNextWorkingDay from '@root/app/lib/date/getNextWorkingDay';
+import { getNextWorkingDay } from '@root/app/specific/lib/dayInfo';
 import { OrderStatus } from '@prisma/client';
 import getClientSettings from '@root/app/server/api/routers/specific/libs/getUserSettings';
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
@@ -23,7 +23,6 @@ async function autoOrder() {
     // Asynchronously iterate over each client
     for (const client of clients) {
 
-        const { timeZone } = client.catering.settings;
         // const { firstOrderDeadline: clientFirstOrderDeadline } = client.info;
         // break;
         const now = getCurrentTime();
@@ -33,7 +32,7 @@ async function autoOrder() {
         // const nowMonth = now.getMonth();
         // const nowDay = now.getDate();
 
-        const nextWorkingDay = getNextWorkingDay(now, timeZone);
+        const nextWorkingDay = getNextWorkingDay(now, client.catering.settings);
         const nextWorkingDayYear = nextWorkingDay.getFullYear();
         const nextWorkingDayMonth = nextWorkingDay.getMonth();
         const nextWorkingDayDay = nextWorkingDay.getDate();
@@ -49,8 +48,6 @@ async function autoOrder() {
         // console.log(now);
         // allCases.includes(client.id) && console.log(client.id, now, deadlinesStatus);
 
-
-        // const isWorkingDayNow = isWorkingDay(now, timeZone);
 
         if (!isBetween) {
             // console.log(`Client: ${client.id}, is not a working day`);

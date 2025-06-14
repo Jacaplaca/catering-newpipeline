@@ -2,9 +2,11 @@ import { db } from '@root/app/server/db';
 import { getQueryPagination } from '@root/app/lib/safeDbQuery';
 import { getDayValid, getOrdersGroupedByDayValid } from '@root/app/validators/specific/order';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
-import type { OrderGroupedByDayCustomTable, OrderMealPopulated } from '@root/types/specific';
-import { RoleType, type Client, type OrderConsumerBreakfast, type OrderConsumerDinner, type OrderConsumerLunch, type OrderStatus } from '@prisma/client';
+import type { OrderGroupedByDayCustomTable } from '@root/types/specific';
+import { RoleType } from '@prisma/client';
 import processMeals from '@root/app/server/api/routers/specific/libs/processMeals';
+import groupStandardOrdersByDay from '@root/app/server/api/routers/specific/libs/groupStandardOrdersByDay';
+import getDayOrders from '@root/app/server/api/routers/specific/libs/getDayOrders';
 
 const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleType.dietician])
     .input(getDayValid)
@@ -12,124 +14,8 @@ const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTyp
         const { session: { catering } } = ctx;
         const { dayId } = input;
 
-        const [year, month, day] = dayId.split('-').map(Number);
-
-        const dayData = await db.order.aggregateRaw({
-            pipeline: [
-                {
-                    $match: {
-                        cateringId: catering.id,
-                        status: { $ne: 'draft' },
-                        deliveryDay: {
-                            year,
-                            month,
-                            day
-                        }
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'Client',
-                        localField: 'clientId',
-                        foreignField: '_id',
-                        as: 'client'
-                    }
-                },
-                {
-                    $unwind: '$client'
-                },
-                {
-                    $lookup: {
-                        from: 'OrderConsumerBreakfast',
-                        let: { orderId: '$_id' },
-                        pipeline: [
-                            { $match: { $expr: { $eq: ['$orderId', '$$orderId'] } } },
-                            {
-                                $lookup: {
-                                    from: 'Consumer',
-                                    localField: 'consumerId',
-                                    foreignField: '_id',
-                                    as: 'consumer'
-                                }
-                            },
-                            { $unwind: '$consumer' }
-                        ],
-                        as: 'breakfastDiet'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'OrderConsumerLunch',
-                        let: { orderId: '$_id' },
-                        pipeline: [
-                            { $match: { $expr: { $eq: ['$orderId', '$$orderId'] } } },
-                            {
-                                $lookup: {
-                                    from: 'Consumer',
-                                    localField: 'consumerId',
-                                    foreignField: '_id',
-                                    as: 'consumer'
-                                }
-                            },
-                            { $unwind: '$consumer' }
-                        ],
-                        as: 'lunchDiet'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'OrderConsumerDinner',
-                        let: { orderId: '$_id' },
-                        pipeline: [
-                            { $match: { $expr: { $eq: ['$orderId', '$$orderId'] } } },
-                            {
-                                $lookup: {
-                                    from: 'Consumer',
-                                    localField: 'consumerId',
-                                    foreignField: '_id',
-                                    as: 'consumer'
-                                }
-                            },
-                            { $unwind: '$consumer' }
-                        ],
-                        as: 'dinnerDiet'
-                    }
-                },
-                {
-                    $project: {
-                        _id: 1,
-                        cateringId: 1,
-                        clientId: 1,
-                        client: 1,
-                        status: 1,
-                        breakfastStandard: 1,
-                        lunchStandard: 1,
-                        dinnerStandard: 1,
-                        breakfastDietCount: 1,
-                        lunchDietCount: 1,
-                        dinnerDietCount: 1,
-                        breakfastDiet: 1,
-                        lunchDiet: 1,
-                        dinnerDiet: 1,
-                        deliveryDay: 1,
-                        sentToCateringAt: 1,
-                        createdAt: 1,
-                        updatedAt: 1
-                    }
-                }
-            ]
-        }) as unknown as {
-            _id: string;
-            client: Client;
-            status: OrderStatus;
-            sentToCateringAt: { $date: Date };
-            breakfastStandard: number;
-            lunchStandard: number;
-            dinnerStandard: number;
-            breakfastDiet: (OrderConsumerBreakfast & OrderMealPopulated)[];
-            lunchDiet: (OrderConsumerLunch & OrderMealPopulated)[];
-            dinnerDiet: (OrderConsumerDinner & OrderMealPopulated)[];
-        }[]
+        const dayData = await getDayOrders(dayId, catering.id);
+        const sortedStandard = groupStandardOrdersByDay(dayData);
 
         const summary = dayData.reduce((acc, {
             breakfastStandard,
@@ -146,29 +32,12 @@ const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTyp
             dinnerStandard: 0,
         })
 
-        const standard = dayData.reduce((acc, order) => {
-            const code = order.client?.info?.code;
-            if (code) {
-                acc.breakfast[code] = (acc.breakfast[code] ?? 0) + (order.breakfastStandard ?? 0);
-                acc.lunch[code] = (acc.lunch[code] ?? 0) + (order.lunchStandard ?? 0);
-                acc.dinner[code] = (acc.dinner[code] ?? 0) + (order.dinnerStandard ?? 0);
-            }
-            return acc;
-        }, {
-            breakfast: {} as Record<string, number>,
-            lunch: {} as Record<string, number>,
-            dinner: {} as Record<string, number>,
-        })
-
         const diet = dayData.reduce((acc, {
             client,
             breakfastDiet,
             lunchDiet,
             dinnerDiet,
         }) => {
-
-
-
             const code = client?.info?.code;
             if (code) {
                 acc.breakfast[code] = processMeals(breakfastDiet);
@@ -182,7 +51,6 @@ const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTyp
             dinner: {} as Record<string, Record<string, { code: string, description: string }>>,
         })
 
-
         const dayDataCleaned = dayData.map(({
             breakfastDiet: _breakfastDiet,
             lunchDiet: _lunchDiet,
@@ -190,7 +58,7 @@ const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTyp
             ...rest
         }) => rest);
 
-        return { dayData: dayDataCleaned, summary, standard, diet };
+        return { dayData: dayDataCleaned, summary, standard: sortedStandard, diet };
     });
 
 const table = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleType.dietician])

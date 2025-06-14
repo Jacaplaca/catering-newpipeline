@@ -1,4 +1,4 @@
-import { RoleType, type TagType } from '@prisma/client';
+import { RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { clientEditValidator } from '@root/app/validators/specific/client';
 
@@ -6,7 +6,7 @@ const edit = createCateringProcedure([RoleType.manager])
     .input(clientEditValidator)
     .mutation(async ({ ctx, input }) => {
         const { db, session } = ctx
-        const { id, name, email, address, city, contactPerson, country, notes, phone, zip, tags, code, firstOrderDeadline, secondOrderDeadline, allowWeekendOrder } = input;
+        const { id, name, email, address, city, contactPerson, country, notes, phone, zip, code, firstOrderDeadline, secondOrderDeadline, allowWeekendOrder, deliveryRoute } = input;
         const { cateringId } = session.user;
         const { settings } = session.catering
 
@@ -26,46 +26,46 @@ const edit = createCateringProcedure([RoleType.manager])
         }
 
 
-        await db.tagClient.deleteMany({
-            where: {
-                clientId: id,
-            },
-        });
+        // await db.tagClient.deleteMany({
+        //     where: {
+        //         clientId: id,
+        //     },
+        // });
 
 
-        if (tags.length) {
-            const currentTags = await db.tag.findMany({
-                where: {
-                    cateringId,
-                },
-            });
+        // if (tags.length) {
+        //     const currentTags = await db.tag.findMany({
+        //         where: {
+        //             cateringId,
+        //         },
+        //     });
 
-            const tagsToCreate = tags.filter((tag) => !currentTags.some((currentTag) => currentTag.name === tag))
-                .map((name) => ({ name, cateringId, type: "client" }))
-                .filter((tag) => tag.cateringId) as { name: string, cateringId: string, type: TagType }[];
+        //     const tagsToCreate = tags.filter((tag) => !currentTags.some((currentTag) => currentTag.name === tag))
+        //         .map((name) => ({ name, cateringId, type: "client" }))
+        //         .filter((tag) => tag.cateringId) as { name: string, cateringId: string, type: TagType }[];
 
-            tagsToCreate.length && await db.tag.createMany({
-                data: tagsToCreate,
-            });
+        //     tagsToCreate.length && await db.tag.createMany({
+        //         data: tagsToCreate,
+        //     });
 
-            const tagsToAddForClient = await db.tag.findMany({
-                where: {
-                    name: {
-                        in: tags,
-                    },
-                },
-                select: {
-                    id: true,
-                },
-            });
+        //     const tagsToAddForClient = await db.tag.findMany({
+        //         where: {
+        //             name: {
+        //                 in: tags,
+        //             },
+        //         },
+        //         select: {
+        //             id: true,
+        //         },
+        //     });
 
-            tagsToAddForClient.length && await db.tagClient.createMany({
-                data: tagsToAddForClient.map((tag) => ({
-                    clientId: id,
-                    tagId: tag.id,
-                })),
-            });
-        }
+        //     tagsToAddForClient.length && await db.tagClient.createMany({
+        //         data: tagsToAddForClient.map((tag) => ({
+        //             clientId: id,
+        //             tagId: tag.id,
+        //         })),
+        //     });
+        // }
 
         if (code) {
             const clientWithCode = await db.client.findFirst({
@@ -116,7 +116,8 @@ const edit = createCateringProcedure([RoleType.manager])
             data: {
                 info: {
                     update: info
-                }
+                },
+                deliveryRouteId: deliveryRoute?.id ?? null,
             }
         });
     })

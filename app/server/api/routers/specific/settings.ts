@@ -74,7 +74,7 @@ const updateManagerSettings = createCateringNotSettingsProcedure([RoleType.manag
     .mutation(({ ctx, input }) => {
         const { session, db } = ctx;
         const { catering } = session;
-        const { name, firstOrderDeadline, secondOrderDeadline, phone, email } = input;
+        const { name, firstOrderDeadline, secondOrderDeadline, phone, email, nonWorkingDays } = input;
         return db.catering.update({
             where: {
                 id: catering.id
@@ -87,6 +87,7 @@ const updateManagerSettings = createCateringNotSettingsProcedure([RoleType.manag
                         secondOrderDeadline,
                         phone,
                         email,
+                        nonWorkingDays,
                     }
                 }
             }
@@ -205,16 +206,12 @@ const getCateringSettings = publicProcedure
         return personalization;
     });
 
-const deadlines = createCateringProcedure([RoleType.client])
+const deadlines = createCateringProcedure([RoleType.client, RoleType.manager, RoleType.dietician, RoleType.kitchen])
     .input(getClientSettingsValidator)
     .query(async ({ ctx, input }) => {
         const { session } = ctx;
         const { user, catering } = session;
         const { clientId } = input;
-
-        if (!clientId) {
-            throw new Error('Client not found');
-        }
 
         return getClientSettings({
             clientId,

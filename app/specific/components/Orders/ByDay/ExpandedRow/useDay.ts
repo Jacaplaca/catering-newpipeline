@@ -10,15 +10,17 @@ const useDay = () => {
         dinner: 0,
     });
 
-    const [standard, setStandard] = useState<{
-        breakfast: { meals: number; clientCode: string }[];
-        lunch: { meals: number; clientCode: string }[];
-        dinner: { meals: number; clientCode: string }[];
-    }>({
-        breakfast: [],
-        lunch: [],
-        dinner: [],
-    });
+    type StandardMealData = { meals: number; clientCode: string; clientName: string };
+    type StandardRouteData = {
+        breakfast: StandardMealData[];
+        lunch: StandardMealData[];
+        dinner: StandardMealData[];
+        totalBreakfast: number;
+        totalLunch: number;
+        totalDinner: number;
+    };
+
+    const [standard, setStandard] = useState<Record<string, StandardRouteData>>({});
 
     const [diet, setDiet] = useState<{
         breakfast: Record<string, {
@@ -68,21 +70,52 @@ const useDay = () => {
                 });
             }
             const processStandard = () => {
-                const { breakfast, lunch, dinner } = standard;
-                const processedStandard = {
-                    breakfast: Object.entries(breakfast).map(([clientCode, value]) => ({
-                        clientCode,
-                        meals: value,
-                    })),
-                    lunch: Object.entries(lunch).map(([clientCode, value]) => ({
-                        clientCode,
-                        meals: value,
-                    })),
-                    dinner: Object.entries(dinner).map(([clientCode, value]) => ({
-                        clientCode,
-                        meals: value,
-                    })),
-                };
+                const processedStandard: Record<string, StandardRouteData> = {};
+
+                const standardFromAPI = dayData.standard;
+
+                for (const [routeName, routeDetails] of Object.entries(standardFromAPI)) {
+                    // routeDetails is now of type RouteStandardDetails from the backend
+                    // RouteStandardDetails: { clients: ClientStandardMeals[], totalBreakfast: number, ... }
+                    // ClientStandardMeals: { clientCode: string, clientName: string, breakfast: number, lunch: number, dinner: number, ... }
+
+                    const breakfastMeals: StandardMealData[] = [];
+                    const lunchMeals: StandardMealData[] = [];
+                    const dinnerMeals: StandardMealData[] = [];
+
+                    for (const clientMeal of routeDetails.clients) {
+                        if (clientMeal.breakfast > 0) {
+                            breakfastMeals.push({
+                                clientCode: clientMeal.clientCode,
+                                clientName: clientMeal.clientName,
+                                meals: clientMeal.breakfast,
+                            });
+                        }
+                        if (clientMeal.lunch > 0) {
+                            lunchMeals.push({
+                                clientCode: clientMeal.clientCode,
+                                clientName: clientMeal.clientName,
+                                meals: clientMeal.lunch,
+                            });
+                        }
+                        if (clientMeal.dinner > 0) {
+                            dinnerMeals.push({
+                                clientCode: clientMeal.clientCode,
+                                clientName: clientMeal.clientName,
+                                meals: clientMeal.dinner,
+                            });
+                        }
+                    }
+
+                    processedStandard[routeName] = {
+                        breakfast: breakfastMeals,
+                        lunch: lunchMeals,
+                        dinner: dinnerMeals,
+                        totalBreakfast: routeDetails.totalBreakfast,
+                        totalLunch: routeDetails.totalLunch,
+                        totalDinner: routeDetails.totalDinner,
+                    };
+                }
                 setStandard(processedStandard);
             }
             const processDiet = () => {

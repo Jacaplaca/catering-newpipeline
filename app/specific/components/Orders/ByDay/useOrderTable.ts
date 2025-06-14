@@ -4,6 +4,7 @@ import useMessage from '@root/app/hooks/useMessage';
 import useSearch from '@root/app/hooks/useSearch';
 import useLabelsPdf from '@root/app/specific/components/Orders/ByDay/DayMealsCell/useLabelsPdf';
 import useMealPdf from '@root/app/specific/components/Orders/ByDay/DayMealsCell/useMealPdf';
+import useRoutesPdf from '@root/app/specific/components/Orders/ByDay/DayMealsCell/useRoutesPdf';
 import useDay from '@root/app/specific/components/Orders/ByDay/ExpandedRow/useDay';
 import useOrderGroupedByDayColumns from '@root/app/specific/components/Orders/ByDay/useColumns';
 import useOrderGroupedByDayDataGrid from '@root/app/specific/components/Orders/ByDay/useDataGrid';
@@ -32,6 +33,7 @@ const useOrderByDayTable = ({
     const { searchValue, search } = useSearch({ lang, pageName });
     const mealPdf = useMealPdf(lang, updateMessage);
     const labelsPdf = useLabelsPdf(lang, updateMessage);
+    const routesPdf = useRoutesPdf(lang, updateMessage);
 
     const columns = useOrderGroupedByDayColumns({ sort });
 
@@ -99,7 +101,8 @@ const useOrderByDayTable = ({
         action,
         message: { messageObj, resetMessage, updateMessage },
         mealPdf,
-        labelsPdf
+        labelsPdf,
+        routesPdf
     };
 }
 export default useOrderByDayTable;

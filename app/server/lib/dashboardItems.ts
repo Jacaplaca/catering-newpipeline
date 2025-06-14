@@ -12,6 +12,15 @@ const add = (dashboardItems: string[], roleId: RoleType) => {
     });
 }
 
+const addGroups = (dashboardGroups: string[], roleId: RoleType) => {
+    return db.role.update({
+        where: { id: roleId },
+        data: {
+            dashboardGroups: { push: dashboardGroups }
+        }
+    });
+}
+
 const remove = async (itemsToRemove: string[], roleId: RoleType) => {
     const role = await db.role.findUnique({ where: { id: roleId } });
     if (!role) {
@@ -25,4 +34,4 @@ const remove = async (itemsToRemove: string[], roleId: RoleType) => {
     });
 }
 
-export { add, remove };
+export { add, remove, addGroups };

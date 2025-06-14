@@ -12,13 +12,11 @@ const useOrdersFilter = ({
 }) => {
     const setParam = useParam({ lang, pageName });
     const tags = useFilterByTagId({ lang, pageName });
-    const [clientForFilter, setClientForFilter] = useState<{ id: string, name: string, code: string } | null>(null);
+    const [clientForFilter, setClientForFilter] = useState<{ id: string, name: string, code: string | number } | null>(null);
     const [statusForFilter, setStatusForFilter] = useState<OrderStatus | null>(null);
 
-    function chooseClient(id: string | null, allItems: { id: string, name: string, code: string }[]) {
-        console.log(id)
-        const client = allItems.find(item => item.id === id)
-        setClientForFilter(client ?? null)
+    function chooseClient(item: { id: string, name: string, code: string | number } | null) {
+        setClientForFilter(item ?? null)
         // setTagForFilter(allItems.find(item => item.id === id) ?? null)
         setParam({ param: ['page', 1], slugs: [], withDomain: true });
     }

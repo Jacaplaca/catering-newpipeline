@@ -3,7 +3,7 @@ import { type clientEditValidator } from '@root/app/validators/specific/client';
 import { type z } from 'zod';
 import getInputsBulk from '@root/app/lib/table/getInputsBulk';
 import useClientInputs from '@root/app/specific/components/Clients/ExpandedRow/useInputs';
-import Tags from '@root/app/_components/ui/Inputs/Tags';
+// import Tags from '@root/app/_components/ui/Inputs/Tags';
 import translate from '@root/app/lib/lang/translate';
 import FormSection from '@root/app/_components/ui/form/Section';
 import InputsWrapper from '@root/app/_components/ui/Inputs/InputsWrapper';
@@ -13,7 +13,8 @@ const ClientInputs = () => {
     const {
         dictionary,
         rowClick: { form, isFetching, updateClient, client,
-            tags: { tagsLocal, searchResults, addTag, removeTag, searchTags, isSearching } },
+            // tags: { tagsLocal, searchResults, addTag, removeTag, searchTags, isSearching } 
+        },
     } = useClientTableContext();
 
     const inputs = useClientInputs();
@@ -32,7 +33,7 @@ const ClientInputs = () => {
             twoRows>
 
             <InputsWrapper > {Inputs.slice(0, -1)} </InputsWrapper>
-            <InputsWrapper> {Inputs.slice(-1)}
+            {/* <InputsWrapper> {Inputs.slice(-1)}
                 <Tags
                     tags={tagsLocal}
                     handleSearch={searchTags}
@@ -49,7 +50,7 @@ const ClientInputs = () => {
                     }
                 />
 
-            </InputsWrapper>
+            </InputsWrapper> */}
         </FormSection>
     );
 };

@@ -3,7 +3,7 @@ import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { db } from '@root/app/server/db';
 import { getClientValidator } from '@root/app/validators/specific/client';
 
-const getFull = createCateringProcedure([RoleType.manager])
+const getFull = createCateringProcedure([RoleType.manager, RoleType.dietician])
     .input(getClientValidator)
     .query(async ({ input, ctx }) => {
         const { session: { user: doer, catering } } = ctx;
@@ -14,11 +14,11 @@ const getFull = createCateringProcedure([RoleType.manager])
         const client = await db.client.findUnique({
             where: { id, cateringId: doer.cateringId },
             include: {
-                tags: {
-                    include: {
-                        tag: true
-                    }
-                },
+                // tags: {
+                //     include: {
+                //         tag: true
+                //     }
+                // },
                 user: {
                     select: {
                         passwordHash: false,
@@ -27,7 +27,8 @@ const getFull = createCateringProcedure([RoleType.manager])
                         email: false,
                         name: true
                     }
-                }
+                },
+                // deliveryRoute: true
             },
         });
 

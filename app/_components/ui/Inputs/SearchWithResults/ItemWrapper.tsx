@@ -5,7 +5,7 @@ export type ItemWrapperProps = {
     item?: { id: string, name: string };
     virtualRow: VirtualItem;
     isLoaderRow: boolean;
-    onClick?: (id: string) => void;
+    onClick?: (item: { id: string, name: string }) => void;
     children: React.ReactNode;
     isSelected?: boolean;
 }
@@ -16,7 +16,7 @@ const ItemWrapper: FunctionComponent<ItemWrapperProps> = ({ item, virtualRow, on
     return (
         <div
             key={virtualRow.index ?? 'loader'}
-            onClick={(onClick && item?.id) ? () => onClick(item.id) : undefined}
+            onClick={(onClick && item) ? () => onClick(item) : undefined}
             className={`absolute top-0 left-0 w-full
                 flex items-center
                 px-4

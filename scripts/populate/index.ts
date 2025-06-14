@@ -164,12 +164,12 @@ async function main() {
                         },
                     }))
                 },
-                tags: {
-                    create: Array.from({ length: TAGS }).map(() => ({
-                        name: faker.lorem.word(),
-                        type: 'client'
-                    }))
-                }
+                // tags: {
+                //     create: Array.from({ length: TAGS }).map(() => ({
+                //         name: faker.lorem.word(),
+                //         type: 'client'
+                //     }))
+                // }
             }
         });
         cateringBar.increment();

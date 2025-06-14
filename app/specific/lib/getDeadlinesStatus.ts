@@ -1,12 +1,13 @@
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
-import isWorkingDay from '@root/app/specific/lib/isWorkingDay';
+import { isWorkingDay } from '@root/app/specific/lib/dayInfo';
 
 const getDeadlinesStatus = ({ settings, day }: {
     settings?: {
         firstOrderDeadline: string;
         secondOrderDeadline: string;
         timeZone: string;
-        allowWeekendOrder: boolean;
+        allowWeekendOrder?: boolean;
+        nonWorkingDays: string[];
     }, day?: { year: number, month: number, day: number } | null
 }) => {
 
@@ -22,13 +23,13 @@ const getDeadlinesStatus = ({ settings, day }: {
             isAfterSecond: false,
         }
     }
-    const { firstOrderDeadline, secondOrderDeadline, timeZone, allowWeekendOrder } = settings;
+    const { firstOrderDeadline, secondOrderDeadline, timeZone, allowWeekendOrder, nonWorkingDays } = settings;
     const desiredDate = day;
 
     const currentDate = getCurrentTime();
 
     const orderDate = new Date(desiredDate.year, desiredDate.month, desiredDate.day);
-    const isOrderDayWorking = isWorkingDay(orderDate, timeZone)
+    const isOrderDayWorking = isWorkingDay(orderDate, { timeZone, nonWorkingDays });
 
     const [firstDeadlineHour, firstDeadlineMinute] = firstOrderDeadline.split(':').map(Number);
     const [secondDeadlineHour, secondDeadlineMinute] = secondOrderDeadline.split(':').map(Number);
@@ -39,7 +40,7 @@ const getDeadlinesStatus = ({ settings, day }: {
     firstDeadline.setDate(firstDeadline.getDate() - 1);
     secondDeadline.setHours(secondDeadlineHour ?? 0, secondDeadlineMinute ?? 0, 0, 0);
     if (!allowWeekendOrder) {
-        while (!isWorkingDay(firstDeadline, timeZone)) {
+        while (!isWorkingDay(firstDeadline, { timeZone, nonWorkingDays })) {
             firstDeadline.setDate(firstDeadline.getDate() - 1); // Find the previous working day
         }
     };

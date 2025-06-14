@@ -116,6 +116,28 @@ const getConsumerDbQuery = ({
         });
     }
 
+    const addAllergens = startWith('allergens') || id ? true : clientId ? true : false;
+
+    if (addAllergens) {
+        console.log('allergens')
+        pipeline.push({
+            $lookup: {
+                from: 'ConsumerAllergen',
+                localField: '_id',
+                foreignField: 'consumerId',
+                as: 'consumerAllergens'
+            }
+        });
+        pipeline.push({
+            $lookup: {
+                from: 'Allergen',
+                localField: 'consumerAllergens.allergenId',
+                foreignField: '_id',
+                as: 'allergenDetails'
+            }
+        });
+    }
+
     if (withDiet) {
         pipeline.push({
             $match: {
@@ -143,6 +165,19 @@ const getConsumerDbQuery = ({
         }
     }
 
+    if (addAllergens) {
+        fieldsToAdd.$addFields.allergens = {
+            $map: {
+                input: '$allergenDetails',
+                as: 'allergen',
+                in: {
+                    id: '$$allergen._id',
+                    name: '$$allergen.name'
+                }
+            }
+        };
+    }
+
     pipeline.push(fieldsToAdd as Prisma.InputJsonValue);
 
     const projection = {
@@ -165,6 +200,11 @@ const getConsumerDbQuery = ({
 
     if (id) {
         projection.notes = 1;
+        projection.allergens = 1;
+    }
+
+    if (addAllergens) {
+        projection.allergens = 1;
     }
 
     const pipelineOrg = [

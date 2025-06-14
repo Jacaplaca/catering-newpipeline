@@ -37,6 +37,44 @@
         ]
     },
     {
+        "label": "Diets",
+        "key": "diets",
+        "opened": false,
+        "order": 3,
+        "items": [
+            {
+                "label": "Allergens",
+                "icon": "fa-solid fa-wheat",
+                "key": "allergens",
+                "order": 1
+            },
+            {
+                "label": "Exclusions",
+                "icon": "fa-solid fa-wheat-slash",
+                "key": "exclusions",
+                "order": 2
+            },
+            {
+                "label": "Meals",
+                "icon": "fa-solid fa-burger-soda",
+                "key": "meals",
+                "order": 3
+            },
+            {
+                "label": "Food",
+                "icon": "fa-solid fa-salad",
+                "key": "food",
+                "order": 4
+            },
+            {
+                "label": "Menu",
+                "icon": "fa-solid fa-utensils",
+                "key": "food-menu",
+                "order": 5
+            }
+        ]
+    },
+    {
         "order": 4,
         "items": [
             {
@@ -82,6 +120,17 @@
     },
     {
         "order": 7,
+        "items": [
+            {
+                "label": "Routes",
+                "icon": "fa-solid fa-truck-fast",
+                "key": "routes",
+                "order": 1
+            }
+        ]
+    },
+    {
+        "order": 8,
         "items": [
             {
                 "label": "Settings",

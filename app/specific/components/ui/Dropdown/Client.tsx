@@ -3,19 +3,22 @@ import ListWrapper from '@root/app/_components/ui/Inputs/SearchWithResults/ListW
 import useVirtualizedList from '@root/app/hooks/useVirtualizedListl';
 import translate from '@root/app/lib/lang/translate';
 import { api } from '@root/app/trpc/react';
-import { useRef, useState, type FunctionComponent } from 'react';
+import { type FunctionComponent } from 'react';
 import FoundResults from '@root/app/_components/ui/Inputs/SearchWithResults/Found';
 import { type VirtualItem } from '@tanstack/react-virtual';
 import HighlightText from '@root/app/_components/Table/HighlightText';
 import ItemWrapper from '@root/app/_components/ui/Inputs/SearchWithResults/ItemWrapper';
+import useDropdown from '@root/app/specific/components/ui/Dropdown/useDropdown';
 
 const ITEMS_PER_PAGE = 10;
 
+type ClientItem = { id: string, name: string, code: string | number };
+
 export type ItemProps = {
-    item?: { id: string, name: string, code?: string };
+    item?: ClientItem;
     virtualRow: VirtualItem;
     isLoaderRow: boolean;
-    onClick?: (id: string) => void;
+    onClick?: (item: ClientItem) => void;
     fragment?: string;
     limitChars?: number;
     isSelected?: boolean;
@@ -27,7 +30,7 @@ const Item: FunctionComponent<ItemProps> = ({ item, virtualRow, isLoaderRow, onC
         <ItemWrapper
             item={item}
             virtualRow={virtualRow}
-            onClick={onClick}
+            onClick={onClick ? () => onClick(item!) : undefined}
             isLoaderRow={isLoaderRow}
         // isSelected={isSelected}
         >
@@ -57,7 +60,7 @@ const Item: FunctionComponent<ItemProps> = ({ item, virtualRow, isLoaderRow, onC
                         className={`text-sm  h-full
                         text-neutral-700 dark:text-white
                         `}
-                        text={item?.code ?? ''}
+                        text={String(item.code ?? '')}
                         fragment={fragment}
                     />
                 </div>}
@@ -67,52 +70,41 @@ const Item: FunctionComponent<ItemProps> = ({ item, virtualRow, isLoaderRow, onC
 }
 const ClientDropdown: FunctionComponent<{
     dictionary: Record<string, string>;
-    select: (id: string | null, allItems: { id: string, name: string, code: string }[]) => void;
-    selected?: { id: string, name: string, code: string } | null;
+    onSelect: (item: ClientItem | null) => void;
+    selected?: ClientItem | null;
     inputClassName?: string;
     foundLimitChars?: number;
-    selectedMultiple?: string[];
-    isMulti?: boolean;
-}> = ({ dictionary, select, selected, inputClassName, foundLimitChars = 22, selectedMultiple, isMulti }) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const [inputValue, setInputValue] = useState<string>('');
-    const [isFocused, setIsFocused] = useState(false);
-    const [key, setKey] = useState(0);
+}> = ({ dictionary, onSelect, selected, inputClassName, foundLimitChars = 22 }) => {
+    const { ref, searchValue, isFocused, key, updateValue, onResultClick, handleSelect, setIsFocused } =
+        useDropdown<ClientItem>(onSelect);
 
     const response = api.specific.client.getInfinite.useInfiniteQuery(
         {
             limit: ITEMS_PER_PAGE,
-            name: inputValue,
+            name: searchValue,
         },
         {
             getNextPageParam: (lastPage) => lastPage.nextCursor,
         }
     );
 
-    const onResultClick = (id: string | null, allItems: { id: string, name: string }[]) => {
-        select(id, allItems as { id: string, name: string, code: string }[]);
-        if (!isMulti) {
-            setIsFocused(false);
-            setKey(prevKey => prevKey + 1);
-        }
-    }
+    // const onResultClick = (id: string | null, allItems: { id: string, name: string }[]) => {
+    //     select(id, allItems as { id: string, name: string, code: string }[]);
+    //     if (!isMulti) {
+    //         setIsFocused(false);
+    //         setKey(prevKey => prevKey + 1);
+    //     }
+    // }
 
-    const { rowVirtualizer, items: clients, isLoading, isEmpty } = useVirtualizedList<{ id: string, name: string }>({
+    const { rowVirtualizer, items: clients, isLoading, isEmpty } = useVirtualizedList<ClientItem>({
         ...response,
         parentRef: ref,
         Item,
         onResultClick,
-        searchValue: inputValue,
+        searchValue,
         limitChars: 30,
-        selectedItems: selectedMultiple,
+        // selectedItems: selectedMultiple,
     });
-
-    const updateValue = (value: string) => {
-        if (value?.length) {
-            select(null, []);
-        }
-        setInputValue(value);
-    };
 
     return <SearchWithResults
         key={key}
@@ -130,7 +122,7 @@ const ClientDropdown: FunctionComponent<{
         placeholder={translate(dictionary, 'shared:search_client_placeholder')}
         FoundComponent={<FoundResults
             limit={foundLimitChars}
-            clearValue={() => select(null, [])}
+            clearValue={() => handleSelect(null)}
             value={selected?.name ?? ''}
         />}
         onSearch={updateValue}

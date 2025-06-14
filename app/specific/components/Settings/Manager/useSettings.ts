@@ -24,6 +24,7 @@ const useManagerSettings = ({ dictionary }: {
             secondOrderDeadline: '--:--',
             phone: '',
             email: '',
+            nonWorkingDays: [],
         }
     });
 
@@ -36,6 +37,7 @@ const useManagerSettings = ({ dictionary }: {
                 // lastOrderTime: settings.lastOrderTime ?? '--:--',
                 firstOrderDeadline: settings.firstOrderDeadline ?? '--:--',
                 secondOrderDeadline: settings.secondOrderDeadline ?? '--:--',
+                nonWorkingDays: settings.nonWorkingDays || [],
             });
         }
     }, [settings, form]);
@@ -63,11 +65,18 @@ const useManagerSettings = ({ dictionary }: {
         isFetching: isFetching || updateSetting.isPending
     });
 
+    const nonWorkingDays = form.watch('nonWorkingDays', []);
+    const setNonWorkingDays = (dates: string[]) => {
+        form.setValue('nonWorkingDays', dates, { shouldValidate: true, shouldDirty: true });
+    };
+
     return {
         form,
         onSubmit: form.handleSubmit(onSubmit),
         hasFinishedSettings,
         Inputs,
+        nonWorkingDays,
+        setNonWorkingDays,
     };
 };
 

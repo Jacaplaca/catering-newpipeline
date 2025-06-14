@@ -85,6 +85,11 @@ export const getOrdersPdfValid = z.object({
     lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
 });
 
+export const getRoutesPdfValid = z.object({
+    dayId: z.string(),
+    lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
+});
+
 export const getLastOrderValid = z.object({
     clientId: z.string(),
 });

@@ -9,6 +9,8 @@ import { type consumerEditValidator } from '@root/app/validators/specific/consum
 import InputsWrapper from '@root/app/_components/ui/Inputs/InputsWrapper';
 import FormSection from '@root/app/_components/ui/form/Section';
 import ClientDropdown from '@root/app/specific/components/ui/Dropdown/Client';
+import AllergenDropdown from '@root/app/specific/components/ui/Dropdown/Allergen';
+import { UseFormReturn } from 'react-hook-form';
 
 const ConsumerInputs = () => {
 
@@ -17,7 +19,11 @@ const ConsumerInputs = () => {
         rowClick: { form, isFetching, update,
             clients: {
                 chooseClient,
-            } },
+            },
+            // allergens: {
+            //     chooseAllergens,
+            // }
+        },
     } = useConsumerTableContext();
 
     const inputs = useConsumerInputs();
@@ -52,7 +58,7 @@ const ConsumerInputs = () => {
                                 >
                                     <ClientDropdown
                                         dictionary={dictionary}
-                                        select={chooseClient}
+                                        onSelect={chooseClient}
                                         selected={value}
                                         inputClassName='w-full'
                                         foundLimitChars={35}
@@ -66,11 +72,38 @@ const ConsumerInputs = () => {
                     {/* {!expandedRowId && Inputs[1]} */}
                     {/* {!expandedRowId && Inputs[2]} */}
                 </InputsWrapper>
-                {/* {!!expandedRowId && <InputsWrapper>
-                    {Inputs[1]}
-                    {Inputs[2]}
-                </InputsWrapper>} */}
+                <InputsWrapper>
+                    <FormField
+                        control={form.control}
+                        name={'allergens'}
+                        render={({
+                            field: { value },
+                        }) => {
+                            return (
+                                <AuthInput
+                                    message={translate(dictionary, form.formState.errors.allergens?.message)}
+                                    label={translate(dictionary, 'consumers:allergens_label')}
+                                    horizontal
+                                >
+                                    <AllergenDropdown
+                                        dictionary={dictionary}
+                                        inputClassName='w-full'
+                                        foundLimitChars={35}
+                                        selectedItems={value ?? []}
+                                        onItemsChange={(items) => {
+                                            form.setValue('allergens', items, { shouldValidate: true, shouldDirty: true });
+                                        }}
+                                        showSelectionIcon
+                                        placeholder={translate(dictionary, 'consumers:allergens_placeholder')}
+                                        selectedLabel={translate(dictionary, 'consumers:selected_allergens')}
+                                    />
+                                </AuthInput>
+                            )
+                        }}
+                    />
+                </InputsWrapper>
             </FormSection>
+
             <FormSection
                 title={translate(dictionary, 'consumers:diet_label')}
             // description={formData?.diet?.code?.toString() ?? ''}

@@ -8,7 +8,7 @@ import { consumerEditValidator, deleteConsumersValid, getConsumerValid, getConsu
 import { type ConsumerCustomTable, consumersSortNames } from '@root/types/specific';
 import { OrderStatus, RoleType } from '@prisma/client';
 
-const dietaryAll = createCateringProcedure([RoleType.client])
+const dietaryAll = createCateringProcedure([RoleType.client, RoleType.dietician, RoleType.manager])
     .input(getDietaryAllForClientValid)
     .query(async ({ input, ctx }) => {
         const { session: { catering } } = ctx;
@@ -105,7 +105,7 @@ const addOne = createCateringProcedure([RoleType.dietician, RoleType.manager])
     .input(consumerEditValidator)
     .mutation(async ({ input, ctx }) => {
         const { session: { catering } } = ctx;
-        const { name, client, notes, diet, code } = input;
+        const { name, client, notes, diet, code, allergens } = input;
         const cateringId = catering.id;
 
         const goodCode = code.trim().toUpperCase();
@@ -121,17 +121,31 @@ const addOne = createCateringProcedure([RoleType.dietician, RoleType.manager])
             throw new Error("consumers:duplicate_code_error");
         }
 
+        return await db.$transaction(async (tx) => {
+            // Create consumer
+            const newConsumer = await tx.consumer.create({
+                data: {
+                    code: goodCode,
+                    name,
+                    cateringId,
+                    clientId: client.id,
+                    notes,
+                    dieticianId: ctx.session.user.id,
+                    diet,
+                }
+            });
 
-        return db.consumer.create({
-            data: {
-                code: goodCode,
-                name,
-                cateringId,
-                clientId: client.id,
-                notes,
-                dieticianId: ctx.session.user.id,
-                diet
+            // Create allergen relationships if any
+            if (allergens && allergens.length > 0) {
+                await tx.consumerAllergen.createMany({
+                    data: allergens.map(allergen => ({
+                        consumerId: newConsumer.id,
+                        allergenId: allergen.id
+                    }))
+                });
             }
+
+            return newConsumer;
         });
 
         // return handleDiet({
@@ -147,7 +161,7 @@ const edit = createCateringProcedure([RoleType.dietician, RoleType.manager])
     .input(consumerEditValidator)
     .mutation(async ({ input, ctx }) => {
         const { session: { catering } } = ctx;
-        const { id, name, client, notes, diet, code } = input;
+        const { id, name, client, notes, diet, code, allergens } = input;
 
         const goodCode = code.trim().toUpperCase();
 
@@ -165,16 +179,37 @@ const edit = createCateringProcedure([RoleType.dietician, RoleType.manager])
             throw new Error("consumers:duplicate_code_error");
         }
 
-        return await db.consumer.update({
-            where: { id },
-            data: {
-                name,
-                code: goodCode,
-                clientId: client.id,
-                cateringId: catering.id,
-                notes,
-                diet
+        // Use transaction to handle consumer update and allergens relationship
+        return await db.$transaction(async (tx) => {
+            // Update consumer data
+            const updatedConsumer = await tx.consumer.update({
+                where: { id },
+                data: {
+                    name,
+                    code: goodCode,
+                    clientId: client.id,
+                    cateringId: catering.id,
+                    notes,
+                    diet,
+                }
+            });
+
+            // Delete existing allergen relationships
+            await tx.consumerAllergen.deleteMany({
+                where: { consumerId: id }
+            });
+
+            // Create new allergen relationships if any
+            if (id && allergens && allergens.length > 0) {
+                await tx.consumerAllergen.createMany({
+                    data: allergens.map(allergen => ({
+                        consumerId: id,
+                        allergenId: allergen.id
+                    }))
+                });
             }
+
+            return updatedConsumer;
         });
 
         // return handleDiet({

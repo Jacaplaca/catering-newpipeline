@@ -71,6 +71,8 @@ const ConsumersTable: FunctionComponent = () => {
                 getData={getConfirmationData}
             />
             {showForDieticianOrManager && <MainModal
+                maxWidth='max-w-[400px]'
+                allowOverflow
                 isOpen={isAddConsumerOpen}
                 closeModal={addConsumerClose}
                 header={t(dictionary, 'consumers:add_consumer')}
@@ -106,7 +108,7 @@ const ConsumersTable: FunctionComponent = () => {
 
                     {showForDieticianOrManager && <ClientDropdown
                         dictionary={dictionary}
-                        select={chooseClient}
+                        onSelect={chooseClient}
                         selected={clientForFilter}
                     />}
 
