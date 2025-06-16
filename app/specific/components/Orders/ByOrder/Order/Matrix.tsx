@@ -50,6 +50,11 @@ const CopyFromButton: FC<{
     </div>
 }
 
+export const checkIfLocked = (meal: MealType, isBetween: boolean, isAfterSecond: boolean) => {
+    const isBreakfast = meal === MealType.Breakfast;
+    return (isBreakfast && isBetween) || isAfterSecond;
+}
+
 
 const MealCell: FC<{
     meal: MealType,
@@ -66,8 +71,7 @@ const MealCell: FC<{
         },
     } = useOrderTableContext();
 
-    const isBreakfast = meal === MealType.Breakfast;
-    const isLocked = (isBreakfast && isBetween) || isAfterSecond;
+    const isLocked = checkIfLocked(meal, isBetween, isAfterSecond);
 
     if (type === 'standard') {
         return <div className='flex flex-row gap-1 items-center justify-center'>
@@ -94,7 +98,7 @@ const MealCell: FC<{
             px-4 py-1 flex items-center font-semibold
             dark:bg-transparent bg-white
             ${isLocked
-                    ? "opacity-90 cursor-not-allowed"
+                    ? "opacity-90"
                     : "hover:dark:bg-darkmode-secondary-accent hover:bg-secondary"}
             rounded-md
             border-[1px] border-neutral-300 dark:border-neutral-600
@@ -102,7 +106,7 @@ const MealCell: FC<{
             hover:dark:text-neutral-100 hover:text-neutral-900
             `}
                 onClick={() => onClick?.(meal)}
-                disabled={isLocked}
+            // disabled={isLocked}
             >
                 {diet[meal].length}
             </button>

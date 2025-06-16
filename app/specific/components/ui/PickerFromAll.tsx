@@ -13,18 +13,19 @@ const PickerFromAll: FunctionComponent<{
     selected: string[],
     onSelect: (id: string, items: { id: string, name: string, code: string }[]) => void,
     searchPlaceholder: string,
-    notFoundLabel: string
-}> = ({ dictionary, search, value, selectAll, deselectAll, items, selected, onSelect, searchPlaceholder, notFoundLabel }) => {
+    notFoundLabel: string,
+    isLocked?: boolean
+}> = ({ dictionary, search, value, selectAll, deselectAll, items, selected, onSelect, searchPlaceholder, notFoundLabel, isLocked }) => {
     // console.log("fragment", value + "AAA");
     return <>
-        <SearchInput
+        {!isLocked && <SearchInput
             search={search}
             everyChar
             debounce={300}
             placeholder={translate(dictionary, searchPlaceholder)}
             value={value}
-        />
-        <div className='flex flex-row gap-2 justify-between text-sm'>
+        />}
+        {!isLocked && <div className='flex flex-row gap-2 justify-between text-sm'>
             <button
                 className='opacity-80'
                 onClick={selectAll}>{translate(dictionary, 'shared:select_all')}</button>
@@ -32,13 +33,13 @@ const PickerFromAll: FunctionComponent<{
                 className='opacity-80'
                 onClick={deselectAll}>{translate(dictionary, 'shared:deselect_all')}</button>
 
-        </div>
+        </div>}
         <div className="flex-grow overflow-y-auto" >
             {items.length ? items.map((item) => (
                 <ElementToPick
                     key={item.id}
                     item={item}
-                    onClick={(id) => onSelect(id, items)}
+                    onClick={(id) => !isLocked && onSelect(id, items)}
                     selectedItems={selected}
                     fragment={value}
                 />

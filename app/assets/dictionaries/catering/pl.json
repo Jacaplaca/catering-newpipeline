@@ -244,7 +244,8 @@
         "total_route_pdf": "Łącznie",
         "client_route_pdf": "Klient",
         "routes_pdf_title": "Trasy",
-        "no_route_pdf": "Bez trasy"
+        "no_route_pdf": "Bez trasy",
+        "cancelled_meals": "Anulowane posiłki"
     },
     "client-files":{
         "file_type_menu": "Menu",
@@ -327,7 +328,9 @@
         "ingredients_label": "Składniki",
         "food_category_placeholder": "Wpisz kategorię potrawy",
         "allergens_placeholder": "Wybierz alergeny",
-        "selected_allergens": "Alergeny:"
+        "selected_allergens": "Alergeny:",
+        "name_required": "Nazwa jest wymagana",
+        "food_category_required": "Kategoria jest wymagana"
     },
     "menu-creator": {
         "title-standard-menu": "Standardowe menu",

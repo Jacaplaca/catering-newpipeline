@@ -1,24 +1,29 @@
 import { api } from '@root/app/trpc/react';
+import { MealType } from '@root/types/specific';
 import { useEffect, useState } from 'react';
 
 const useConsumersPick = ({
     selectedIds,
     updateSelected,
     allowedIds,
-    clientId
+    clientId,
+    meal
 }: {
     selectedIds: string[],
     updateSelected: (ids: string[]) => void,
     allowedIds?: string[],
     clientId?: string,
+    meal: MealType
 }) => {
+
 
     const [selectedItems, setSelectedItems] = useState<{ id: string, name: string, code: string }[]>([]);
 
     const [inputValue, setInputValue] = useState<string>('');
     const { data: allItems, isLoading } = api.specific.consumer.dietaryAll.useQuery({ clientId: clientId ?? '' }, { enabled: !!clientId });
 
-    const allowedItems = allowedIds ? allItems?.filter(item => allowedIds.includes(item.id)) : allItems;
+    let allowedItems = allowedIds ? allItems?.filter(item => allowedIds.includes(item.id)) : allItems;
+    allowedItems = meal === MealType.Breakfast ? allItems : allowedItems;
 
     const [filteredItems, setFilteredItems] = useState<{ id: string, name: string, code: string }[]>(allowedItems ?? []);
 

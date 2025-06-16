@@ -16,7 +16,7 @@ const Meal: FC<{
             onItemsChange={(a) => { updateMenu(a as { id: string, name: string, ingredients: string | null, allergens: { id: string, name: string }[] }[], id) }}
             selectedItems={getFoodsByMealId(id)}
             inputClassName='w-full'
-            foundLimitChars={22}
+            foundLimitChars={80}
             placeholder={translate(dictionary, 'menu-creator:food_placeholder')}
             showSelectionIcon={true}
             allergens={getAllergens(id)}

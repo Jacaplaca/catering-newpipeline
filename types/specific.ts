@@ -156,8 +156,16 @@ export type OrderForView = {
         lunch: number;
         dinner: number;
     };
+    standardsBeforeDeadline: {
+        lunch: number;
+        dinner: number;
+    };
     diet: {
         breakfast: Array<Consumer & { diet: Diet | null }>;
+        lunch: Array<Consumer & { diet: Diet | null }>;
+        dinner: Array<Consumer & { diet: Diet | null }>;
+    };
+    dietBeforeDeadline: {
         lunch: Array<Consumer & { diet: Diet | null }>;
         dinner: Array<Consumer & { diet: Diet | null }>;
     };

@@ -78,7 +78,7 @@ const StandardMenuDay = () => {
                         <SelectedDisplay
                             selectedItems={getAllAllergensFromAllTypes()}
                             iconClassName="fas fa-exclamation-triangle"
-                            label="Allergens:"
+                            label={`${translate(dictionary, 'menu-creator:allergens')}:`}
                             noBorder={true}
                             noBackground={true}
                         />

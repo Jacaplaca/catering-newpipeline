@@ -25,6 +25,7 @@ const SearchInput: FunctionComponent<{
 
     useEventListener('keydown', (event: Event & { key: string }) => {
         if (event.key === 'Enter') {
+            event.preventDefault();
             handleSubmit();
         }
     }, inputRef);
@@ -50,6 +51,8 @@ const SearchInput: FunctionComponent<{
         setSearchValue('');
         onClear?.();
     };
+
+    const isDisabled = loading || !searchValue;
 
     return (
         <div className="">
@@ -95,7 +98,8 @@ const SearchInput: FunctionComponent<{
                         </button>}
                         {Boolean(everyChar) && <button
                             onClick={handleSubmit}
-                            type="submit"
+                            type="button"
+                            disabled={isDisabled}
                             className={`px-2.5
                                 text-sm font-medium h-full text-neutral-900 dark:text-white
                                 bg-secondary rounded-e-lg border border-secondary hover:bg-secondary-accent
@@ -104,6 +108,7 @@ const SearchInput: FunctionComponent<{
                                 dark:border-secondary-accent
                                 dark:hover:bg-darkmode-secondary-accent
                                 dark:focus:bg-darkmode-secondary
+                                disabled:opacity-50 disabled:cursor-not-allowed
                                 `}>
                             {label}
                             <span className="sr-only">{label}</span>

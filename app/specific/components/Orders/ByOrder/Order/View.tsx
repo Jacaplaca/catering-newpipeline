@@ -39,6 +39,90 @@ const DietConsumers = ({ consumers }: { consumers: Array<Consumer & { diet: Diet
     );
 }
 
+const CancelledConsumers = ({
+    currentConsumers,
+    beforeDeadlineConsumers
+}: {
+    currentConsumers: Array<Consumer & { diet: Diet | null }>;
+    beforeDeadlineConsumers: Array<Consumer & { diet: Diet | null }>;
+}) => {
+    const {
+        dictionary,
+    } = useOrderTableContext();
+    // Find consumers who were in beforeDeadline but are not in current (cancelled)
+    const cancelledConsumers = beforeDeadlineConsumers.filter(
+        beforeConsumer => !currentConsumers.some(current => current.id === beforeConsumer.id)
+    );
+
+    if (cancelledConsumers.length === 0) return null;
+
+    return (
+        <div className="mt-2 pt-2 border-t border-red-200 dark:border-red-800">
+            <p className="text-xs text-red-600 dark:text-red-400 mb-1 font-medium">
+                {translate(dictionary, 'orders:cancelled_meals')}
+            </p>
+            <div className="flex flex-col gap-1">
+                {cancelledConsumers.map((consumer) => {
+                    const { code, name, diet, id } = consumer;
+                    const { code: dietCode, description: dietDescription } = diet ?? {};
+                    return (
+                        <div key={id} className="bg-red-50 dark:bg-red-900/20 rounded p-1">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="font-medium">{name}</span>
+                                <span className="font-semibold">{code}</span>
+                            </div>
+                            {(dietDescription ?? dietCode) && (
+                                <div className="text-xs text-red-700 dark:text-red-300">
+                                    <span>{dietDescription}</span>
+                                    {dietCode && <span className="ml-1 font-bold">{dietCode}</span>}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const StandardMealCount = ({
+    current,
+    beforeDeadline,
+    mealType
+}: {
+    current: number;
+    beforeDeadline?: number;
+    mealType: 'breakfast' | 'lunch' | 'dinner';
+}) => {
+    const standardStyle = 'p-3 font-bold text-base text-center text-neutral-800 dark:text-neutral-200';
+
+    // If no beforeDeadline data or same value, show normal
+    if (!beforeDeadline || beforeDeadline === current) {
+        return <div className={standardStyle}>{current}</div>;
+    }
+
+    // Calculate difference
+    const difference = current - beforeDeadline;
+    const isIncrease = difference > 0;
+    const diffText = isIncrease ? `+${difference}` : `${difference}`;
+    const diffColor = isIncrease ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+
+    // Show current value and difference
+    return (
+        <div className={standardStyle}>
+            <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-row items-center gap-3">
+                    <span>{current}</span>
+                    <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600"></div>
+                    <span className={`text-sm font-semibold ${diffColor}`}>
+                        {diffText}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const OrderView = () => {
     const {
         dictionary,
@@ -54,7 +138,7 @@ const OrderView = () => {
     if (!orderForView) return <div>Error</div>;
 
     const headerStyle = 'p-3 font-semibold text-neutral-800 dark:text-neutral-200';
-    const standardStyle = 'p-3 font-bold text-base text-center text-neutral-800 dark:text-neutral-200';
+
     return (
         <div className="flex flex-col h-full">
             <div className={`grid grid-cols-4 auto-rows-auto gap-4 p-5`}>
@@ -63,13 +147,38 @@ const OrderView = () => {
                 <div className={`${headerStyle} text-center`}>{translate(dictionary, 'orders:lunch')}</div>
                 <div className={`${headerStyle} text-center`}>{translate(dictionary, 'orders:dinner')}</div>
                 <div className={`${headerStyle} text-right`}>{translate(dictionary, 'orders:standard')}</div>
-                <div className={`${standardStyle}`}>{orderForView?.standards?.breakfast}</div>
-                <div className={`${standardStyle}`}>{orderForView?.standards?.lunch}</div>
-                <div className={`${standardStyle}`}>{orderForView?.standards?.dinner}</div>
+                <StandardMealCount
+                    current={orderForView.standards.breakfast}
+                    mealType="breakfast"
+                />
+                <StandardMealCount
+                    current={orderForView.standards.lunch}
+                    beforeDeadline={orderForView.standardsBeforeDeadline.lunch}
+                    mealType="lunch"
+                />
+                <StandardMealCount
+                    current={orderForView.standards.dinner}
+                    beforeDeadline={orderForView.standardsBeforeDeadline.dinner}
+                    mealType="dinner"
+                />
                 <div className={`${headerStyle} text-right`}>{translate(dictionary, 'orders:diet')}</div>
-                <div className="overflow-auto "><DietConsumers consumers={orderForView?.diet.breakfast} /></div>
-                <div className="overflow-auto "><DietConsumers consumers={orderForView?.diet.lunch} /></div>
-                <div className="overflow-auto "><DietConsumers consumers={orderForView?.diet.dinner} /></div>
+                <div className="overflow-auto">
+                    <DietConsumers consumers={orderForView.diet.breakfast} />
+                </div>
+                <div className="overflow-auto">
+                    <DietConsumers consumers={orderForView.diet.lunch} />
+                    <CancelledConsumers
+                        currentConsumers={orderForView.diet.lunch}
+                        beforeDeadlineConsumers={orderForView.dietBeforeDeadline.lunch}
+                    />
+                </div>
+                <div className="overflow-auto">
+                    <DietConsumers consumers={orderForView.diet.dinner} />
+                    <CancelledConsumers
+                        currentConsumers={orderForView.diet.dinner}
+                        beforeDeadlineConsumers={orderForView.dietBeforeDeadline.dinner}
+                    />
+                </div>
             </div>
             {orderForView.notes && (
                 <div className="p-5 mt-4 border-t border-neutral-200 dark:border-neutral-700">

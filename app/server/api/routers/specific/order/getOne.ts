@@ -44,8 +44,30 @@ const forView = createCateringProcedure([RoleType.manager, RoleType.kitchen])
                 },
                 {
                     $lookup: {
+                        from: 'OrderConsumerLunchBeforeDeadline',
+                        localField: '_id',
+                        foreignField: 'orderId',
+                        as: 'lunchDietBeforeDeadline'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'OrderConsumerDinnerBeforeDeadline',
+                        localField: '_id',
+                        foreignField: 'orderId',
+                        as: 'dinnerDietBeforeDeadline'
+                    }
+                },
+                {
+                    $lookup: {
                         from: 'Consumer',
-                        let: { breakfastIds: '$breakfastDiet.consumerId', lunchIds: '$lunchDiet.consumerId', dinnerIds: '$dinnerDiet.consumerId' },
+                        let: {
+                            breakfastIds: '$breakfastDiet.consumerId',
+                            lunchIds: '$lunchDiet.consumerId',
+                            dinnerIds: '$dinnerDiet.consumerId',
+                            lunchBeforeDeadlineIds: '$lunchDietBeforeDeadline.consumerId',
+                            dinnerBeforeDeadlineIds: '$dinnerDietBeforeDeadline.consumerId'
+                        },
                         pipeline: [
                             {
                                 $match: {
@@ -53,7 +75,9 @@ const forView = createCateringProcedure([RoleType.manager, RoleType.kitchen])
                                         $or: [
                                             { $in: ['$_id', '$$breakfastIds'] },
                                             { $in: ['$_id', '$$lunchIds'] },
-                                            { $in: ['$_id', '$$dinnerIds'] }
+                                            { $in: ['$_id', '$$dinnerIds'] },
+                                            { $in: ['$_id', '$$lunchBeforeDeadlineIds'] },
+                                            { $in: ['$_id', '$$dinnerBeforeDeadlineIds'] }
                                         ]
                                     }
                                 }
@@ -99,6 +123,10 @@ const forView = createCateringProcedure([RoleType.manager, RoleType.kitchen])
                             lunch: '$lunchStandard',
                             dinner: '$dinnerStandard'
                         },
+                        standardsBeforeDeadline: {
+                            lunch: '$lunchStandardBeforeDeadline',
+                            dinner: '$dinnerStandardBeforeDeadline'
+                        },
                         diet: {
                             breakfast: {
                                 $filter: {
@@ -122,6 +150,22 @@ const forView = createCateringProcedure([RoleType.manager, RoleType.kitchen])
                                 }
                             }
                         },
+                        dietBeforeDeadline: {
+                            lunch: {
+                                $filter: {
+                                    input: '$consumers',
+                                    as: 'consumer',
+                                    cond: { $in: ['$$consumer.id', '$lunchDietBeforeDeadline.consumerId'] }
+                                }
+                            },
+                            dinner: {
+                                $filter: {
+                                    input: '$consumers',
+                                    as: 'consumer',
+                                    cond: { $in: ['$$consumer.id', '$dinnerDietBeforeDeadline.consumerId'] }
+                                }
+                            }
+                        },
                         day: '$deliveryDay',
                         notes: 1,
                     }
@@ -131,6 +175,8 @@ const forView = createCateringProcedure([RoleType.manager, RoleType.kitchen])
                         id: 1,
                         status: 1,
                         standards: 1,
+                        standardsBeforeDeadline: 1,
+                        dietBeforeDeadline: 1,
                         diet: 1,
                         notes: 1,
                         day: {

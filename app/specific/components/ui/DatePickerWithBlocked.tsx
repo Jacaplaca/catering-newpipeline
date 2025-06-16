@@ -5,6 +5,7 @@ import { registerLocale } from 'react-datepicker';
 import { format } from 'date-fns-tz';
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
+import { getBlockedDays } from '@root/app/specific/lib/dayInfo';
 
 registerLocale('pl', pl);
 
@@ -60,7 +61,7 @@ const DatePickerWithBlocked: FC<{
     };
     const minDate = getCurrentTime();
     // maxDate.setDate(maxDate.getDate() + 14);
-    const blockedDays = orderedDates ?? [];
+    const blockedDays = getBlockedDays({ orderedDates, nonWorkingDaysCustom: cateringSettings?.nonWorkingDays ?? [] });
 
 
     const filterDate = (date: Date) => {

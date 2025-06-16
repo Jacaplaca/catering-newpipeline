@@ -31,7 +31,7 @@ const useFoodRow = ({
     resetMessage: () => void
     dictionary: Record<string, string>
 }) => {
-    const [defaultForm, setDefaultForm] = useState<z.infer<typeof FormSchema>>(defaultValues);
+    // const [defaultForm, setDefaultForm] = useState<z.infer<typeof FormSchema>>();
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
     const { data: fullFood, refetch: fullFoodRefetch, isFetching: fullFoodFetching }
@@ -40,7 +40,7 @@ const useFoodRow = ({
             { enabled: Boolean(expandedRowId) }
         );
 
-    const [foodData, setFoodData] = useState<FoodCustomTable | null>(null);
+    const [foodData, setFoodData] = useState<FoodCustomTable>();
 
     useEffect(() => {
         if (fullFood) {
@@ -50,24 +50,29 @@ const useFoodRow = ({
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
-        defaultValues: defaultForm,
+        defaultValues: defaultValues,
     });
 
     useEffect(() => {
         // resetMessage();
         if (foodData && expandedRowId) {
-            const food = {
-                id: foodData?.id ?? '',
-                name: foodData?.name ?? '',
-                ingredients: foodData?.ingredients ?? '',
-                foodCategory: foodData?.foodCategory ?? undefined,
-                allergens: foodData?.allergens ?? [],
+            // Transform foodData to match form schema
+            const formData = {
+                id: foodData.id,
+                name: foodData.name,
+                ingredients: foodData.ingredients ?? '',
+                foodCategory: foodData.foodCategory ? {
+                    id: foodData.foodCategory.id,
+                    name: foodData.foodCategory.name
+                } : undefined,
+                allergens: foodData.allergens || []
             };
-            form.reset(food);
-            setDefaultForm(food);
+
+            form.reset(formData);
+            // setDefaultForm(food);
         } else if (!expandedRowId) {
-            form.reset(defaultValues);
-            setDefaultForm(defaultValues);
+            form.reset();
+            // setDefaultForm(defaultValues);
         }
     }, [foodData, form, expandedRowId]);
 
@@ -123,7 +128,7 @@ const useFoodRow = ({
         form,
         onSubmit: form.handleSubmit(onSubmit),
         isFetching: fullFoodFetching,
-        formData: defaultForm,
+        // formData: defaultValues,
     };
 };
 

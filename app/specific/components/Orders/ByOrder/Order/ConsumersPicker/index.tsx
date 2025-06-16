@@ -1,6 +1,7 @@
 import translate from '@root/app/lib/lang/translate';
 import { useOrderTableContext } from '@root/app/specific/components/Orders/ByOrder/context';
 import useConsumersPick from '@root/app/specific/components/Orders/ByOrder/Order/ConsumersPicker/useConsumersPick';
+import { checkIfLocked } from '@root/app/specific/components/Orders/ByOrder/Order/Matrix';
 import PickerFromAll from '@root/app/specific/components/ui/PickerFromAll';
 import Selected from '@root/app/specific/components/ui/Selected';
 import { MealType } from '@root/types/specific';
@@ -22,7 +23,7 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
         order: {
             diet,
             updateDiet,
-            deadlines: { isBetween },
+            deadlines: { isBetween, isAfterSecond },
             consumerPicker: {
                 setOpen: setConsumersPickerOpen,
             }
@@ -31,6 +32,8 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
             orderForEdit
         }
     } = useOrderTableContext();
+
+    const isLocked = checkIfLocked(mealType, isBetween, isAfterSecond);
 
     const updateSelected = (ids: string[]) => {
         updateDiet(mealType, ids);
@@ -81,7 +84,8 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
         selectedIds: selectedConsumers,
         allowedIds: isBetween ? consumersBeforeDeadline : undefined,
         updateSelected,
-        clientId
+        clientId,
+        meal: mealType
     });
 
     if (!allItems) return null;
@@ -104,12 +108,10 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
                 <div className='font-semibold text-sm sm:text-lg'>{translate(dictionary, getTitle())}</div>
             </div>
 
-            <div className='flex flex-col md:flex-row gap-4 h-[290px] md:h-[370px] overflow-y-auto'>
-                <div className='flex flex-col gap-2 w-full md:w-1/2 px-2'>
+            <div className={`flex flex-col md:flex-row gap-4 h-[290px] md:h-[370px] overflow-y-auto`}>
+                {!isLocked && <div className='flex flex-col gap-2 w-full md:w-1/2 px-2'>
                     <PickerFromAll
                         dictionary={dictionary}
-
-
                         selected={selectedConsumers}
                         onSelect={onResultClick}
                         items={filteredItems}
@@ -119,11 +121,12 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
                         deselectAll={deselectAll}
                         searchPlaceholder='orders:search_consumer_placeholder'
                         notFoundLabel='orders:dietary_consumers_not_found'
+                        isLocked={isLocked}
                     />
-                </div>
+                </div>}
 
                 {selectedItems.length > 0 ? (
-                    <div className="hidden md:flex w-full md:w-1/2 flex-col px-2">
+                    <div className={`hidden md:flex w-full  flex-col px-2 ${isLocked ? 'md:w-full' : 'md:w-1/2'}`}>
                         <div className='flex flex-row justify-start items-center mb-2'>
                             <div className="font-semibold">
                                 {translate(dictionary, getSelectedLabel())}
@@ -138,7 +141,8 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
                                     <Selected
                                         key={consumer.id}
                                         element={consumer}
-                                        onClick={() => onResultClick(consumer.id, allItems)}
+                                        onClick={() => !isLocked && onResultClick(consumer.id, allItems)}
+                                        isLocked={isLocked}
                                     />
                                 ))}
                             </div>

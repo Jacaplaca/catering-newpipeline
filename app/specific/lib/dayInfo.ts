@@ -36,4 +36,12 @@ export const getNextWorkingDay = (
         nextDate.setDate(nextDate.getDate() + 1);
     }
     return nextDate;
-}
+};
+
+export const getBlockedDays = ({ orderedDates, nonWorkingDaysCustom }: {
+    orderedDates?: string[],
+    nonWorkingDaysCustom?: string[]
+}) => {
+    const blockedDays = Array.from(new Set([...(orderedDates ?? []), ...(nonWorkingDaysCustom ?? [])]));
+    return blockedDays;
+};
