@@ -1,3 +1,17 @@
+# [2.0.0](https://github.com/Jacaplaca/catering/compare/v1.6.0...v2.0.0) (2025-06-23)
+
+
+### Features
+
+* individual menu for clients and routes in pdfs ([58b3e71](https://github.com/Jacaplaca/catering/commit/58b3e7181181511772dd59fe925ef1e11b17697d))
+
+
+### BREAKING CHANGES
+
+* diets creator
+
+
+
 # [1.6.0](https://github.com/Jacaplaca/catering/compare/v1.5.1...v1.6.0) (2025-04-05)
 
 
@@ -31,15 +45,6 @@
 ### Bug Fixes
 
 * kitchen setting zero in meals better error in sign in ([d22153e](https://github.com/Jacaplaca/catering/commit/d22153e2ddb551aeb7d538a2f54f8ba9c022b9ee))
-
-
-
-# [1.4.0](https://github.com/Jacaplaca/catering/compare/v1.3.1...v1.4.0) (2025-02-22)
-
-
-### Features
-
-* individual deadline for clients autoOrder label consumer code ([679c003](https://github.com/Jacaplaca/catering/commit/679c0036926e7c3a432344026a1d60a515d3d78d))
 
 
 
