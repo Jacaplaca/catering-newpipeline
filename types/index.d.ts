@@ -212,5 +212,6 @@ export type TableActionType = {
   onClick?: () => void
   icon?: string
   isDivider?: boolean,
-  hidden?: boolean
+  hidden?: boolean,
+  iconClassName?: string
 }

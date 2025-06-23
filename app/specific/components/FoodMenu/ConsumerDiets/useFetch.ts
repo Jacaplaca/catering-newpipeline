@@ -1,8 +1,9 @@
 import usePagination from '@root/app/hooks/usePagination';
 import placeholderData from '@root/app/lib/table/placeholderData';
+import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import { api } from '@root/app/trpc/react';
 import { type TableColumnType } from '@root/types';
-import { type ClientCustomTable, type ClientsSortName } from '@root/types/specific';
+import { type ClientWithCommonAllergensSortName, type ClientWithCommonAllergens } from '@root/types/specific';
 
 function useFetchConsumerDiets({
     columns,
@@ -15,10 +16,11 @@ function useFetchConsumerDiets({
     columns: TableColumnType[],
     // showColumns: string[],
     searchValue: string,
-    sortName: ClientsSortName,
+    sortName: ClientWithCommonAllergensSortName,
     sortDirection: 'asc' | 'desc',
     tagId?: string,
 }) {
+    const { day } = useFoodMenuContext();
     const showColumns = columns.map(el => el.key);
     const { data: totalCount = 0, refetch: countRefetch, isFetching: countIsFetching } = api.specific.client.count
         .useQuery({ searchValue, tagId, showColumns }, {
@@ -27,11 +29,11 @@ function useFetchConsumerDiets({
 
     const { page, limit } = usePagination(totalCount);
 
-    const { data: fetchedRows = [], refetch: rowsRefetch, isFetching } = api.specific.client.getMany
-        .useQuery({ page, limit, sortName, sortDirection, searchValue, tagId, showColumns },
+    const { data: fetchedRows = [], refetch: rowsRefetch, isFetching } = api.specific.regularMenu.getClientsWithCommonAllergens
+        .useQuery({ day: day.day ?? { year: 0, month: 0, day: 0 }, page, limit, sortName, sortDirection, searchValue, tagId, showColumns },
             {
                 // enabled: showColumns.length > 0,
-                placeholderData: placeholderData<ClientCustomTable>(limit, columns),
+                placeholderData: placeholderData<ClientWithCommonAllergens>(limit, columns),
             },
         );
 

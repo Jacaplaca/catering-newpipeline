@@ -1,7 +1,7 @@
 // import { db } from '@root/app/server/db';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import type { MealType, OrderMealPopulated } from '@root/types/specific';
-import { RoleType, type Client, type OrderConsumerBreakfast, type OrderStatus } from '@prisma/client';
+import { RoleType, type Client, type DeliveryRoute, type OrderConsumerBreakfast, type OrderStatus } from '@prisma/client';
 import translate from '@root/app/lib/lang/translate';
 import { format } from 'date-fns-tz';
 import { pl } from 'date-fns/locale';
@@ -64,6 +64,20 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 { $unwind: '$client' },
                 {
                     $lookup: {
+                        from: 'DeliveryRoute',
+                        localField: 'client.deliveryRouteId',
+                        foreignField: '_id',
+                        as: 'client.deliveryRoute'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$client.deliveryRoute',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
                         from: `${dietsCollections[mealType]}`,
                         let: { orderId: '$_id' },
                         pipeline: [
@@ -99,7 +113,7 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             ]
         }) as unknown as {
             _id: string;
-            client: Client;
+            client: Client & { deliveryRoute?: DeliveryRoute };
             status: OrderStatus;
             sentToCateringAt: { $date: Date };
             diet: (OrderConsumerBreakfast & OrderMealPopulated)[];
@@ -129,11 +143,13 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             // Extract labels data
             const labelsData = dayData.flatMap(order =>
                 order.diet.map(item => {
+                    const deliveryRouteName = order.client.deliveryRoute?.name ?? '';
                     // const clientCode = order.client.info.code ?? '';
                     const consumerCode = item.consumer.code ?? '';
                     const dietCode = item.consumer.diet?.code ?? '';
                     const dietDescription = item.consumer.diet?.description ?? '';
                     return {
+                        deliveryRouteName,
                         // clientCode,
                         consumerCode,
                         dietCode,
@@ -184,8 +200,10 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 // label.consumerName = 'Melisa Wolska-Wojciechowskaasdfsadfasdfasdfsdf asdfasdfasdf';
                 // label.dietCode = 'WEGDFFSDF';
                 // label.dietDescription = 'al;skdjf asalsdkjf lksjdf;lksdl;fkasjdlfkasjdflaksdjflaskdjf asldkfjas; alsdkfjas dlfkasjdlfaksjdflaskdjfasldkfjasld asd;flkasjdflk alskdjfl;askdfjlasdf';
-                const [clientCode, consumerCodeOnly] = label.consumerCode.split(/ (.*)/, 2);
-                const firstLine = `${clientCode} ${consumerCodeOnly}`;
+                const [clientCode, consumerCodeOnly] = (label.consumerCode ?? '').split(/ (.*)/s, 2);
+                const routeNamePart = label.deliveryRouteName ? `(${label.deliveryRouteName})` : '';
+                const clientPartWithRoute = `${clientCode ?? ''} ${routeNamePart}`.trim();
+                const firstLine = `${clientPartWithRoute} ${consumerCodeOnly ?? ''}`.trim();
                 const secondLine = `${label.dietCode}${label.dietCode && label.dietDescription.length ? ":" : ""} ${label.dietDescription}`;
 
                 // Zdefiniuj zmienne z rozmiarem czcionki
@@ -205,25 +223,30 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 let currentY = y + padding;
                 firstLineArray.forEach((line) => {
                     // Podziel linię na pierwszą część przed spacją i resztę
-                    const spaceIndex = line.indexOf(' ');
-                    const clientCodePart = spaceIndex === -1 ? line : line.substring(0, spaceIndex);
-                    const consumerCodePart = spaceIndex === -1 ? '' : line.substring(spaceIndex + 1);
+                    let leftPart = line;
+                    let rightPart = '';
+
+                    if (consumerCodeOnly && line.endsWith(consumerCodeOnly)) {
+                        const index = line.lastIndexOf(consumerCodeOnly);
+                        leftPart = line.substring(0, index).trim();
+                        rightPart = consumerCodeOnly;
+                    }
 
                     // Oblicz dostępną szerokość
                     const availableWidth = cellWidth - 2 * padding;
 
                     // Renderuj kod klienta do lewej
                     doc.font('Roboto-Bold')
-                        .text(clientCodePart, x + padding, currentY, { lineBreak: false });
+                        .text(leftPart, x + padding, currentY, { lineBreak: false });
 
                     // Jeśli istnieje kod konsumenta, renderuj do prawej
-                    if (consumerCodePart) {
+                    if (rightPart) {
                         const consumerWidth = doc.font('Roboto')
-                            .widthOfString(consumerCodePart, { lineBreak: false });
+                            .widthOfString(rightPart, { lineBreak: false });
                         const consumerX = x + padding + availableWidth - consumerWidth;
 
                         doc.font('Roboto')
-                            .text(consumerCodePart, consumerX, currentY, { lineBreak: false });
+                            .text(rightPart, consumerX, currentY, { lineBreak: false });
                     }
 
                     currentY += doc.heightOfString(line, { lineBreak: false });

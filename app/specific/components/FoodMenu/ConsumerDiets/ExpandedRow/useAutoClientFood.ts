@@ -8,6 +8,7 @@ const useAutoClientFood = () => {
     const { mutate, isPending, isSuccess, isError } = api.specific.consumerFood.autoReplace.useMutation({
         onSuccess: () => {
             void utils.specific.consumerFood.getByClientId.invalidate();
+            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
         },
         onError: (error) => {
             rowClick.updateMessage({

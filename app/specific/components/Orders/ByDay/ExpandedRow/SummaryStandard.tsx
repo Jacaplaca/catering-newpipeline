@@ -30,7 +30,7 @@ const SummaryStandard = () => {
                         });
 
                         return (
-                            <div key={mealType} className='border-[1px] border-neutral-400 dark:border-neutral-600 p-4 px-6 rounded-md min-w-[250px] mb-4'>
+                            <div key={mealType} className='border-[1px] border-neutral-400 dark:border-neutral-600 p-4 px-4 rounded-md min-w-[250px] mb-4'>
                                 <div className={`flex flex-row gap-4
                         items-baseline mb-2 
                         `}>
@@ -52,9 +52,9 @@ const SummaryStandard = () => {
 
                                             return (
                                                 <div key={routeName} className="mt-2">
-                                                    <h4 className="font-semibold text-sm italic text-neutral-600 dark:text-neutral-400 mb-1 flex flex-row items-center justify-center">
-                                                        {/* <span className='mr-1'><i className='fas fa-truck-fast'></i></span> */}
-                                                        <span className='font-normal'>{routeName === "unassigned" ? translations.unassignedRoute : routeName}</span>
+                                                    <h4 className="font-semibold text-sm text-neutral-700 dark:text-neutral-300 mb-2 flex flex-row items-center justify-center gap-2 p-1 rounded-md bg-neutral-200 dark:bg-neutral-700/50">
+                                                        <i className='fa-solid fa-truck-fast' />
+                                                        <span className='font-bold'>{routeName === "unassigned" ? translations.unassignedRoute : routeName}</span>
                                                     </h4>
                                                     {mealsForRouteAndType.map(({ clientCode, meals }, index) => (
                                                         <div

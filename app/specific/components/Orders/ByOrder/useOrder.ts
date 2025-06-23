@@ -1,5 +1,6 @@
 import { type UpdateMessageType } from '@root/app/hooks/useMessage';
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
+import translate from '@root/app/lib/lang/translate';
 import { getNextWorkingDay, isWeekend } from '@root/app/specific/lib/dayInfo';
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
 import { api } from '@root/app/trpc/react';
@@ -19,7 +20,7 @@ const defaultDiet = {
     dinner: [],
 } as { breakfast: string[], lunch: string[], dinner: string[] };
 
-const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, clientId, addOrderClose }: {
+const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, clientId, addOrderClose, dictionary }: {
     orderForEdit?: OrderForEdit,
     newOrder: boolean,
     setRows: Dispatch<SetStateAction<OrdersCustomTable[]>>,
@@ -205,6 +206,10 @@ const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, cli
         onError: (error) => {
             setError(error.message);
             addOrderClose();
+            updateMessage({
+                status: 'error',
+                content: translate(dictionary, error.message),
+            });
         },
     });
 
@@ -227,6 +232,10 @@ const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, cli
         place.mutate(order);
         updateMessage('saving');
     };
+
+    useEffect(() => {
+        console.log({ day });
+    }, [day]);
 
     return {
 

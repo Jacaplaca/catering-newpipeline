@@ -11,6 +11,15 @@ export const consumerFoodValidator = z.object({
             name: z.string(),
         })),
     }),
+    alternativeFood: z.object({
+        id: z.string(),
+        name: z.string(),
+        ingredients: z.string().nullable(),
+        allergens: z.array(z.object({
+            id: z.string(),
+            name: z.string(),
+        })),
+    }).optional(),
     exclusions: z.array(z.object({
         id: z.string(),
         name: z.string(),
@@ -41,4 +50,9 @@ export const consumerFoodGetByClientIdValidator = z.object({
         month: z.number(),
         day: z.number(),
     }),
+});
+
+export const getSimilarCommentsValidator = z.object({
+    consumerFoodId: z.string(),
+    query: z.string(),
 });

@@ -1,14 +1,13 @@
 import useRows from '@root/app/hooks/table/useRows';
 import useTableSort from '@root/app/hooks/table/useTableSort';
-import useMessage from '@root/app/hooks/useMessage';
 import useSearch from '@root/app/hooks/useSearch';
 import useConsumerDietsColumns from '@root/app/specific/components/FoodMenu/ConsumerDiets/useColumns';
 import useConsumerDietsDataGrid from '@root/app/specific/components/FoodMenu/ConsumerDiets/useDataGrid';
 import useFetchConsumerDiets from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFetch';
 import useFilter from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFilter';
-import useConsumerDietsRow from '@root/app/specific/components/FoodMenu/ConsumerDiets/useRow';
+import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import { type SettingParsedType } from '@root/types';
-import { type ClientCustomTable, type ClientsSortName } from '@root/types/specific';
+import { type ClientWithCommonAllergens, type ClientWithCommonAllergensSortName } from '@root/types/specific';
 import { useEffect } from 'react';
 
 const useConsumerDietsTable = ({
@@ -22,12 +21,13 @@ const useConsumerDietsTable = ({
     settings: { main: SettingParsedType },
     dictionary: Record<string, string>,
 }) => {
-    const { messageObj, resetMessage, updateMessage } = useMessage(dictionary);
-    const { sort, sortDirection, sortName } = useTableSort<ClientsSortName>("name")
+
+    const { sort, sortDirection, sortName } = useTableSort<ClientWithCommonAllergensSortName>("info.name")
     const { searchValue, search } = useSearch({ lang, pageName });
     const filter = useFilter({ lang, pageName });
 
     const columns = useConsumerDietsColumns({ sort });
+    const { rowClick } = useFoodMenuContext();
 
     const {
         data: {
@@ -51,9 +51,8 @@ const useConsumerDietsTable = ({
         sortDirection,
     });
 
-    const [rows, setRows] = useRows<ClientCustomTable>(fetchedRows);
+    const [rows] = useRows<ClientWithCommonAllergens>(fetchedRows);
 
-    const rowClick = useConsumerDietsRow({ setRows, dictionary, updateMessage, resetMessage });
 
     useEffect(() => {
         rowClick.onRowClick(null);
@@ -62,6 +61,7 @@ const useConsumerDietsTable = ({
 
 
     const { skeleton, table } = useConsumerDietsDataGrid({
+        dictionary,
         rows,
         searchValue,
         limit,
@@ -86,11 +86,10 @@ const useConsumerDietsTable = ({
         isFetching,
         totalCount,
         search,
-        rowClick,
         sort: { sortName, sortDirection },
         filter,
-        message: { messageObj, resetMessage, updateMessage },
-        resetTable
+        resetTable,
+        rowClick
     }
 };
 export default useConsumerDietsTable;

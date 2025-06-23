@@ -49,6 +49,17 @@
     opacity-80 pointer-events-none;
 }
 
+.react-datepicker__day--marked {
+  @apply relative;
+}
+
+.react-datepicker__day--marked::before {
+  content: '✓';
+  @apply absolute inset-0 flex items-center justify-center
+    text-green-500 dark:text-green-400 font-bold text-2xl
+    opacity-80 pointer-events-none;
+}
+
 .react-datepicker__day:hover {
   @apply bg-secondary dark:bg-darkmode-secondary
   text-neutral-800 dark:text-white;
@@ -139,3 +150,4 @@
 .react-datepicker__day--disabled.non-working-day {
    @apply bg-red-100 dark:bg-red-900 text-red-400 dark:text-red-500 opacity-70;
 }
+

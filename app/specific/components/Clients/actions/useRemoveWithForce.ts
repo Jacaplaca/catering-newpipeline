@@ -1,7 +1,7 @@
 import { api } from '@root/app/trpc/react';
 import { useBoolean } from 'usehooks-ts'
 
-const useActivateConsumerDiets = ({
+const useRemoveClientWithForce = ({
     onSuccess, ids,
 }: {
     onSuccess: () => unknown,
@@ -9,7 +9,7 @@ const useActivateConsumerDiets = ({
 }) => {
     const { value: isConfirmationOpen, setTrue: show, setFalse: hide } = useBoolean(false)
 
-    const activateUsersCall = api.specific.client.activate.useMutation({
+    const removeUsersCall = api.specific.client.deleteOne.useMutation({
         onSuccess: () => {
             onSuccess();
         },
@@ -22,7 +22,7 @@ const useActivateConsumerDiets = ({
     });
 
     const action = () => {
-        activateUsersCall.mutate({ ids });
+        removeUsersCall.mutate({ ids, forceRemove: true });
     }
 
     return {
@@ -30,9 +30,9 @@ const useActivateConsumerDiets = ({
         isConfirmationOpen,
         show,
         hide,
-        questionKey: 'clients:activate_confirmation'
+        questionKey: 'clients:delete_confirmation_with_force'
     }
 
 };
 
-export default useActivateConsumerDiets;
+export default useRemoveClientWithForce;

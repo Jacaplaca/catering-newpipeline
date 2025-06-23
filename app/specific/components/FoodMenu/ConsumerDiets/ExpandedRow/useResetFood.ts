@@ -5,6 +5,7 @@ const useResetFood = () => {
     const { mutate, isPending, isSuccess, isError } = api.specific.consumerFood.resetOne.useMutation({
         onSuccess: () => {
             void utils.specific.consumerFood.getByClientId.invalidate();
+            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
         },
     });
 

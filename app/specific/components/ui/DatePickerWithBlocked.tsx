@@ -44,7 +44,9 @@ const DatePickerWithBlocked: FC<{
     maxDate?: Date,
     dateFormat?: string,
     ignoreDeadlines?: boolean,
-}> = ({ lang, day, cateringSettings, orderedDates, updateDay, maxDate, dateFormat = "yyyy-MM-dd", ignoreDeadlines = false }) => {
+    onMonthChange?: (date: Date) => void,
+    markedDays?: Date[],
+}> = ({ lang, day, cateringSettings, orderedDates, updateDay, maxDate, dateFormat = "yyyy-MM-dd", ignoreDeadlines = false, onMonthChange, markedDays }) => {
 
     if (!day || !cateringSettings?.timeZone) return null;
 
@@ -86,7 +88,7 @@ const DatePickerWithBlocked: FC<{
 
         return false;
     };
-
+    console.log({ markedDays });
     return (
         <DatePicker
             locale={lang}
@@ -97,12 +99,13 @@ const DatePickerWithBlocked: FC<{
             onSelect={handleDateChange}
             maxDate={maxDate}
             filterDate={filterDate}
-        // dayClassName={(date) => {
-        //     const dateString = format(date, 'yyyy-MM-dd');
-        //     return blockedDays.filter(blockedDate => new Date(blockedDate) >= new Date(minDate)).includes(dateString)
-        //         ? 'react-datepicker__day--ordered'
-        //         : '';
-        // }}
+            onMonthChange={onMonthChange}
+            dayClassName={(date) => {
+                const dateString = format(date, 'yyyy-MM-dd');
+                return markedDays?.map(day => format(day, 'yyyy-MM-dd')).includes(dateString)
+                    ? 'react-datepicker__day--marked'
+                    : '';
+            }}
         />
     );
 };

@@ -4,6 +4,7 @@ import { api } from '@root/app/trpc/react';
 const useMenuQueries = (
     day: { year: number, month: number, day: number } | null,
     templateDayObject: { id: string, name: string } | null,
+    clientId: string | undefined | null,
 ) => {
     const { data: existingMenu, refetch: refetchMenu, isFetching: menuFetching, isLoading: menuLoading } = api.specific.regularMenu.getOne.useQuery({
         day: {
@@ -13,6 +14,19 @@ const useMenuQueries = (
         },
     }, {
         enabled: !!day,
+        // staleTime: Infinity, // Consider caching strategy
+        // cacheTime: Infinity,
+    });
+
+    const currentClient = api.specific.regularMenu.getOne.useQuery({
+        day: {
+            year: day?.year ?? 0,
+            month: day?.month ?? 0,
+            day: day?.day ?? 0,
+        },
+        clientId: clientId ?? undefined,
+    }, {
+        enabled: !!day && !!clientId,
         // staleTime: Infinity, // Consider caching strategy
         // cacheTime: Infinity,
     });
@@ -33,6 +47,7 @@ const useMenuQueries = (
         templateDayMenu,
         templateDayMenuFetching,
         templateDayMenuLoading,
+        currentClient,
     };
 };
 

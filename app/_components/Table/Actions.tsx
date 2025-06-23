@@ -21,13 +21,13 @@ const RowActions: FunctionComponent<{
             theme={{ arrowIcon: "hidden" }}
             disabled={disabled}
         >
-            {actions.filter(action => !action.hidden).map(({ label, onClick, icon, isDivider, key }) => {
+            {actions.filter(action => !action.hidden).map(({ label, onClick, icon, isDivider, key, iconClassName }) => {
                 if (isDivider) {
                     return <Dropdown.Divider key={key} />
                 }
                 return (
                     <Dropdown.Item key={key} onClick={onClick}>
-                        {icon && <i className={`${icon} mr-2`}></i>}
+                        {icon && <i className={`${icon} mr-2 ${iconClassName}`}></i>}
                         {translate(dictionary, label)}
                     </Dropdown.Item>
                 )

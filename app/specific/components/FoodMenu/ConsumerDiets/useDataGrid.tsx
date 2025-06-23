@@ -1,8 +1,8 @@
 import HighlightText from '@root/app/_components/Table/HighlightText';
 import SkeletonCell from '@root/app/_components/Table/SkeletonCell';
-import YesNo from '@root/app/_components/Table/YesNo';
-import Checkbox from '@root/app/_components/ui/Inputs/Checkbox';
-import { type ClientCustomTable } from '@root/types/specific';
+import translate from '@root/app/lib/lang/translate';
+import Property from '@root/app/specific/components/FoodMenu/ConsumerDiets/Poperties';
+import { type ClientWithCommonAllergens } from '@root/types/specific';
 
 const useConsumerDietsDataGrid = ({
     rows,
@@ -10,12 +10,14 @@ const useConsumerDietsDataGrid = ({
     limit,
     totalCount,
     columns,
+    dictionary
 }: {
-    rows: ClientCustomTable[]
+    rows: ClientWithCommonAllergens[]
     searchValue: string,
     limit: number,
     totalCount: number,
     columns: { key: string }[]
+    dictionary: Record<string, string>
 }) => {
 
     const skeletonRowsCount = limit > totalCount ? totalCount : limit
@@ -33,7 +35,7 @@ const useConsumerDietsDataGrid = ({
         }
     })
 
-    const table = rows.map(({ id, name, info, email, deactivated, deliveryRoute }, i) => {
+    const table = rows.map(({ id, info, deactivated, hasCommonAllergens, hasIndividualMenu }, i) => {
         return {
             key: id ?? `placeholderData-${i}`,
             className: deactivated ? 'opacity-80 bg-clip-content h-[40px] bg-[repeating-linear-gradient(45deg,transparent,transparent_8px,rgba(0,0,0,0.4)_8px,rgba(0,0,0,0.7)_16px)]' : '',
@@ -51,6 +53,25 @@ const useConsumerDietsDataGrid = ({
                         text={info?.name ?? ""}
                         fragment={searchValue} />,
                     key: 'info.name'
+                },
+                {
+                    component: <div className='flex gap-2 items-center justify-start'>
+                        <Property value={hasCommonAllergens}
+                            trueColor="text-red-500"
+                            trueIcon="fa fa-triangle-exclamation"
+                            falseIcon="fa fa-badge-check"
+                            falseColor="text-green-500"
+                            label={hasCommonAllergens ? translate(dictionary, 'menu-creator:common_allergens') : ''}
+                        />
+                        <Property value={hasIndividualMenu}
+                            trueColor="text-blue-500"
+                            trueIcon="fa fa-palette"
+                            falseIcon=""
+                            label={hasIndividualMenu ? translate(dictionary, 'menu-creator:individual_menu') : ''}
+                        />
+                        {/* <Property value={hasIndividualMenu} label={t('clients:individual_menu')} icon="fa fa-user" /> */}
+                    </div>,
+                    key: 'properties'
                 },
                 // {
                 //     component: <HighlightText
@@ -127,10 +148,7 @@ const useConsumerDietsDataGrid = ({
                 //         fragment={searchValue} />,
                 //     key: 'info.secondOrderDeadline'
                 // },
-                // {
-                //     component: <YesNo value={info?.allowWeekendOrder ?? false} />,
-                //     key: 'info.allowWeekendOrder'
-                // },
+
                 // {
                 //     component: settings?.lastOrderTime
                 //         ? <div className='flex gap-2 items-center justify-start'>

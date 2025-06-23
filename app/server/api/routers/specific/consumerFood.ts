@@ -1,17 +1,17 @@
 import { RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { db } from '@root/app/server/db';
-import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodGetOneValidator, consumerFoodValidator, resetOneValidator } from '@root/app/validators/specific/consumerFood';
+import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodGetOneValidator, consumerFoodValidator, getSimilarCommentsValidator, resetOneValidator } from '@root/app/validators/specific/consumerFood';
 import { type ClientFoodAssignment } from '@root/types/specific';
 import { TRPCError } from '@trpc/server';
-import getCommonAllergens from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/getCommonAllergens';
+import getCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/getCommonAllergens';
 
 
 const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(consumerFoodValidator)
-  .mutation(({ input, ctx }) => {
-    const { session: { catering } } = ctx;
-    const { id, food, exclusions, comment } = input;
+  .mutation(({ input }) => {
+    // const { session: { catering } } = ctx;
+    const { id, food, exclusions, comment, alternativeFood } = input;
 
     if (!food.id) {
       throw new TRPCError({
@@ -26,6 +26,9 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
         food: {
           connect: { id: food.id },
         },
+        ...(alternativeFood?.id
+          ? { alternativeFood: { connect: { id: alternativeFood.id } } }
+          : { alternativeFood: { disconnect: true } }),
         comment,
         exclusions: {
           deleteMany: {},
@@ -57,13 +60,32 @@ const getByClientId = createCateringProcedure([RoleType.manager, RoleType.dietic
   .query(async ({ input, ctx }) => {
     const { session: { catering } } = ctx;
     const { clientId, day } = input;
+
+    const clientMenu = await db.regularMenu.findFirst({
+      where: {
+        clientId,
+        day,
+        cateringId: catering.id,
+      },
+    });
+
+    const standardMenu = await db.regularMenu.findFirst({
+      where: {
+        day,
+        cateringId: catering.id,
+        clientId: { isSet: false }
+      },
+    });
+
+    const menuId = clientMenu?.id ?? standardMenu?.id;
+
     const data = await db.consumerFood.findMany({
       where: {
         consumer: {
           clientId,
         },
         regularMenu: {
-          day,
+          id: menuId,
         },
         cateringId: catering.id,
       },
@@ -79,6 +101,15 @@ const getByClientId = createCateringProcedure([RoleType.manager, RoleType.dietic
           },
         },
         food: {
+          include: {
+            allergens: {
+              include: {
+                allergen: true,
+              },
+            },
+          },
+        },
+        alternativeFood: {
           include: {
             allergens: {
               include: {
@@ -135,6 +166,15 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
             },
           },
         },
+        alternativeFood: {
+          include: {
+            allergens: {
+              include: {
+                allergen: true,
+              },
+            },
+          },
+        },
         exclusions: {
           include: {
             exclusion: {
@@ -159,7 +199,6 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
       throw error;
     }
 
-
     // Get allergen IDs from current consumer
     const currentConsumerAllergenIds = currentAssignment.consumer.allergens.map(ca => ca.allergenId);
 
@@ -180,11 +219,10 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
         allergens: { none: {} },
       };
 
-    // Find another consumerFood with same food and consumer with EXACTLY the same allergens
-    const alternativeAssignment = await db.consumerFood.findFirst({
+    // Find ALL alternative assignments with same food and consumer with EXACTLY the same allergens
+    const alternativeAssignments = await db.consumerFood.findMany({
       where: {
         id: { not: currentAssignment.id },           // Exclude current assignment
-        consumerId: { not: currentAssignment.consumerId }, // musi być inny consumer
         foodId: currentAssignment.foodId,            // Same food
         cateringId: catering.id,
         consumer: consumerFilter,
@@ -208,6 +246,15 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
             },
           },
         },
+        alternativeFood: {
+          include: {
+            allergens: {
+              include: {
+                allergen: true,
+              },
+            },
+          },
+        },
         exclusions: {
           include: {
             exclusion: {
@@ -220,66 +267,73 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
       },
     });
 
+    // Filter assignments to find safe ones (without common allergens)
+    const safeAlternativeAssignments = alternativeAssignments.filter(assignment => {
+      const { consumer, food, alternativeFood, exclusions, comment } = assignment;
+
+      // CRITICAL: Additional validation to ensure EXACT match of allergens
+      const alternativeConsumerAllergenIds = consumer.allergens.map(ca => ca.allergenId);
+
+      if (currentConsumerAllergenIds.length > 0) {
+        // Check if both arrays have EXACTLY the same length and same elements
+        const hasExactSameAllergens =
+          alternativeConsumerAllergenIds.length === currentConsumerAllergenIds.length &&
+          alternativeConsumerAllergenIds.length > 0 &&
+          alternativeConsumerAllergenIds.every(id => currentConsumerAllergenIds.includes(id)) &&
+          currentConsumerAllergenIds.every(id => alternativeConsumerAllergenIds.includes(id));
+
+        if (!hasExactSameAllergens) {
+          return false;
+        }
+      } else {
+        // Current consumer has no allergens, alternative must also have no allergens
+        if (alternativeConsumerAllergenIds.length > 0) {
+          return false;
+        }
+      }
+
+      // Check for common allergens
+      const consumerAllergens = consumer.allergens.map(ca => ca.allergen);
+      // Use alternativeFood if available, otherwise use food
+      const foodAllergens = alternativeFood
+        ? alternativeFood.allergens.map(fa => fa.allergen)
+        : food.allergens.map(fa => fa.allergen);
+      const exclusionAllergens = exclusions.flatMap(e =>
+        e.exclusion.allergens.map(ea => ea.allergen)
+      );
+
+      const commonAllergens = getCommonAllergens({ consumerAllergens, foodAllergens, exclusionAllergens, comment });
+
+      // Return true only if NO common allergens (safe assignment)
+      return commonAllergens.length === 0;
+    });
+
+    // Select first safe alternative assignment
+    const alternativeAssignment = safeAlternativeAssignments[0];
+
     if (!alternativeAssignment) {
       throw error;
     }
 
-    // CRITICAL: Additional validation to ensure EXACT match of allergens
-    const alternativeConsumerAllergenIds = alternativeAssignment.consumer.allergens.map(ca => ca.allergenId);
-
-    if (currentConsumerAllergenIds.length > 0) {
-      // Check if both arrays have EXACTLY the same length and same elements
-      const hasExactSameAllergens =
-        alternativeConsumerAllergenIds.length === currentConsumerAllergenIds.length &&
-        alternativeConsumerAllergenIds.length > 0 &&
-        alternativeConsumerAllergenIds.every(id => currentConsumerAllergenIds.includes(id)) &&
-        currentConsumerAllergenIds.every(id => alternativeConsumerAllergenIds.includes(id));
-
-      if (!hasExactSameAllergens) {
-        // console.log('Alternative assignment does not have exact same allergens, skipping');
-        // console.log('Current allergens:', currentConsumerAllergenIds);
-        // console.log('Alternative allergens:', alternativeConsumerAllergenIds);
-        throw error;
-      }
-    } else {
-      // Current consumer has no allergens, alternative must also have no allergens
-      if (alternativeConsumerAllergenIds.length > 0) {
-        // console.log('Current consumer has no allergens but alternative has allergens, skipping');
-        throw error;
-      }
-    }
-
-    // Check for common allergens if alternativeAssignment exists
-    const consumerAllergens = alternativeAssignment.consumer.allergens.map(ca => ca.allergen);
-    const foodAllergens = alternativeAssignment.food.allergens.map(fa => fa.allergen);
-    const exclusionAllergens = alternativeAssignment.exclusions.flatMap(e =>
-      e.exclusion.allergens.map(ea => ea.allergen)
-    );
-
-    const commonAllergens = getCommonAllergens(consumerAllergens, foodAllergens, exclusionAllergens);
-
-    // console.log('Common allergens found:', commonAllergens);
-
-    // You can now use commonAllergens for your logic
-    if (commonAllergens.length) {
-      // Handle case when there are common allergens
-      return error;
-    }
+    const { consumer, foodId, food, alternativeFoodId, alternativeFood, exclusions, comment } = alternativeAssignment;
 
     return db.consumerFood.update({
       where: { id },
       data: {
         food: {
-          connect: { id: alternativeAssignment.foodId },
+          connect: { id: foodId },
         },
+        alternativeFood: alternativeFoodId ? {
+          connect: { id: alternativeFoodId },
+        } : { disconnect: true },
         exclusions: {
-          create: alternativeAssignment.exclusions.map(e => ({
+          create: exclusions.map(e => ({
             exclusion: {
               connect: { id: e.exclusionId },
             },
           }))
         },
-        comment: currentAssignment.comment ?? '',
+        comment: comment ?? '',
       },
     });
   });
@@ -313,10 +367,112 @@ const resetOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
             id: currentAssignment.foodId,
           },
         },
+        alternativeFood: { disconnect: true },
         exclusions: { deleteMany: {} },
         comment: '',
       },
     });
+  });
+
+const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.dietician])
+  .input(getSimilarCommentsValidator)
+  .query(async ({ input, ctx }) => {
+    const { session: { catering } } = ctx;
+    const { consumerFoodId, query } = input;
+
+    const limit = 10;
+
+    const originalConsumerFood = await db.consumerFood.findFirst({
+      where: {
+        id: consumerFoodId,
+        cateringId: catering.id,
+      },
+      include: {
+        consumer: {
+          include: {
+            allergens: true,
+          },
+        },
+        food: true,
+        alternativeFood: true,
+      },
+    });
+
+    if (!originalConsumerFood) {
+      return [];
+    }
+
+    // Get allergen IDs from original consumer
+    const originalConsumerAllergenIds = originalConsumerFood.consumer.allergens.map(ca => ca.allergenId);
+
+    if (originalConsumerAllergenIds.length === 0) {
+      return [];
+    }
+
+    // Get food IDs to match (original food and alternative food)
+    const foodIdsToMatch = [originalConsumerFood.foodId];
+    if (originalConsumerFood.alternativeFoodId) {
+      foodIdsToMatch.push(originalConsumerFood.alternativeFoodId);
+    }
+
+    const similarConsumerFoods = await db.consumerFood.findMany({
+      where: {
+        id: { not: originalConsumerFood.id },
+        cateringId: catering.id,
+        // Check if comment contains query (if provided)
+        ...(query ? {
+          comment: {
+            contains: query,
+            mode: 'insensitive',
+            not: originalConsumerFood.comment ?? '',
+          },
+        } : {}),
+        // Consumer must have at least one common allergen
+        consumer: {
+          allergens: {
+            some: {
+              allergenId: {
+                in: originalConsumerAllergenIds,
+              },
+            },
+          },
+        },
+        // Food or alternativeFood must match (cross-check)
+        OR: [
+          // Original food matches food
+          { foodId: { in: foodIdsToMatch } },
+          // Original food matches alternativeFood
+          { alternativeFoodId: { in: foodIdsToMatch } },
+        ],
+      },
+      include: {
+        consumer: {
+          include: {
+            allergens: {
+              include: {
+                allergen: true,
+              },
+            },
+          },
+        },
+        food: true,
+        alternativeFood: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+
+    // Filter comments, remove duplicates using Set, and apply limit
+    const comments = Array.from(new Set(
+      similarConsumerFoods
+        .filter(cf => cf.comment && cf.comment.trim().length > 0)
+        .map(cf => cf.comment)
+        .filter(comment => comment !== originalConsumerFood.comment)
+        .filter(comment => comment)
+    )).slice(0, limit);
+
+    return comments;
   });
 
 const consumerFoodRouter = {
@@ -325,6 +481,7 @@ const consumerFoodRouter = {
   getByClientId,
   autoReplace,
   resetOne,
+  getSimilarComments,
 };
 
 export default consumerFoodRouter;

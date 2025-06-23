@@ -43,7 +43,8 @@
     "upload_file_dropzone_single": "Przeciągnij i upuść plik tutaj lub kliknij, aby wybrać plik",
     "upload_file_dropzone_multiple": "Przeciągnij i upuść pliki tutaj lub kliknij, aby wybrać pliki",
     "remove_all": "Usuń wszystkie",
-    "max_file_size": "Maksymalny rozmiar pliku to {}"
+    "max_file_size": "Maksymalny rozmiar pliku to {}",
+    "loading": "Ładowanie..."
   },
   "error": {
     "DEFAULT": "Coś poszło nie tak!. Powrót do Strony Głównej"

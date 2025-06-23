@@ -10,6 +10,8 @@ const getDeadlinesStatus = ({ settings, day }: {
         nonWorkingDays: string[];
     }, day?: { year: number, month: number, day: number } | null
 }) => {
+    const currentDate = getCurrentTime();
+    // console.log({ day, settings, currentDate });
 
     if (!settings || !day) {
         return {
@@ -21,12 +23,12 @@ const getDeadlinesStatus = ({ settings, day }: {
             isBeforeFirst: false,
             isBetween: false,
             isAfterSecond: false,
+            currentDate
         }
     }
     const { firstOrderDeadline, secondOrderDeadline, timeZone, allowWeekendOrder, nonWorkingDays } = settings;
     const desiredDate = day;
 
-    const currentDate = getCurrentTime();
 
     const orderDate = new Date(desiredDate.year, desiredDate.month, desiredDate.day);
     const isOrderDayWorking = isWorkingDay(orderDate, { timeZone, nonWorkingDays });
@@ -58,7 +60,8 @@ const getDeadlinesStatus = ({ settings, day }: {
         isBetween,
         isAfterSecond,
         isOrderDayWorking,
-        canChange: isBeforeFirst || isBetween || isBeforeSecond
+        canChange: isBeforeFirst || isBetween || isBeforeSecond,
+        currentDate
     }
 };
 

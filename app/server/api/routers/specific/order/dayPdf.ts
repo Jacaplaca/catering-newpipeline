@@ -90,6 +90,20 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
                 },
                 {
                     $lookup: {
+                        from: 'DeliveryRoute',
+                        localField: 'client.deliveryRouteId',
+                        foreignField: '_id',
+                        as: 'deliveryRoute'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$deliveryRoute',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
                         from: `${dietsCollections[mealType]}`,
                         let: { orderId: '$_id' },
                         pipeline: [
@@ -125,7 +139,8 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
                         notes: 1,
                         sentToCateringAt: 1,
                         createdAt: 1,
-                        updatedAt: 1
+                        updatedAt: 1,
+                        deliveryRoute: 1
                     }
                 }
             ]
@@ -137,6 +152,7 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
             standard: number;
             notes: string; // Ta wartość zostanie nadpisana przez logikę debugową poniżej
             diet: (OrderConsumerBreakfast & OrderMealPopulated)[];
+            deliveryRoute?: { code: string; name: string };
         }[]
 
         const summaryStandard = dayData.reduce((acc, { standard }) => {
@@ -154,35 +170,56 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
             return acc;
         }, {} as Record<string, string>);
 
-        const standardObject = dayData.reduce((acc, { client, standard }) => {
+        const standardObject = dayData.reduce((acc, { client, standard, deliveryRoute }) => {
             const code = client?.info?.code;
             if (code) {
-                acc[code] = (acc[code] ?? 0) + standard;
+                if (!acc[code]) {
+                    acc[code] = { meals: 0, deliveryRouteInfo: '' };
+                }
+                acc[code].meals += standard;
+                if (deliveryRoute && !acc[code].deliveryRouteInfo) {
+                    acc[code].deliveryRouteInfo = deliveryRoute.name;
+                }
             }
             return acc;
-        }, {} as Record<string, number>);
+        }, {} as Record<string, { meals: number; deliveryRouteInfo: string }>);
 
-        const dietObject = dayData.reduce((acc, { client, diet }) => {
+        const dietObject = dayData.reduce((acc, { client, diet, deliveryRoute }) => {
             const code = client?.info?.code;
             if (code) {
-                acc[code] = processMeals(diet);
+                if (!acc[code]) {
+                    acc[code] = { meals: {}, deliveryRouteInfo: '' };
+                }
+                const newMeals = processMeals(diet);
+                Object.entries(newMeals).forEach(([consumerCode, mealData]) => {
+                    if (!acc[code]?.meals[consumerCode]) {
+                        acc[code]!.meals[consumerCode] = mealData;
+                    }
+                });
+                if (deliveryRoute && !acc[code].deliveryRouteInfo) {
+                    acc[code].deliveryRouteInfo = deliveryRoute.name;
+                }
             }
             return acc;
-        }, {} as Record<string, Record<string, { code: string, description: string }>>);
+        }, {} as Record<string, { meals: Record<string, { code: string, description: string }>, deliveryRouteInfo: string }>);
 
 
-        const standard = Object.entries(standardObject).map(([clientCode, value]) => ({
+        const standard = Object.entries(standardObject).map(([clientCode, { meals, deliveryRouteInfo }]) => ({
             clientCode,
-            meals: value,
+            meals,
+            deliveryRouteInfo
         })).filter(({ meals }) => meals);
 
-        const diet = Object.entries(dietObject).reduce((acc, [clientCode, value]) => {
-            acc[clientCode] = Object.entries(value).map(([consumerCode, diet]) => ({
-                consumerCode,
-                diet,
-            }));
+        const diet = Object.entries(dietObject).reduce((acc, [clientCode, { meals, deliveryRouteInfo }]) => {
+            acc[clientCode] = {
+                deliveryRouteInfo,
+                meals: Object.entries(meals).map(([consumerCode, diet]) => ({
+                    consumerCode,
+                    diet,
+                }))
+            };
             return acc;
-        }, {} as Record<string, { consumerCode: string, diet: { code: string, description: string } }[]>);
+        }, {} as Record<string, { deliveryRouteInfo: string, meals: { consumerCode: string, diet: { code: string, description: string } }[] }>);
 
         const dictionary = await getDict({ lang, keys: ['shared', 'orders'] })
 
@@ -263,7 +300,7 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
                 // --- POCZĄTEK ZMIAN: Dostosowanie odstępu clientCode - meals ---
                 const clientX = 50;
                 const mealsText = item.meals.toString();
-                const clientCodeText = item.clientCode;
+                const clientCodeText = `${item.clientCode}${item.deliveryRouteInfo ? ` (${item.deliveryRouteInfo})` : ''}`;
 
                 // Rysuj kod klienta, bez określonej szerokości, aby zajął tyle ile potrzebuje
                 doc.font('Roboto')
@@ -318,7 +355,7 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
                     align: 'center'
                 });
 
-            Object.entries(diet).filter(([_, dietMeals]) => dietMeals.length > 0).forEach(([clientCode, dietMeals]) => {
+            Object.entries(diet).filter(([_, { meals }]) => meals.length > 0).forEach(([clientCode, { meals: dietMeals, deliveryRouteInfo }]) => {
                 if (doc.y + 30 > doc.page.height - doc.page.margins.bottom - 30) {
                     doc.addPage();
                     doc.y = doc.page.margins.top;
@@ -327,7 +364,7 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
                 doc.moveDown()
                     .fontSize(12)
                     .font('Roboto-Bold')
-                    .text(clientCode, 50)
+                    .text(`${clientCode}${deliveryRouteInfo ? ` (${deliveryRouteInfo})` : ''}`, 50)
                     .font('Roboto');
 
 

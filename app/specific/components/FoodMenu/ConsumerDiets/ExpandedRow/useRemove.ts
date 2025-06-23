@@ -1,15 +1,17 @@
 import { api } from '@root/app/trpc/react';
 import { useBoolean } from 'usehooks-ts'
 
-const useRemoveConsumerDiets = ({
-    onSuccess, ids,
+const useRemoveMenu = ({
+    onSuccess, clientId, day,
 }: {
     onSuccess: () => unknown,
-    ids: string[],
+    clientId: string,
+    day: { year: number, month: number, day: number } | null,
 }) => {
+
     const { value: isConfirmationOpen, setTrue: show, setFalse: hide } = useBoolean(false)
 
-    const removeUsersCall = api.specific.client.deleteOne.useMutation({
+    const removeByClientMutation = api.specific.regularMenu.removeByClient.useMutation({
         onSuccess: () => {
             onSuccess();
         },
@@ -22,7 +24,7 @@ const useRemoveConsumerDiets = ({
     });
 
     const action = () => {
-        removeUsersCall.mutate({ ids });
+        removeByClientMutation.mutate({ clientId, day: day ?? { year: 0, month: 0, day: 0 } });
     }
 
     return {
@@ -30,9 +32,9 @@ const useRemoveConsumerDiets = ({
         isConfirmationOpen,
         show,
         hide,
-        questionKey: 'clients:delete_confirmation'
+        questionKey: 'menu-creator:remove_client_standard_menu_confirmation'
     }
 
 };
 
-export default useRemoveConsumerDiets;
+export default useRemoveMenu;

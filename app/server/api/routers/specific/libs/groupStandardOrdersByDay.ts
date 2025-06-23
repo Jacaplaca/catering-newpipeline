@@ -33,7 +33,7 @@ const groupStandardOrdersByDay = (dayData: DayOrder[]): Record<string, RouteStan
 
         let routeName: string;
         if (order?.deliveryRoute?.code && order?.deliveryRoute?.name) {
-            routeName = `[${order.deliveryRoute.code}] ${order.deliveryRoute.name}`;
+            routeName = `${order.deliveryRoute.name}`;
         } else {
             routeName = "unassigned";
         }

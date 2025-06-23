@@ -151,7 +151,7 @@ model Catering {
     allergens Allergen[]
     foodCategories FoodCategory[]
     food Food[]
-    regularMenu RegularMenu[]
+    regularMenus RegularMenu[]
     consumerFoods ConsumerFood[]
     meals Meal[]
     exclusions Exclusion[]
@@ -202,10 +202,12 @@ model Client {
     name String? //editable by client
     consumers Consumer[]
     orders Order[]
+    consumerFoods ConsumerFood[]
     // tags TagClient[]
     files ClientFile[]
     deliveryRouteId String?
     deliveryRoute DeliveryRoute? @relation(fields: [deliveryRouteId], references: [id])
+    regularMenus RegularMenu[]
     deactivated Boolean @default(false)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -708,8 +710,9 @@ model Food {
     foodCategoryId String?
     foodCategory   FoodCategory? @relation(fields: [foodCategoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
     allergens      FoodAllergen[]
-    meals MealFood[]
-    consumerFoods    ConsumerFood[]
+    consumerFoods  ConsumerFood[] @relation("ConsumerFood")
+    alternativeConsumerFoods ConsumerFood[] @relation("AlternativeConsumerFood")
+    menuMealFoods  MenuMealFood[]
     cateringId String
     catering Catering @relation(fields: [cateringId], references: [id])
     createdAt      DateTime      @default(now())
@@ -734,10 +737,31 @@ model RegularMenu {
     day DeliveryDay
     cateringId String
     catering Catering @relation(fields: [cateringId], references: [id])
+    clientId String?
+    client Client? @relation(fields: [clientId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    consumerFoods ConsumerFood[] 
+    consumerFoods ConsumerFood[]
+    menuMealFoods MenuMealFood[]
+
+    @@unique([day.year, day.month, day.day, clientId])
+}
+
+model MenuMealFood {
+    id String @id @default(cuid()) @map("_id")
+    regularMenuId String
+    regularMenu RegularMenu @relation(fields: [regularMenuId], references: [id], onDelete: Cascade)
+    mealId String
+    meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+    foodId String
+    food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+    order Int?
+    
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    
+    @@unique([regularMenuId, mealId, foodId])
 }
 
 model Meal {
@@ -745,18 +769,8 @@ model Meal {
     name String
     cateringId String
     catering Catering @relation(fields: [cateringId], references: [id])
-    foods MealFood[]
     consumerFoods ConsumerFood[]
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
-model MealFood {
-    id String @id @default(cuid()) @map("_id")
-    mealId String
-    meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
-    foodId String
-    food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+    menuMealFoods MenuMealFood[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -810,13 +824,17 @@ model ConsumerFood {
     id String @id @default(cuid()) @map("_id")
     regularMenuId String
     regularMenu RegularMenu @relation(fields: [regularMenuId], references: [id], onDelete: Cascade)
+    clientId String
+    client Client @relation(fields: [clientId], references: [id])
     // dishType DishType
     cateringId String
     catering Catering @relation(fields: [cateringId], references: [id])
     consumerId String
     consumer Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
     foodId String
-    food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+    food Food @relation("ConsumerFood", fields: [foodId], references: [id], onDelete: Cascade)
+    alternativeFoodId String?
+    alternativeFood Food? @relation("AlternativeConsumerFood", fields: [alternativeFoodId], references: [id], onDelete: Cascade)
     mealId     String
     meal       Meal    @relation(fields: [mealId], references: [id], onDelete: Cascade)
     exclusions ConsumerFoodExclusion[]

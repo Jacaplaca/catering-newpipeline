@@ -4,9 +4,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import './DatePicker.css';
 import DatePickerCustomHeader from '@root/app/_components/ui/Inputs/DatePickerCustomHeader';
 
-
-
-
 type DatePickerProps = {
     locale: LocaleApp;
     selected: string;
@@ -18,9 +15,10 @@ type DatePickerProps = {
     maxDate?: Date;
     dayClassName?: (date: Date) => string;
     alwaysOpen?: boolean;
+    onMonthChange?: (date: Date) => void;
 }
 
-const DatePicker: FC<DatePickerProps> = ({ locale, selected, minDate, CustomInput, onSelect, dateFormat, filterDate, maxDate, dayClassName, alwaysOpen = false }) => {
+const DatePicker: FC<DatePickerProps> = ({ locale, selected, minDate, CustomInput, onSelect, dateFormat, filterDate, maxDate, dayClassName, alwaysOpen = false, onMonthChange }) => {
 
     return (
         <div>
@@ -39,6 +37,7 @@ const DatePicker: FC<DatePickerProps> = ({ locale, selected, minDate, CustomInpu
                 dateFormat={dateFormat}
                 dayClassName={dayClassName}
                 inline={alwaysOpen}
+                onMonthChange={onMonthChange}
                 renderCustomHeader={({
                     date,
                     decreaseMonth,

@@ -8,6 +8,9 @@ export const clientSortNames = ['name', 'email', 'code', "info.name", "info.emai
 
 export type ClientsSortName = typeof clientSortNames[number];
 
+export const clientWithCommonAllergensSortNames = ["info.code", 'info.name'] as const;
+export type ClientWithCommonAllergensSortName = typeof clientWithCommonAllergensSortNames[number];
+
 export const routeSortNames = ['name', 'code'] as const;
 export type RouteSortName = typeof routeSortNames[number];
 
@@ -55,7 +58,11 @@ export type ClientCustomTable = {
     createdAt: Date;
     updatedAt: Date;
     deliveryRoute: DeliveryRoute;
+};
 
+export type ClientWithCommonAllergens = ClientCustomTable & {
+    hasCommonAllergens: boolean;
+    hasIndividualMenu: boolean;
 };
 
 export const consumersSortNames = ['name', 'client.name', 'client.code', 'diet.description', 'diet.dietician.name', 'code', 'diet.code', 'createdAt'] as const;
@@ -269,6 +276,9 @@ export type ClientFoodAssignment =
         food: Food & {
             allergens: Array<FoodAllergen & { allergen: Allergen }>;
         };
+        alternativeFood: Food & {
+            allergens: Array<FoodAllergen & { allergen: Allergen }>;
+        } | null;
         meal: Meal;
         exclusions: Array<ConsumerFoodExclusion & {
             exclusion: Exclusion & {

@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { api } from '@root/app/trpc/react';
-import { useConsumerDietsTableContext } from '@root/app/specific/components/FoodMenu/ConsumerDiets/context';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import { useState, useMemo, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -12,9 +11,9 @@ const FormSchema = consumerFoodValidator;
 type ConsumerFoodReplacementFormValues = z.infer<typeof FormSchema>;
 
 const useConsumerFood = (assignment: ClientFoodAssignment) => {
-    const { meal, consumer, food, exclusions, comment } = assignment;
+    const { id, meal, consumer, food, exclusions, comment, alternativeFood } = assignment;
     const { day: { day } } = useFoodMenuContext();
-    const { rowClick: { clientConsumers } } = useConsumerDietsTableContext();
+    const { rowClick: { clientConsumers } } = useFoodMenuContext();
     const utils = api.useUtils();
     const [isEditing, setIsEditing] = useState(!!assignment.id);
 
@@ -31,6 +30,12 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
             ingredients: food.ingredients,
             allergens: food.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
         },
+        alternativeFood: {
+            id: alternativeFood?.id ?? '',
+            name: alternativeFood?.name ?? '',
+            ingredients: alternativeFood?.ingredients ?? null,
+            allergens: alternativeFood?.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })) ?? [],
+        },
         exclusions: exclusions.map(({ exclusion }) => ({
             id: exclusion.id,
             name: exclusion.name,
@@ -40,7 +45,7 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
             })),
         })),
         comment: comment ?? '',
-    }), [assignment.id, food, exclusions, comment]);
+    }), [assignment.id, food, exclusions, comment, alternativeFood]);
 
     const form = useForm<ConsumerFoodReplacementFormValues>({
         resolver: zodResolver(FormSchema),
@@ -57,6 +62,18 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
         control: form.control,
         name: 'food.allergens',
         defaultValue: food.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
+    });
+
+    const watchedAlternativeFoodId = useWatch({
+        control: form.control,
+        name: 'alternativeFood.id',
+        defaultValue: alternativeFood?.id ?? '',
+    });
+
+    const watchedAlternativeFoodAllergens = useWatch({
+        control: form.control,
+        name: 'alternativeFood.allergens',
+        defaultValue: alternativeFood?.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })) ?? [],
     });
 
     const watchedExclusions = useWatch({
@@ -80,20 +97,18 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
     const commonAllergens = useMemo(() => {
         const consumerAllergenIds = new Set(consumer.allergens.map(({ allergen }) => allergen.id));
 
-        // zbiory alergenów pojawiających się w exclusions
-        // const exclusionAllergenIds = new Set(
-        //     (watchedExclusions ?? [])
-        //         .flatMap(ex => ex?.allergens ?? [])
-        //         .map(({ id }) => id),
-        // );
+        // Use alternativeFood allergens if alternativeFood is selected, otherwise use food allergens
+        const relevantAllergens = watchedAlternativeFoodId && watchedAlternativeFoodId.trim() !== ''
+            ? watchedAlternativeFoodAllergens
+            : watchedFoodAllergens;
 
-        return (watchedFoodAllergens ?? []).filter(
+        return (relevantAllergens ?? []).filter(
             (allergen, index, self) =>
                 consumerAllergenIds.has(allergen.id) &&              // wspólne konsument-posiłek
                 !allExcludedAllergenIds.has(allergen.id) &&            // pomniejszone o exclusions
                 self.findIndex(a => a.id === allergen.id) === index, // unikalność
         );
-    }, [watchedFoodAllergens, allExcludedAllergenIds, consumer.allergens]);
+    }, [watchedFoodAllergens, watchedAlternativeFoodAllergens, watchedAlternativeFoodId, allExcludedAllergenIds, consumer.allergens]);
     // --------------------------------------------------------------------
 
     // useEffect(() => {
@@ -119,6 +134,7 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
             // await utils.specific.consumerFoodReplacement.invalidate();
             console.log('Food replacement created successfully');
             // You might want to call refetch() here if you have one.
+            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
         },
         onError: (error) => {
             console.error('Error creating food replacement:', error);
@@ -168,10 +184,37 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
         void form.trigger();
     }
 
+    const updateAlternativeFood = (value: { id: string, name: string }[]) => {
+        const first = value[0] as { id: string, name: string, ingredients: string | null, allergens: { id: string, name: string }[] };
+        if (first) {
+            form.setValue('alternativeFood', {
+                id: first.id,
+                name: first.name,
+                ingredients: first.ingredients,
+                allergens: first.allergens.map(a => ({ id: a.id, name: a.name })),
+            }, { shouldValidate: true, shouldDirty: true });
+        } else {
+            form.setValue('alternativeFood', {
+                id: alternativeFood?.id ?? '',
+                name: alternativeFood?.name ?? '',
+                ingredients: alternativeFood?.ingredients ?? null,
+                allergens: alternativeFood?.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })) ?? [],
+            }, { shouldValidate: true, shouldDirty: true });
+        }
+        void form.trigger();
+    }
+
     const updateExclusions = (value: { id: string, name: string }[]) => {
         form.setValue('exclusions', value as { id: string, name: string, allergens: { id: string, name: string }[] }[], { shouldValidate: true, shouldDirty: true });
         void form.trigger();
     }
+
+    const { data: similarCommentsData, isPending: isSimilarLoading } = api.specific.consumerFood.getSimilarComments.useQuery({
+        consumerFoodId: id,
+        query: form.watch('comment'),
+    });
+
+    const similarComments = similarCommentsData?.map(comment => comment).filter(c => c !== form.watch('comment')) ?? [];
 
     return {
         form,
@@ -182,6 +225,9 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
         updateFood,
         updateExclusions,
         allExcludedAllergen,
+        updateAlternativeFood,
+        similarComments,
+        isSimilarLoading,
         // existingReplacement,
         // isLoading,
         // refetch,

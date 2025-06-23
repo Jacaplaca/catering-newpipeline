@@ -10,6 +10,7 @@ const Meal: FC<{
     const { dictionary, standardMenuForm, getAllergens, getFoodsByMealId } = useFoodMenuContext();
     const { updateMenu } = standardMenuForm;
     return <div className={`gap-2 border  border-neutral-50 dark:border-neutral-800  rounded-md p-4 `}>
+
         <div className="font-semibold mb-2 text-lg">{name}</div>
         <FoodDropdown
             dictionary={dictionary}

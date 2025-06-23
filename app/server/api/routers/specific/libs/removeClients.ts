@@ -69,19 +69,28 @@ const removeClients = async ({
                 //     select: { userId: true }
                 // });
 
-                const clientFiles = await getClientS3Keys(clientId);
+                // TODO: works with removeClientFiles
+                // const clientFiles = await getClientS3Keys(clientId);
+
+                await tx.regularMenu.deleteMany({
+                    where: {
+                        clientId
+                    }
+                });
 
                 await tx.client.delete({
                     where: { id: clientId }
                 });
 
+                // TODO: decide if we want to delete users, but user can have multiple clients
                 // if (client?.userId) {
                 //     await tx.user.delete({
                 //         where: { id: client.userId }
                 //     });
                 // }
 
-                await removeClientFiles(clientFiles);
+                // TODO: bring back on production
+                // await removeClientFiles(clientFiles);
             }
         }
         return { success: true };

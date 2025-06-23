@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { type z } from 'zod';
 import { api } from '@root/app/trpc/react';
-import type useMenuQueries from './useMenuQueries';
+import type useMenuQueries from '@root/app/specific/components/FoodMenu/useMenuQueries';
 
 // Define the shape of the form values, including 'id' which is always present in the form state
 type FoodSelectItem = { id: string; name: string, ingredients: string | null, allergens: { id: string, name: string }[], mealId: string | null };
@@ -19,6 +19,7 @@ interface UseStandardMenuProps {
     day: { year: number, month: number, day: number } | null;
     menuQueries: ReturnType<typeof useMenuQueries>;
     setTemplateDayObject: (dayObject: { id: string, name: string } | null) => void;
+    clientId?: string | undefined | null;
 }
 
 const FormSchema = regularMenuEditValidator.or(regularMenuCreateValidator);
@@ -36,21 +37,39 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
         day,
         menuQueries,
         setTemplateDayObject,
+        clientId,
     } = props;
     const {
         existingMenu,
         menuFetching,
         menuLoading,
         templateDayMenu,
+        currentClient,
     } = menuQueries;
+
+    const { data: currentClientMenu, isFetching: currentClientMenuFetching, isLoading: currentClientMenuLoading } = currentClient;
+
+    const [defaultFormValues, setDefaultFormValues] = useState<RegularMenuFormValues>(getEmptyValues(day));
+    const formAll = useForm<RegularMenuFormValues>({
+        resolver: zodResolver(FormSchema),
+        defaultValues: defaultFormValues,
+    });
+
+    const formClient = useForm<RegularMenuFormValues>({
+        resolver: zodResolver(FormSchema),
+        defaultValues: defaultFormValues,
+    });
+
+    const menuObj = clientId ? currentClientMenu : existingMenu;
+    const form = clientId ? formClient : formAll;
+
 
     const utils = api.useUtils();
     const [isEditing, setIsEditing] = useState(false);
-    const [defaultFormValues, setDefaultFormValues] = useState<RegularMenuFormValues>(getEmptyValues(day));
 
     const backToDefault = () => {
         form.reset(defaultFormValues);
-        setIsEditing(!!existingMenu);
+        setIsEditing(!!menuObj);
         setTemplateDayObject(null);
     };
 
@@ -77,10 +96,7 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
         setTemplateDayObject(null);
     }
 
-    const form = useForm<RegularMenuFormValues>({
-        resolver: zodResolver(FormSchema),
-        defaultValues: defaultFormValues,
-    });
+
 
     useEffect(() => {
         form.setValue('foods', templateDayMenu?.foods ?? [], { shouldDirty: true });
@@ -89,12 +105,12 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
     useEffect(() => {
         if (day) {
             const newDefaults = getEmptyValues(day);
-            if (existingMenu) {
-                const foods = existingMenu.foods;
+            if (menuObj) {
+                const foods = menuObj.foods;
                 if (foods) {
                     const menuData: RegularMenuFormValues = {
-                        id: existingMenu.id,
-                        day: existingMenu.day,
+                        id: menuObj.id,
+                        day: menuObj.day,
                         foods,
                     };
                     form.reset(menuData);
@@ -102,12 +118,26 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
                     setIsEditing(true);
                 }
             } else {
-                // If no existing menu for the day, and it's not loading, reset to defaults for creation
-                if (!menuLoading && !menuFetching) {
+                // // If no existing menu for the day, and it's not loading, reset to defaults for creation
+                if (!menuLoading && !menuFetching && !clientId) {
                     form.reset(newDefaults);
                     setDefaultFormValues(newDefaults);
                     setIsEditing(false);
                 }
+
+                if (clientId && !menuObj && existingMenu) {
+
+                    const foods = existingMenu.foods;
+                    const menuData: RegularMenuFormValues = {
+                        id: '',
+                        day: existingMenu.day,
+                        foods,
+                    };
+                    form.reset(menuData);
+                    setDefaultFormValues(menuData);
+                }
+
+
             }
         } else {
             // If no day is selected, reset to initial empty state
@@ -116,7 +146,7 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
             setDefaultFormValues(initialDefaults);
             setIsEditing(false);
         }
-    }, [day, existingMenu, form, menuLoading, menuFetching]);
+    }, [day, menuObj, form, menuLoading, menuFetching, clientId, existingMenu]);
 
     useEffect(() => {
         setTemplateDayObject(null);
@@ -126,6 +156,9 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
     const createMutation = api.specific.regularMenu.create.useMutation({
         onSuccess: () => {
             void utils.specific.regularMenu.getOne.invalidate();
+            void utils.specific.regularMenu.configuredDays.invalidate();
+            void utils.specific.regularMenu.getInfinite.invalidate();
+            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
             console.log('Menu created successfully');
         },
         onError: (error) => {
@@ -135,39 +168,66 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
 
     const updateMutation = api.specific.regularMenu.update.useMutation({
         onSuccess: () => {
+            console.log('Menu updated successfully bbbbbv');
             void utils.specific.regularMenu.getOne.invalidate();
-            console.log('Menu updated successfully');
+            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
+            console.log('Menu updated successfully     asdfasdf');
         },
         onError: (error) => {
             console.error('Error updating menu:', error);
         },
     });
 
-    const onSubmit = (values: RegularMenuFormValues) => {
-        void utils.specific.regularMenu.getInfinite.invalidate();
-        if (!day) {
-            console.error("Cannot save, day is not selected.");
-            return;
-        }
+    // const onSubmit = (values: RegularMenuFormValues) => {
+    //     void utils.specific.regularMenu.getInfinite.invalidate();
+    //     if (!day) {
+    //         console.error("Cannot save, day is not selected.");
+    //         return;
+    //     }
 
-        const submissionData = {
-            ...values,
-            day: day, // Ensure the correct day is part of the submission
-        };
+    //     const submissionData = {
+    //         ...values,
+    //         day: day, // Ensure the correct day is part of the submission
+    //     };
 
-        if (isEditing && existingMenu?.id) {
-            // The edit validator expects an 'id'
-            updateMutation.mutate(submissionData as z.infer<typeof regularMenuEditValidator>);
-        } else {
-            // The create validator does not expect an 'id'
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, ...createData } = submissionData;
-            createMutation.mutate(createData as z.infer<typeof regularMenuCreateValidator>);
-        }
+    //     if (isEditing && menuObj?.id) {
+    //         // The edit validator expects an 'id'
+    //         updateMutation.mutate(submissionData as z.infer<typeof regularMenuEditValidator>);
+    //     } else {
+    //         // The create validator does not expect an 'id'
+    //         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    //         const { id, ...createData } = submissionData;
+    //         createMutation.mutate(createData as z.infer<typeof regularMenuCreateValidator>);
+    //     }
+    // };
+
+    const handleSubmit = (clientId?: string) => {
+        console.log('handleSubmit', clientId);
+        return form.handleSubmit((values: RegularMenuFormValues) => {
+            void utils.specific.regularMenu.getInfinite.invalidate();
+            if (!day) {
+                console.error("Cannot save, day is not selected.");
+                return;
+            }
+
+            const submissionData = {
+                ...values,
+                day: day,
+                clientId, // Add clientId to submission data
+            };
+
+            if (isEditing && menuObj?.id) {
+                updateMutation.mutate(submissionData as z.infer<typeof regularMenuEditValidator>);
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { id, ...createData } = submissionData;
+                createMutation.mutate(createData as z.infer<typeof regularMenuCreateValidator>);
+            }
+        });
     };
 
     const clearForm = () => {
-        const emptyValues = getEmptyValues(day, existingMenu?.id);
+        const emptyValues = getEmptyValues(day, menuObj?.id);
         form.reset(emptyValues);
         setIsEditing(true);
         setTemplateDayObject(null);
@@ -175,7 +235,9 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
 
     return {
         form,
-        onSubmit: form.handleSubmit(onSubmit),
+        formAll,
+        formClient,
+        onSubmit: handleSubmit, // Return the new function that accepts clientId
         isEditing,
         isLoading: menuLoading || menuFetching,
         isSubmitting: createMutation.isPending || updateMutation.isPending,

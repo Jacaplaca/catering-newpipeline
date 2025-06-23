@@ -7,9 +7,9 @@ const deleteOne = createCateringProcedure([RoleType.manager])
     .input(deleteElementsValid)
     .mutation(({ ctx, input }) => {
         const { session } = ctx
-        const { ids } = input;
+        const { ids, forceRemove } = input;
         const { cateringId } = session.user;
-        return removeClients({ clientsIds: ids, cateringId, forceRemove: false });
+        return removeClients({ clientsIds: ids, cateringId, forceRemove });
     })
 
 export default deleteOne;

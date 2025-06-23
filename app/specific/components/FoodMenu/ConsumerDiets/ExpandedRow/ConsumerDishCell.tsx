@@ -1,30 +1,35 @@
 import { useState } from 'react';
 import { type ClientFoodAssignment } from '@root/types/specific';
 import FoodReplacementEditor from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/FoodReplacementEditor';
-import getCommonAllergens from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/getCommonAllergens';
+import getCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/getCommonAllergens';
 import AutoReplaceButton from './AutoReplaceButton';
 import ResetButton from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/ResetButton';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
+import useConsumerFood from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/FoodReplacementEditor/useConsumerFood';
 
 interface ConsumerDishCellProps {
     assignment: ClientFoodAssignment
 }
 
 const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
-    const { consumer, food, exclusions, mealId } = assignment;
+    const { consumer, food: originalFood, exclusions, mealId, comment, alternativeFood } = assignment;
+    const food = alternativeFood ?? originalFood;
     const [isConsumerDietEditorOpen, setConsumerDietEditorOpen] = useState(false);
     const { getFoodsByMealId } = useFoodMenuContext();
-    console.log("standardMenuForm", getFoodsByMealId(mealId));
+
+    const consumerFood = useConsumerFood(assignment);
+    const { isSubmitting } = consumerFood;
 
     const exclusionAllergens = exclusions.flatMap(ex =>
         ex.exclusion.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name }))
     );
 
-    const commonAllergens = getCommonAllergens(
-        consumer.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
-        food.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
+    const commonAllergens = getCommonAllergens({
+        consumerAllergens: consumer.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
+        foodAllergens: food.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
         exclusionAllergens,
-    );
+        comment
+    });
 
     const hasAllergenWarning = commonAllergens.length > 0;
     const hasExclusions = exclusions.length > 0;
@@ -39,6 +44,12 @@ const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
         const noExclusions = exclusions.length === 0;
         const noComment = !assignment.comment;
         return !sameFoods || !noExclusions || !noComment;
+    }
+
+    if (isSubmitting) {
+        return <div className='w-full h-full flex items-center justify-center'>
+            <i className="fas fa-spinner animate-spin text-2xl"></i>
+        </div>
     }
 
     return (
@@ -67,10 +78,15 @@ const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
 
             {/* Middle section - food name and exclusions */}
             <div className="flex-1 flex flex-col items-center justify-start px-3 py-2">
-                <span className="font-semibold text-neutral-900 dark:text-neutral-50">{food.name}</span>
+                <span className="text-sm text-base italic text-neutral-700 dark:text-neutral-200 ">{food.name}</span>
                 {hasExclusions && (
-                    <span className='mt-1 text-xs italic text-neutral-500 dark:text-neutral-400'>
+                    <span className='mt-1 text-neutral-900 dark:text-neutral-50  font-semibold '>
                         {exclusionNames}
+                    </span>
+                )}
+                {comment && (
+                    <span className='mt-1 text-neutral-900 dark:text-neutral-50  font-semibold '>
+                        {comment}
                     </span>
                 )}
             </div>
@@ -83,11 +99,11 @@ const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
                     </span>
                 </div>
             )}
-
             <FoodReplacementEditor
                 isOpen={isConsumerDietEditorOpen}
                 onClose={() => setConsumerDietEditorOpen(false)}
                 assignment={assignment}
+                consumerFood={consumerFood}
             />
         </div>
     );

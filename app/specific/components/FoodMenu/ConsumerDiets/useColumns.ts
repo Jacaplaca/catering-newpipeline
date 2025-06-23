@@ -1,22 +1,27 @@
 import { type TableColumnType } from '@root/types'
-import { type ClientsSortName } from '@root/types/specific'
+import { type ClientWithCommonAllergensSortName } from '@root/types/specific'
 
 const useConsumerDietsColumns = ({
     sort
 }: {
-    sort: (by: ClientsSortName) => void
+    sort: (by: ClientWithCommonAllergensSortName) => void
 }) => {
 
     const columns: TableColumnType[] = [
         {
             key: "info.code",
             title: 'clients:info.code_column',
-            sort: () => sort('code')
+            sort: () => sort('info.code')
         },
         {
             key: "info.name",
             title: 'clients:info.name_column',
             sort: () => sort('info.name')
+        },
+        {
+            key: "properties",
+            title: '',
+            // sort: () => sort('hasCommonAllergens')
         },
         // {
         //     key: "name",

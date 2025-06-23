@@ -115,10 +115,12 @@
         "duplicate_code_error": "Istnieje już klient z takim kodem",
         "not_found": "Klient nie został znaleziony",
         "delete_confirmation": "Klient, który ma zamówienia, zostanie zdeaktywowany. Klient bez zamówień zostanie usunięty. Czy na pewno chcesz to zrobić?",
+        "delete_confirmation_with_force": "Klienci oraz wszystkie ich dane zostaną usunięte. Czy na pewno chcesz to zrobić?",
         "activate_confirmation": "Klienci zostaną aktywowani. Czy na pewno chcesz to zrobić?",
         "activate_button": "Aktywuj",
         "already_removed": "Klient został już usunięty przez innego użytkownika, odśwież stronę aby zobaczyć najnowsze zmiany",
-        "choose_delivery_route": "Wybierz trasę dostawy"
+        "choose_delivery_route": "Wybierz trasę dostawy",
+        "delete_with_force": "Usuń z danymi"
     },
     "dieticians": {
         "title": "Dietetycy",
@@ -330,7 +332,8 @@
         "allergens_placeholder": "Wybierz alergeny",
         "selected_allergens": "Alergeny:",
         "name_required": "Nazwa jest wymagana",
-        "food_category_required": "Kategoria jest wymagana"
+        "food_category_required": "Kategoria jest wymagana",
+        "alternative_food": "Zamieniona potrawa"
     },
     "menu-creator": {
         "title-standard-menu": "Standardowe menu",
@@ -365,7 +368,16 @@
         "ingredients": "Składniki",
         "allergens": "Alergeny",
         "no-additional-information": "Brak dodatkowych informacji",
-        "choose_source_menu": "Wybierz wzór"
+        "choose_source_menu": "Wybierz wzór",
+        "is-menu-editable-for-client": "Stwórz indywidualne menu",
+        "edit-standard-menu": "Edytuj menu",
+        "back-to-consumer-menu": "Wróć do jadłospisu",
+        "remove_client_standard_menu_confirmation": "Czy na pewno chcesz usunąć indywidualne menu dla tego klienta i wrócić do standardowego?",
+        "common_allergens": "Są alergeny",
+        "individual_menu": "Indywidualne menu",
+        "edit_standard_menu_confirmation": "Czy na pewno chcesz edytować standardowe menu? Utracisz wszystkie zmiany zapisane w dla każdego dziecka tego dnia. Menu indywidualne zostaną bez zmian.",
+        "similar_comments": "Proponowane komentarze",
+        "no_suggestions": "Brak proponowanych komentarzy"
     },
     "exclusion": {
         "duplicate_name_error": "Istnieje już wykluczenie z taką nazwą",
