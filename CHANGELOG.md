@@ -1,3 +1,12 @@
+# [2.1.0](https://github.com/Jacaplaca/catering/compare/v2.0.0...v2.1.0) (2025-07-14)
+
+
+### Features
+
+* group standard and diet orders by delivery route in PDF generation ([8e8a22c](https://github.com/Jacaplaca/catering/commit/8e8a22cdb9d1f7fc05fa73c643dfa2f0d15fdaeb))
+
+
+
 # [2.0.0](https://github.com/Jacaplaca/catering/compare/v1.6.0...v2.0.0) (2025-06-23)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * allow weekend order and orders view for dietician ([9e1d9f6](https://github.com/Jacaplaca/catering/commit/9e1d9f65ffa95ffe139500c2e60ffcb12452180a))
-
-
-
-## [1.4.1](https://github.com/Jacaplaca/catering/compare/v1.4.0...v1.4.1) (2025-03-13)
-
-
-### Bug Fixes
-
-* kitchen setting zero in meals better error in sign in ([d22153e](https://github.com/Jacaplaca/catering/commit/d22153e2ddb551aeb7d538a2f54f8ba9c022b9ee))
 
 
 
