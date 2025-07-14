@@ -210,6 +210,16 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
             deliveryRouteInfo
         })).filter(({ meals }) => meals);
 
+        // Group standard orders by delivery route
+        const standardGroupedByRoute = standard.reduce((acc, item) => {
+            const routeKey = item.deliveryRouteInfo || 'Bez trasy'; // Fallback for items without route
+            if (!acc[routeKey]) {
+                acc[routeKey] = [];
+            }
+            acc[routeKey].push(item);
+            return acc;
+        }, {} as Record<string, typeof standard>);
+
         const diet = Object.entries(dietObject).reduce((acc, [clientCode, { meals, deliveryRouteInfo }]) => {
             acc[clientCode] = {
                 deliveryRouteInfo,
@@ -220,6 +230,7 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
             };
             return acc;
         }, {} as Record<string, { deliveryRouteInfo: string, meals: { consumerCode: string, diet: { code: string, description: string } }[] }>);
+
 
         const dictionary = await getDict({ lang, keys: ['shared', 'orders'] })
 
@@ -279,102 +290,166 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
 
             let yPosition = startY;
 
-            standard.forEach(item => {
-                const noteText = notes[item.clientCode];
-                let itemHeight = lineHeight; // Minimalna wysokość to linia kodu/ilości
-                let noteHeight = 0;
+            // Render grouped standard orders
+            Object.entries(standardGroupedByRoute).forEach(([routeName, routeItems]) => {
+                // Calculate total meals for this route
+                const routeTotalMeals = routeItems.reduce((sum, item) => sum + item.meals, 0);
 
-                if (noteText) {
-                    noteHeight = doc.heightOfString(noteText, {
-                        width: pageWidth - 10,
-                    });
-                    itemHeight += noteHeight;
-                }
-                itemHeight += verticalGap;
+                // Estimate minimum space needed for route header + first item
+                const routeHeaderHeight = 25;
+                const minItemHeight = lineHeight + verticalGap; // Minimum for one item without notes
+                const minSpaceNeeded = routeHeaderHeight + minItemHeight;
 
-                if (yPosition + itemHeight > doc.page.height - doc.page.margins.bottom - 30) {
+                // Check if we need a new page for the route header + at least one item
+                if (yPosition + minSpaceNeeded > doc.page.height - doc.page.margins.bottom - 30) {
                     doc.addPage();
                     yPosition = doc.page.margins.top;
                 }
 
-                // --- POCZĄTEK ZMIAN: Dostosowanie odstępu clientCode - meals ---
-                const clientX = 50;
-                const mealsText = item.meals.toString();
-                const clientCodeText = `${item.clientCode}${item.deliveryRouteInfo ? ` (${item.deliveryRouteInfo})` : ''}`;
-
-                // Rysuj kod klienta, bez określonej szerokości, aby zajął tyle ile potrzebuje
-                doc.font('Roboto')
-                    .fontSize(12)
-                    .fillColor('black')
-                    .text(clientCodeText, clientX, yPosition, {
-                        lineBreak: false, // Zapobiega łamaniu
-                        continued: true // Pozwala dodać tekst zaraz obok
-                    });
-
-                // Zmierz szerokość kodu klienta
-                const clientWidth = doc.widthOfString(clientCodeText);
-                const mealsX = clientX + clientWidth + 5; // 5 punktów odstępu
-
-                // Rysuj ilość posiłków zaraz obok
+                // Route header with total meals in parentheses
                 doc.font('Roboto-Bold')
-                    .fontSize(12)
-                    .text(mealsText, mealsX, yPosition, { // Użyj tej samej pozycji Y
-                        // nie podajemy width, niech zajmie ile trzeba
-                        lineBreak: false, // Kończymy linię po ilości
-                        continued: false // Zakończ linię tutaj
-                    });
-                // --- KONIEC ZMIAN: Dostosowanie odstępu clientCode - meals ---
+                    .fontSize(14)
+                    .fillColor('black')
+                    .text(`Trasa: ${routeName} (${routeTotalMeals})`, 50, yPosition);
 
-                yPosition += lineHeight; // Przesuń Y o wysokość linii klienta/ilości
+                yPosition += 25; // Space after route header
 
-                // Add notes if they exist
-                if (noteText) {
-                    // --- POCZĄTEK ZMIAN: Ciemniejszy kolor notatek ---
-                    doc.font('Roboto')
-                        .fontSize(noteFontSize)
-                        .fillColor('dimgray') // Ciemniejszy szary
-                        .text(noteText, clientX, yPosition, { // Notatka pod kodem klienta
-                            width: pageWidth - 10 // Notatka na prawie całą szerokość strony
+                // Render items for this route
+                routeItems.forEach(item => {
+                    const noteText = notes[item.clientCode];
+                    let itemHeight = lineHeight;
+                    let noteHeight = 0;
+
+                    if (noteText) {
+                        noteHeight = doc.heightOfString(noteText, {
+                            width: pageWidth - 10,
                         });
-                    // --- KONIEC ZMIAN: Ciemniejszy kolor notatek ---
-                    yPosition += noteHeight; // Przesuń Y o wysokość notatki
-                }
+                        itemHeight += noteHeight;
+                    }
+                    itemHeight += verticalGap;
 
-                yPosition += verticalGap; // Dodaj stały odstęp przed kolejnym wpisem
+                    if (yPosition + itemHeight > doc.page.height - doc.page.margins.bottom - 30) {
+                        doc.addPage();
+                        yPosition = doc.page.margins.top;
+                    }
+
+                    const clientX = 50;
+                    const mealsText = item.meals.toString();
+                    const clientCodeText = item.clientCode; // Remove route info from client text since it's now in header
+
+                    doc.font('Roboto')
+                        .fontSize(12)
+                        .fillColor('black')
+                        .text(clientCodeText, clientX, yPosition, {
+                            lineBreak: false,
+                            continued: true
+                        });
+
+                    const clientWidth = doc.widthOfString(clientCodeText);
+                    const mealsX = clientX + clientWidth + 5;
+
+                    doc.font('Roboto-Bold')
+                        .fontSize(12)
+                        .text(mealsText, mealsX, yPosition, {
+                            lineBreak: false,
+                            continued: false
+                        });
+
+                    yPosition += lineHeight;
+
+                    if (noteText) {
+                        doc.font('Roboto')
+                            .fontSize(noteFontSize)
+                            .fillColor('dimgray')
+                            .text(noteText, clientX, yPosition, {
+                                width: pageWidth - 10
+                            });
+                        yPosition += noteHeight;
+                    }
+
+                    yPosition += verticalGap;
+                });
+
+                // Add extra space between route groups
+                yPosition += 15;
             });
 
             doc.y = yPosition; // Ustaw pozycję Y dla sekcji diet
 
             doc.x = 50;
-            doc.moveDown(4)
-                .fontSize(14)
-                .font('Roboto-Bold')
-                .fillColor('black')
-                .text(translate(dictionary, 'orders:diet'), {
-                    width: pageWidth,
-                    align: 'center'
-                });
 
-            Object.entries(diet).filter(([_, { meals }]) => meals.length > 0).forEach(([clientCode, { meals: dietMeals, deliveryRouteInfo }]) => {
-                if (doc.y + 30 > doc.page.height - doc.page.margins.bottom - 30) {
+            // Always start diets on a new page
+            doc.addPage();
+            doc.y = doc.page.margins.top;
+
+            // doc.moveDown(4)
+            //     .fontSize(14)
+            //     .font('Roboto-Bold')
+            //     .fillColor('black')
+            //     .text(translate(dictionary, 'orders:diet'), {
+            //         width: pageWidth,
+            //         align: 'center'
+            //     });
+
+            // Group diet orders by delivery route
+            const dietGroupedByRoute = Object.entries(diet)
+                .filter(([_, { meals }]) => meals.length > 0)
+                .reduce((acc, [clientCode, { meals, deliveryRouteInfo }]) => {
+                    const routeKey = deliveryRouteInfo || 'Bez trasy';
+                    if (!acc[routeKey]) {
+                        acc[routeKey] = [];
+                    }
+                    acc[routeKey].push({
+                        clientCode,
+                        meals,
+                        deliveryRouteInfo
+                    });
+                    return acc;
+                }, {} as Record<string, Array<{ clientCode: string; meals: { consumerCode: string, diet: { code: string, description: string } }[]; deliveryRouteInfo: string }>>);
+
+            let isFirstDietRoute = true;
+            Object.entries(dietGroupedByRoute).forEach(([routeName, routeClients]) => {
+                // Start each diet route on a new page, except the first one
+                if (!isFirstDietRoute) {
                     doc.addPage();
                     doc.y = doc.page.margins.top;
                 }
+                isFirstDietRoute = false;
 
+                // Route header for diets
                 doc.moveDown()
-                    .fontSize(12)
+                    .fontSize(14)
                     .font('Roboto-Bold')
-                    .text(`${clientCode}${deliveryRouteInfo ? ` (${deliveryRouteInfo})` : ''}`, 50)
-                    .font('Roboto');
+                    .fillColor('black')
+                    .text(`Trasa: ${routeName}`, 50);
 
+                // Render clients for this route
+                routeClients.forEach(({ clientCode, meals }) => {
+                    // Check space for client header + at least one diet item
+                    const clientSpaceNeeded = 20 + 12 + 11; // 20 points for moveDown, 12 points for client fontSize, 11 points for diet item
 
-                dietMeals.forEach(dietMeal => {
-                    if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - 30) {
+                    if (doc.y + clientSpaceNeeded > doc.page.height - doc.page.margins.bottom - 30) {
                         doc.addPage();
                         doc.y = doc.page.margins.top;
                     }
-                    doc.fontSize(11).text(`${dietMeal.consumerCode}: ${dietMeal.diet.code}`, 70);
+
+                    doc.moveDown()
+                        .fontSize(12)
+                        .font('Roboto-Bold')
+                        .text(clientCode, 70)
+                        .font('Roboto');
+
+                    meals.forEach(dietMeal => {
+                        if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - 30) {
+                            doc.addPage();
+                            doc.y = doc.page.margins.top;
+                        }
+                        doc.fontSize(11).text(`${dietMeal.consumerCode}: ${dietMeal.diet.code}`, 90);
+                    });
                 });
+
+                // Add space between route groups
+                doc.moveDown();
             });
 
             const range = doc.bufferedPageRange();
