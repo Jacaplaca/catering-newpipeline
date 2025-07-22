@@ -1,3 +1,12 @@
+# [2.2.0](https://github.com/Jacaplaca/catering/compare/v2.1.0...v2.2.0) (2025-07-22)
+
+
+### Features
+
+* add NEXT_PUBLIC_DOMAIN to environment variables, create menu page component, full order edit for manager ([e472902](https://github.com/Jacaplaca/catering/commit/e47290226e15bc5eb5970c7e90d2aa230e834c93))
+
+
+
 # [2.1.0](https://github.com/Jacaplaca/catering/compare/v2.0.0...v2.1.0) (2025-07-14)
 
 
@@ -36,15 +45,6 @@
 ### Bug Fixes
 
 * sort order notes ([42a8a0c](https://github.com/Jacaplaca/catering/commit/42a8a0cdedcc8f2e61ab5a9c3b957724669ceb66))
-
-
-
-# [1.5.0](https://github.com/Jacaplaca/catering/compare/v1.4.1...v1.5.0) (2025-03-19)
-
-
-### Features
-
-* allow weekend order and orders view for dietician ([9e1d9f6](https://github.com/Jacaplaca/catering/commit/9e1d9f65ffa95ffe139500c2e60ffcb12452180a))
 
 
 
