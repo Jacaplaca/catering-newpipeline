@@ -1,4 +1,5 @@
 import { type Consumer, type Diet } from '@prisma/client';
+import MyButton from '@root/app/_components/ui/buttons/MyButton';
 import translate from '@root/app/lib/lang/translate';
 import { useOrderTableContext } from '@root/app/specific/components/Orders/ByOrder/context';
 
@@ -129,7 +130,11 @@ const OrderView = () => {
         rowClick: {
             orderForView,
             orderForViewFetching
-        }
+        },
+        roles: {
+            isManager,
+        },
+        openOrderModalForManager,
     } = useOrderTableContext();
 
     if (orderForViewFetching) return <div
@@ -141,6 +146,15 @@ const OrderView = () => {
 
     return (
         <div className="flex flex-col h-full">
+            {isManager && <MyButton
+                className='w-fit bg-neutral-200 dark:bg-neutral-700 mb-4 sm:mb-0'
+                onClick={() => openOrderModalForManager(orderForView.id ?? '')}
+                id='edit-order-button'
+                ariaLabel={translate(dictionary, 'orders:edit_order')}
+                icon='fas fa-edit'
+            >
+                {translate(dictionary, 'orders:edit_order')}
+            </MyButton>}
             <div className={`grid grid-cols-4 auto-rows-auto gap-4 p-5`}>
                 <div className={`p-3 text-center`}></div>
                 <div className={`${headerStyle} text-center`}>{translate(dictionary, 'orders:breakfast')}</div>

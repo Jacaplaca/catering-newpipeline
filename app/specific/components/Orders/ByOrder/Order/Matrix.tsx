@@ -18,7 +18,7 @@ const CopyFromButton: FC<{
             copyDietsFrom,
             copyStandardsFrom,
             deadlines: { isBetween }
-        },
+        }
     } = useOrderTableContext();
 
     const hideCopy = (meal === MealType.Breakfast || (isBetween && type === 'diet'));
@@ -50,9 +50,9 @@ const CopyFromButton: FC<{
     </div>
 }
 
-export const checkIfLocked = (meal: MealType, isBetween: boolean, isAfterSecond: boolean) => {
+export const checkIfLocked = (meal: MealType, isBetween: boolean, isAfterSecond: boolean, isManager: boolean) => {
     const isBreakfast = meal === MealType.Breakfast;
-    return (isBreakfast && isBetween) || isAfterSecond;
+    return ((isBreakfast && isBetween) || isAfterSecond) && !isManager;
 }
 
 
@@ -69,9 +69,14 @@ const MealCell: FC<{
             updateStandards,
             deadlines: { isBetween, isAfterSecond }
         },
+        roles: {
+            isManager,
+        }
     } = useOrderTableContext();
 
-    const isLocked = checkIfLocked(meal, isBetween, isAfterSecond);
+    console.log(standards);
+
+    const isLocked = checkIfLocked(meal, isBetween, isAfterSecond, isManager);
 
     if (type === 'standard') {
         return <div className='flex flex-row gap-1 items-center justify-center'>

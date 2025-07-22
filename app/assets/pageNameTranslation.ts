@@ -16,6 +16,7 @@ export const defaultPages = {
     activate: "activate",
     invitation: "invitation",
     dashboard: "dashboard",
+    menu: "menu",
 }
 
 const pageNameTrans = {
@@ -35,6 +36,7 @@ const pageNameTrans = {
         activate: defaultPages.activate,
         invitation: defaultPages.invitation,
         dashboard: defaultPages.dashboard,
+        menu: defaultPages.menu,
     },
     pl: {
         logowanie: defaultPages.signIn,
@@ -52,6 +54,7 @@ const pageNameTrans = {
         aktywacja: defaultPages.activate,
         zaproszenie: defaultPages.invitation,
         panel: defaultPages.dashboard,
+        jadlospis: defaultPages.menu,
     },
 } as { [key in Locale]: Record<string, string> }
 

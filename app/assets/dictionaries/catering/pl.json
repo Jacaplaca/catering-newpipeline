@@ -120,7 +120,8 @@
         "activate_button": "Aktywuj",
         "already_removed": "Klient został już usunięty przez innego użytkownika, odśwież stronę aby zobaczyć najnowsze zmiany",
         "choose_delivery_route": "Wybierz trasę dostawy",
-        "delete_with_force": "Usuń z danymi"
+        "delete_with_force": "Usuń z danymi",
+        "menu_link": "Link do jadłospisu"
     },
     "dieticians": {
         "title": "Dietetycy",
@@ -247,7 +248,8 @@
         "client_route_pdf": "Klient",
         "routes_pdf_title": "Trasy",
         "no_route_pdf": "Bez trasy",
-        "cancelled_meals": "Anulowane posiłki"
+        "cancelled_meals": "Anulowane posiłki",
+        "edit_order": "Edytuj zamówienie"
     },
     "client-files":{
         "file_type_menu": "Menu",
@@ -275,7 +277,8 @@
         "tab_menu": "Tygodniowe",
         "menu": "Menu standardowe",
         "diet": "Menu dietetyczne",
-        "checklist": "Wykaz składników"
+        "checklist": "Wykaz składników",
+        "no_client": "Nie ma takiego klienta"
     },
     "routes": {
         "title": "Trasy",
@@ -353,6 +356,7 @@
         "auto-replace-food": "Wyszukuje podobne i poprawia",
         "consumer": "Dziecko",
         "no-dishes": "Brak potraw",
+        "no-dishes-available": "Brak dostępnych potraw",
         "no-consumers-available": "Brak dzieci",
         "reset-food-to-standard": "Przywróć standardowe danie",
         "consumer_allergens": "Alergeny dziecka",
@@ -375,7 +379,7 @@
         "remove_client_standard_menu_confirmation": "Czy na pewno chcesz usunąć indywidualne menu dla tego klienta i wrócić do standardowego?",
         "common_allergens": "Są alergeny",
         "individual_menu": "Indywidualne menu",
-        "edit_standard_menu_confirmation": "Czy na pewno chcesz edytować standardowe menu? Utracisz wszystkie zmiany zapisane w dla każdego dziecka tego dnia. Menu indywidualne zostaną bez zmian.",
+        "edit_standard_menu_confirmation": "Czy na pewno chcesz edytować standardowe menu?",
         "similar_comments": "Proponowane komentarze",
         "no_suggestions": "Brak proponowanych komentarzy"
     },

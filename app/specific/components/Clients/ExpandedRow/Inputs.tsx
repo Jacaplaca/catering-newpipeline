@@ -7,15 +7,16 @@ import translate from '@root/app/lib/lang/translate';
 import FormSection from '@root/app/_components/ui/form/Section';
 import InputsWrapper from '@root/app/_components/ui/Inputs/InputsWrapper';
 import DeliveryRouteDropdown from '@root/app/specific/components/ui/Dropdown/DeliveryRoute';
-import FoodCategoryDropdown from '@root/app/specific/components/ui/Dropdown/FoodCategory';
 import { FormField } from '@root/app/_components/ui/form';
-import AuthInput from '@root/app/_components/ui/Inputs/AuthInput';
+import makeHref from '@root/app/lib/url/makeHref';
+import LinkCopy from '@root/app/_components/Dashboard/Settings/Invite/LinkCopy';
 
 const ClientInputs = () => {
 
     const {
         dictionary,
-        rowClick: { form, isFetching, updateClient, client, chooseDeliveryRoute },
+        rowClick: { form, isFetching, updateClient, client, chooseDeliveryRoute, expandedRowId },
+        lang,
     } = useClientTableContext();
 
     const inputs = useClientInputs();
@@ -85,7 +86,10 @@ const ClientInputs = () => {
                         }
                     }
                 /> */}
-
+                <LinkCopy
+                    label={translate(dictionary, 'clients:menu_link')}
+                    link={makeHref({ lang, page: 'menu', slugs: [expandedRowId ?? ''] }, true)}
+                />
             </InputsWrapper>
         </FormSection>
     );

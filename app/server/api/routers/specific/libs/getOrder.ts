@@ -65,6 +65,7 @@ const getOrder = async ({ orderId, cateringId, onlyActiveConsumers }: { orderId:
             $project: {
                 id: '$_id',
                 status: 1,
+                clientId: 1,
                 standards: {
                     breakfast: '$breakfastStandard',
                     lunch: '$lunchStandard',
@@ -90,6 +91,7 @@ const getOrder = async ({ orderId, cateringId, onlyActiveConsumers }: { orderId:
         {
             $project: {
                 id: 1,
+                clientId: 1,
                 status: 1,
                 standards: 1,
                 diet: 1,

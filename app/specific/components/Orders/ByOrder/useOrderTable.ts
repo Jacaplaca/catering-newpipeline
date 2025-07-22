@@ -13,7 +13,7 @@ import useOrderAction from '@root/app/specific/components/Orders/ByOrder/useRowA
 import { type SettingParsedType } from '@root/types';
 import { type OrdersCustomTable, type OrdersSortName } from '@root/types/specific';
 import { type Session } from 'next-auth';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useBoolean } from 'usehooks-ts';
 
 const useOrderTable = ({
@@ -34,6 +34,7 @@ const useOrderTable = ({
     const { messageObj, resetMessage, updateMessage } = useMessage(dictionary);
     const { sort, sortDirection, sortName } = useTableSort<OrdersSortName>("deliveryDay", 'desc')
     const { searchValue, search } = useSearch({ lang, pageName });
+    const [orderIdForManager, setOrderIdForManager] = useState<string | null>(null);
 
     const filter = useOrdersFilter({ lang, pageName });
 
@@ -124,7 +125,18 @@ const useOrderTable = ({
         order.clearOrder();
     }
 
+    const openOrderModalForManager = (orderId: string) => {
+        setOrderIdForManager(orderId);
+        // order.clearOrder();
+    }
+
     return {
+        roles: {
+            isManager: session?.user.roleId === 'manager',
+            isClient: session?.user.roleId === 'client',
+            isKitchen: session?.user.roleId === 'kitchen',
+            isDietician: session?.user.roleId === 'dietician',
+        },
         clientId,
         pageName,
         lang,
@@ -141,7 +153,9 @@ const useOrderTable = ({
         order,
         orderModal: { isOpen: isAddOrderOpen, open: openOrderModal, close: addOrderClose },
         filter,
-        message: { messageObj, resetMessage, updateMessage }
+        message: { messageObj, resetMessage, updateMessage },
+        orderIdForManager,
+        openOrderModalForManager
     };
 }
 export default useOrderTable;

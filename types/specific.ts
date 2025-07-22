@@ -57,7 +57,7 @@ export type ClientCustomTable = {
     deactivated: boolean;
     createdAt: Date;
     updatedAt: Date;
-    deliveryRoute: DeliveryRoute;
+    deliveryRoute: DeliveryRoute & { _id: string };
 };
 
 export type ClientWithCommonAllergens = ClientCustomTable & {
@@ -196,6 +196,7 @@ export enum MealType {
 
 export type OrderForEdit = {
     id: string;
+    clientId: string;
     status: OrderStatus;
     standards: {
         breakfast: number;

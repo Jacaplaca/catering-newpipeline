@@ -118,22 +118,126 @@ const addFoodToConsumers = async (
 ) => {
   const consumers = await getConsumers(tx, { cateringId, clientId: menu.clientId, update });
 
-  // if (update) {
-  //   const clientsWithMenus = await getClientsWithMenus(tx, cateringId);
-
-  // }
-
   if (consumers.length === 0) return;
 
   if (menu.clientId) {
     const { day } = menu;
     const originalMenu = await getOriginalMenu(tx, cateringId, day);
     if (originalMenu) {
-      await removeConsumerFoods(tx, originalMenu.id, consumers);
-    }
-  }
+      // Get existing consumer foods from original menu for this client's consumers
+      const existingConsumerFoods = await tx.consumerFood.findMany({
+        where: {
+          regularMenuId: originalMenu.id,
+          consumerId: { in: consumers.map(c => c.id) },
+        },
+        include: {
+          exclusions: {
+            include: {
+              exclusion: true,
+            },
+          },
+        },
+      });
 
-  await assignConsumerFoods(tx, { menu, foods, consumers, cateringId });
+      // Remove consumer foods from original menu
+      await removeConsumerFoods(tx, originalMenu.id, consumers);
+
+      // Create map of compatible assignments to transfer
+      const transferableAssignments = new Map<string, {
+        consumerId: string;
+        foodId: string;
+        alternativeFoodId: string | null;
+        mealId: string;
+        comment: string | null;
+        exclusions: { exclusionId: string }[];
+      }>();
+
+      // Check which existing assignments can be transferred to new menu
+      for (const existingFood of existingConsumerFoods) {
+        const key = `${existingFood.consumerId}:${existingFood.mealId}`;
+        const isCompatible = foods.some(newFood =>
+          newFood.mealId === existingFood.mealId &&
+          newFood.id === existingFood.foodId
+        );
+
+        if (isCompatible) {
+          transferableAssignments.set(key, {
+            consumerId: existingFood.consumerId,
+            foodId: existingFood.foodId,
+            alternativeFoodId: existingFood.alternativeFoodId,
+            mealId: existingFood.mealId,
+            comment: existingFood.comment,
+            exclusions: existingFood.exclusions.map(e => ({ exclusionId: e.exclusionId })),
+          });
+        }
+      }
+
+      // Create consumer foods for new menu, preserving transferable assignments
+      const consumerFoodsToCreate: Prisma.ConsumerFoodCreateManyInput[] = [];
+      const consumerFoodExclusionsToCreate: { consumerFoodId: string; exclusionId: string }[] = [];
+
+      for (const food of foods) {
+        for (const consumer of consumers) {
+          const key = `${consumer.id}:${food.mealId}`;
+          const transferableData = transferableAssignments.get(key);
+
+          if (transferableData && transferableData.foodId === food.id) {
+            // Use existing assignment data
+            const consumerFood = await tx.consumerFood.create({
+              data: {
+                cateringId,
+                regularMenuId: menu.id,
+                consumerId: consumer.id,
+                foodId: transferableData.foodId,
+                alternativeFoodId: transferableData.alternativeFoodId,
+                mealId: transferableData.mealId,
+                clientId: consumer.clientId,
+                comment: transferableData.comment,
+              },
+            });
+
+            // Re-create exclusions for transferred assignment
+            for (const exclusion of transferableData.exclusions) {
+              consumerFoodExclusionsToCreate.push({
+                consumerFoodId: consumerFood.id,
+                exclusionId: exclusion.exclusionId,
+              });
+            }
+          } else {
+            // Create new assignment
+            consumerFoodsToCreate.push({
+              cateringId,
+              regularMenuId: menu.id,
+              consumerId: consumer.id,
+              foodId: food.id,
+              mealId: food.mealId,
+              clientId: consumer.clientId,
+            });
+          }
+        }
+      }
+
+      // Create remaining new consumer foods (those without transferable data)
+      if (consumerFoodsToCreate.length > 0) {
+        await tx.consumerFood.createMany({
+          data: consumerFoodsToCreate,
+        });
+      }
+
+      // Create exclusions for transferred assignments
+      if (consumerFoodExclusionsToCreate.length > 0) {
+        await tx.consumerFoodExclusion.createMany({
+          data: consumerFoodExclusionsToCreate,
+        });
+      }
+    } else {
+      // No original menu exists, create new assignments normally
+      await assignConsumerFoods(tx, { menu, foods, consumers, cateringId });
+    }
+  } else {
+    // This is a general menu (not client-specific), create assignments normally
+    await assignConsumerFoods(tx, { menu, foods, consumers, cateringId });
+  }
 };
 
 const addMealFoodsToMenu = async (
@@ -286,26 +390,44 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
         });
       }
 
-      // Remove existing consumer foods and regular menu meals
-      await tx.consumerFood.deleteMany({
-        where: { regularMenuId }
+      const existingMenuMealFoods = await tx.menuMealFood.findMany({
+        where: { regularMenuId },
+        select: { foodId: true, mealId: true },
       });
 
-      await tx.menuMealFood.deleteMany({
-        where: { regularMenuId }
-      });
+      const existingFoodsSet = new Set(existingMenuMealFoods.map(f => `${f.foodId}:${f.mealId}`));
+      const newFoodsSet = new Set(foods.map(f => `${f.id}:${f.mealId}`));
 
-      // Update the menu
+      const foodsToAdd = foods.filter(f => !existingFoodsSet.has(`${f.id}:${f.mealId}`));
+      const foodsToRemove = existingMenuMealFoods.filter(f => !newFoodsSet.has(`${f.foodId}:${f.mealId}`));
+
+      if (foodsToRemove.length > 0) {
+        const removeConditions = foodsToRemove.map(f => ({ foodId: f.foodId, mealId: f.mealId }));
+
+        await tx.consumerFood.deleteMany({
+          where: {
+            regularMenuId,
+            OR: removeConditions,
+          },
+        });
+
+        await tx.menuMealFood.deleteMany({
+          where: {
+            regularMenuId,
+            OR: removeConditions,
+          },
+        });
+      }
+
       const regularMenu = await tx.regularMenu.update({
         where: { id: regularMenuId },
         data: { day },
       });
 
-      // Add meals and foods to menu
-      await addMealFoodsToMenu(tx, regularMenuId, foods);
-
-      // Add new foods to consumers
-      await addFoodToConsumers(tx, { cateringId, menu: clientMenu, foods, update: true });
+      if (foodsToAdd.length > 0) {
+        await addMealFoodsToMenu(tx, regularMenuId, foodsToAdd);
+        await addFoodToConsumers(tx, { cateringId, menu: clientMenu, foods: foodsToAdd, update: true });
+      }
 
       return regularMenu;
     });

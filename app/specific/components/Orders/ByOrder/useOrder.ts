@@ -193,6 +193,7 @@ const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, cli
         onSuccess: async () => {
             if (orderForEdit) {
                 await updateRow(orderForEdit.id);
+                await utils.specific.order.forView.invalidate({ id: orderForEdit.id });
             } else {
                 await utils.specific.order.orderedDates.refetch();
                 await utils.specific.order.table.refetch();

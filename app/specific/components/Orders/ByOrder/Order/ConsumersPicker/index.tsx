@@ -30,10 +30,13 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
         },
         rowClick: {
             orderForEdit
+        },
+        roles: {
+            isManager,
         }
     } = useOrderTableContext();
 
-    const isLocked = checkIfLocked(mealType, isBetween, isAfterSecond);
+    const isLocked = checkIfLocked(mealType, isBetween, isAfterSecond, isManager);
 
     const updateSelected = (ids: string[]) => {
         updateDiet(mealType, ids);
@@ -84,7 +87,7 @@ const ConsumersPicker: React.FC<ConsumersPickerProps> = ({
         selectedIds: selectedConsumers,
         allowedIds: isBetween ? consumersBeforeDeadline : undefined,
         updateSelected,
-        clientId,
+        clientId: isManager ? orderForEdit?.clientId : clientId,
         meal: mealType
     });
 

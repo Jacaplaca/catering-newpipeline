@@ -88,7 +88,7 @@ const useFoodDataGrid = ({
                 },
                 {
                     component: <HighlightText
-                        className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                        className="font-medium text-gray-900 dark:text-white"
                         text={ingredients ?? ""}
                     // fragment={searchValue}
                     />,

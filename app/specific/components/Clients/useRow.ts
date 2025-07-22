@@ -24,10 +24,7 @@ const useClientRow = ({
 }) => {
     const utils = api.useUtils();
 
-    const onSubmit = (values: z.infer<typeof FormSchema>) => {
-        updateMessage('saving');
-        updateClient.mutate(values);
-    };
+
 
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
@@ -40,7 +37,7 @@ const useClientRow = ({
 
     const { data: client, isFetching: fullClientFetching } = api.specific.client.getOne.useQuery(
         { id: expandedRowId ?? '' },
-        { enabled: true }
+        { enabled: Boolean(expandedRowId) }
     );
 
     const [clientData, setClientData] = useState<typeof client | null>(null);
@@ -78,7 +75,7 @@ const useClientRow = ({
     });
 
     useEffect(() => {
-        if (clientData) {
+        if (clientData && expandedRowId) {
             const client = {
                 id: clientData?.id ?? '',
                 name: clientData?.info.name ?? '',
@@ -93,14 +90,16 @@ const useClientRow = ({
                 notes: clientData?.info.notes ?? '',
                 // tags: clientData?.tags.map((tag) => tag.tag.name) ?? [],
                 firstOrderDeadline: clientData?.info.firstOrderDeadline ?? '',
-                deliveryRoute: clientData?.deliveryRoute ?? null,
+                deliveryRoute: clientData?.deliveryRoute ? { id: clientData.deliveryRoute._id, name: clientData.deliveryRoute.name } : null,
                 secondOrderDeadline: clientData?.info.secondOrderDeadline ?? '',
                 allowWeekendOrder: clientData?.info.allowWeekendOrder ?? false,
             };
             form.reset(client);
+        } else if (!expandedRowId) {
+            form.reset(defaultValues);
         }
         resetMessage();
-    }, [clientData, form]);
+    }, [clientData, form, expandedRowId]);
 
 
     useEffect(() => {
@@ -129,6 +128,11 @@ const useClientRow = ({
             updateMessage({ content: translate(dictionary, error.message), status: 'error' });
         },
     });
+
+    const onSubmit = (values: z.infer<typeof FormSchema>) => {
+        updateMessage('saving');
+        updateClient.mutate(values);
+    };
 
     const onRowClick = (key: string | null) => {
         setExpandedRowId(state => state === key ? null : key);
@@ -159,7 +163,9 @@ const useClientRow = ({
         client,
         updateClient,
         form,
-        onSubmit: form.handleSubmit(onSubmit),
+        onSubmit: form.handleSubmit(onSubmit, (errors) => {
+            console.error('Form validation errors:', errors);
+        }),
         isFetching: fullClientFetching,
         // tags,
         chooseDeliveryRoute

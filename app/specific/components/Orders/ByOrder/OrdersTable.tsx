@@ -54,7 +54,9 @@ const OrdersTable: FunctionComponent = () => {
         order: {
             hideNewOrder
         },
-        message
+        message,
+        orderIdForManager,
+        openOrderModalForManager
     } = useOrderTableContext();
 
     const { value: isTableShown, setTrue: showTable, setFalse: hideTable } = useBoolean(true);
@@ -93,6 +95,10 @@ const OrdersTable: FunctionComponent = () => {
             {isClient && <OrderEditModal
                 isOpen={!!expandedRowId}
                 closeModal={() => onRowClick(null)}
+            />}
+            {isManager && <OrderEditModal
+                isOpen={!!orderIdForManager}
+                closeModal={() => openOrderModalForManager("")}
             />}
             <TableWrapper>
                 <TableHeader

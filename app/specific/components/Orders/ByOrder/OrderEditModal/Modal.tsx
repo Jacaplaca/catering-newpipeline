@@ -21,7 +21,10 @@ const OrderEditModal: FC<OrderEditModalProps> = ({ isOpen, closeModal }) => {
                 close: closeConsumersPicker
             },
             day,
-            deadlines,
+            deadlines
+        },
+        roles: {
+            isManager,
         }
     } = useOrderTableContext();
 
@@ -41,7 +44,7 @@ const OrderEditModal: FC<OrderEditModalProps> = ({ isOpen, closeModal }) => {
         disallowBackdropClose
         isError={true}
         footer={
-            deadlines.canChange && !consumersPickerOpen ? <OrderEditorButtons /> : null
+            (deadlines.canChange || isManager) && !consumersPickerOpen ? <OrderEditorButtons /> : null
         }
         footerColor={`border-t dark:border-darkmode-modal-separator border-modal-separator
         bg-neutral-200 dark:bg-neutral-700`}

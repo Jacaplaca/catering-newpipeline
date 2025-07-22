@@ -20,8 +20,8 @@ const makeHref = ({
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     let href = isLangDefault || isOneLang ? "" : `/${lang}`;
     const addDomain = (url: string) => {
-        const domain = getBaseUrl();
-        return withDomain ? `${domain}${url}` : url
+        // const domain = getBaseUrl();
+        return withDomain ? `${env.NEXT_PUBLIC_DOMAIN}${url}` : url
     };
     const addParams = (url: string) => {
         if (!params) {

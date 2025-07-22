@@ -25,7 +25,7 @@ const LinkCopy: FunctionComponent<{
                     ? <i className="fa-regular fa-check-circle copied-to-clipboard"></i>
                     : <button
                         onClick={() => { copyToClipboard(link) }}
-                        className="fa-regular fa-copy copy-button"></button>
+                        className="fa-regular fa-copy copy-button text-neutral-800 dark:text-neutral-100"></button>
             )}
         />
     )

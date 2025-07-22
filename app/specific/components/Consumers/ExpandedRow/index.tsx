@@ -20,12 +20,12 @@ const ConsumerExpandedRow = () => {
             <form onSubmit={onSubmit} className='relative w-full ' >
                 <ConsumerInputs />
                 <Buttons
+                    align="left"
                     cancelLabel={expandedRowId ? translate(dictionary, 'shared:cancel') : undefined}
                     onCancel={() => onRowClick(null)}
                     cancelDisabled={update.isPending}
                     submitLabel={translate(dictionary, 'shared:save')}
                     onSubmit={onSubmit}
-                    // submitDisabled={update.isPending || !form.formState.isValid}
                     submitDisabled={update.isPending || !form.formState.isDirty}
                     submitLoading={update.isPending}
                     onReset={form.formState.isDirty ? () => form.reset() : undefined}

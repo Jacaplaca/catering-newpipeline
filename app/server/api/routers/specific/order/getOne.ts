@@ -198,7 +198,7 @@ const forView = createCateringProcedure([RoleType.manager, RoleType.kitchen])
         return rawOrder;
     });
 
-const forEdit = createCateringProcedure([RoleType.client])
+const forEdit = createCateringProcedure([RoleType.client, RoleType.manager])
     .input(getOrderValid)
     .query(async ({ input, ctx }) => {
         const { session: { catering } } = ctx;

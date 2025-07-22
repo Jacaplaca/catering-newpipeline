@@ -22,6 +22,7 @@ export const orderValidator = z.object({
         day: z.number().min(0).max(31),
     }),
     notes: z.string().optional(),
+    id: z.string().optional(),
 });
 
 export const orderForEditValid = orderValidator.extend({

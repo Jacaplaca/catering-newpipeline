@@ -12,6 +12,7 @@ import { type FunctionComponent } from 'react';
 import { type ClientFileType, type ClientFile } from '@prisma/client';
 import Link from 'next/link';
 import translate from '@root/app/lib/lang/translate';
+import makeHref from '@root/app/lib/url/makeHref';
 
 registerLocale('pl', pl);
 
@@ -22,9 +23,10 @@ const transMap: Record<ClientFileType, string> = {
 };
 
 const DocumentsComponent: FunctionComponent<{
+    lang: LocaleApp
     clientFiles: ClientFile[]
     dictionary: Record<string, string>
-}> = ({ clientFiles, dictionary }) => {
+}> = ({ clientFiles, dictionary, lang }) => {
     const daysOfWeeks = getDaysOfWeeks('wednesday');
     return (
         <div>
@@ -52,7 +54,7 @@ const DocumentsComponent: FunctionComponent<{
                                                 return (
                                                     <Link
                                                         key={id}
-                                                        href={`file/${s3Key}`} target='_blank'
+                                                        href={makeHref({ lang, page: 'file', slugs: [s3Key] })} target='_blank'
                                                         className='flex gap-2 items-center hover:underline group'>
                                                         <div className='text-base font-medium'>{translate(dictionary, transMap[fileType])}</div>
                                                         <i className="text-xl fa-solid fa-file-circle-check text-base text-neutral-500 group-hover:text-secondary-accent dark:text-secondary-accent-dark" />

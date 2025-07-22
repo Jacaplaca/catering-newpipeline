@@ -3,6 +3,7 @@ import { type FunctionComponent } from 'react';
 
 const Buttons: FunctionComponent<{
     className?: string
+    align?: 'left' | 'center' | 'right' // Nowy prop
     cancelLabel?: string
     onCancel?: () => void
     cancelDisabled?: boolean
@@ -13,6 +14,7 @@ const Buttons: FunctionComponent<{
     onReset?: () => void
 }> = ({
     className,
+    align = 'right', // Domyślnie do prawej
     cancelLabel,
     onCancel,
     cancelDisabled,
@@ -22,8 +24,14 @@ const Buttons: FunctionComponent<{
     submitLoading,
     onReset
 }) => {
+        const alignClass = {
+            left: 'justify-start',
+            center: 'justify-center',
+            right: 'justify-end'
+        }[align];
+
         return (
-            <div className={`flex gap-4 justify-end items-center ${className ?? ""}`}>
+            <div className={`flex gap-4 ${alignClass} items-center ${className ?? ""}`}>
                 {onReset
                     ? <i
                         onClick={onReset}

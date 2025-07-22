@@ -11,6 +11,7 @@ const useOrderRow = ({
     const isClient = role === 'client';
     const isManager = role === 'manager';
     const isKitchen = role === 'kitchen';
+    const isManagerOrClient = isManager || isClient;
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
     const isProperId = (id?: string | null) => {
@@ -20,7 +21,7 @@ const useOrderRow = ({
     const { data: orderForEdit, isFetching: orderForEditFetching }
         = api.specific.order.forEdit.useQuery(
             { id: expandedRowId ?? '' },
-            { enabled: isProperId(expandedRowId) && isClient }
+            { enabled: isProperId(expandedRowId) && isManagerOrClient }
         );
 
     const { data: orderForView, isFetching: orderForViewFetching }

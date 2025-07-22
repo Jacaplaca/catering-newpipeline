@@ -14,6 +14,7 @@ const save = async ({ ctx, input, status }: {
     const { db, session } = ctx;
 
     const { catering, user } = session;
+    const isManager = user.roleId === RoleType.manager;
     const { day, diet, standards, clientId, notes } = input;
 
     const settings = await getClientSettings({
@@ -33,7 +34,7 @@ const save = async ({ ctx, input, status }: {
         throw new Error("orders:non_working_day");
     }
 
-    if (isAfterSecond) {
+    if (isAfterSecond && !isManager) {
         throw new Error("orders:deadline_is_over");
     }
 
@@ -108,7 +109,7 @@ const save = async ({ ctx, input, status }: {
             db.orderConsumerDinner.deleteMany({ where: { orderId: existingOrder.id } }),
         ]
 
-        if (isBeforeFirst) {
+        if (isBeforeFirst || isManager) {
             transaction.push(db.orderConsumerBreakfast.deleteMany({ where: { orderId: existingOrder.id } }));
             transaction.push(db.orderConsumerDinnerBeforeDeadline.deleteMany({ where: { orderId: existingOrder.id } }));
             transaction.push(db.orderConsumerLunchBeforeDeadline.deleteMany({ where: { orderId: existingOrder.id } }));
@@ -118,7 +119,7 @@ const save = async ({ ctx, input, status }: {
 
         let data = {}
 
-        if (isBeforeFirst) {
+        if (isBeforeFirst || isManager) {
             data = { ...orderUpdateData, ...beforeFirstDeadlineUpdateData }
         } else if (isBetween) {
             const filterDiets = (
@@ -167,7 +168,7 @@ const save = async ({ ctx, input, status }: {
     }
 }
 
-export const place = createCateringProcedure([RoleType.client])
+export const place = createCateringProcedure([RoleType.client, RoleType.manager])
     .input(orderValidator)
     .mutation(async ({ ctx, input }) => {
         // await new Promise(resolve => setTimeout(resolve, 1000));

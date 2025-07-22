@@ -24,6 +24,9 @@ const Order: FC = () => {
             notes,
             updateNote
         },
+        roles: {
+            isClient,
+        }
     } = useOrderTableContext();
 
     useEffect(() => {
@@ -31,7 +34,7 @@ const Order: FC = () => {
     }, []);
 
     return <div className="flex flex-col gap-2 sm:gap-4 py-2 sm:py-4">
-        {orderForEdit ? <Deadline /> : <OrderDatePicker />}
+        {isClient ? <div>{orderForEdit ? <Deadline /> : <OrderDatePicker />}</div> : null}
         <OrderMatrix />
         <button
             type="button"

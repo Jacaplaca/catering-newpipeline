@@ -18,6 +18,7 @@ const ClientExpandedRow = () => {
             <Form {...form} >
                 <form onSubmit={onSubmit} className='relative max-w-[1200px] ' >
                     <ClientInputs />
+
                     <Buttons
                         cancelLabel={translate(dictionary, 'shared:cancel')}
                         onCancel={() => onRowClick(null)}
