@@ -1,3 +1,12 @@
+## [2.2.1](https://github.com/Jacaplaca/catering/compare/v2.2.0...v2.2.1) (2025-07-30)
+
+
+### Bug Fixes
+
+* save on ready. More info about consumer in diet creator ([e180d3d](https://github.com/Jacaplaca/catering/commit/e180d3d1a29faf2acd7547ea6eb2e1b9ed7adbf0))
+
+
+
 # [2.2.0](https://github.com/Jacaplaca/catering/compare/v2.1.0...v2.2.0) (2025-07-22)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * mont report for manager pdf fix some ui ([d106eb8](https://github.com/Jacaplaca/catering/commit/d106eb85f3eba7a2d0ceb39703ca3ff47dc2e6d2))
-
-
-
-## [1.5.1](https://github.com/Jacaplaca/catering/compare/v1.5.0...v1.5.1) (2025-03-31)
-
-
-### Bug Fixes
-
-* sort order notes ([42a8a0c](https://github.com/Jacaplaca/catering/commit/42a8a0cdedcc8f2e61ab5a9c3b957724669ceb66))
 
 
 
