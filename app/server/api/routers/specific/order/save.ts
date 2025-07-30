@@ -1,4 +1,4 @@
-import { OrderStatus, RoleType } from '@prisma/client';
+import { Order, OrderStatus, RoleType } from '@prisma/client';
 import { orderValidator } from '@root/app/validators/specific/order';
 import { type z } from 'zod';
 import { type Context, createCateringProcedure } from '@root/app/server/api/specific/trpc';
@@ -67,7 +67,7 @@ const save = async ({ ctx, input, status }: {
     const dinnerDiets = diet.dinner.map(consumerId => ({ consumerId }))
 
     const orderUpdateData = {
-        status,
+        status: (isManager && existingOrder) ? existingOrder.status : status,
         breakfastStandard: standards.breakfast,
         lunchStandard: standards.lunch,
         dinnerStandard: standards.dinner,
@@ -83,9 +83,9 @@ const save = async ({ ctx, input, status }: {
             create: dinnerDiets
         },
         dinnerDietCount: dinnerDiets.length,
-        sentToCateringAt: status === OrderStatus.in_progress ? getCurrentTime() : undefined,
+        sentToCateringAt: (isManager && existingOrder) ? existingOrder.sentToCateringAt : status === OrderStatus.in_progress ? getCurrentTime() : undefined,
         notes,
-    }
+    };
 
     const beforeFirstDeadlineUpdateData = {
         lunchStandardBeforeDeadline: standards.lunch,

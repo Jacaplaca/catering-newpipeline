@@ -88,7 +88,7 @@ const DatePickerWithBlocked: FC<{
 
         return false;
     };
-    console.log({ markedDays });
+    // console.log({ markedDays });
     return (
         <DatePicker
             locale={lang}

@@ -4,9 +4,9 @@ import { useFoodMenuContext } from './context';
 import useConfiguredDays from '@root/app/specific/components/FoodMenu/useConfiguredDays';
 const FoodMenuDate: FC = () => {
     const { day: { day, updateDay, cateringSettings }, lang } = useFoodMenuContext();
-    const { onMonthChange, pickedMonth, configuredDays } = useConfiguredDays();
+    const { onMonthChange, configuredDays } = useConfiguredDays();
     const dateFormat = "EEEE, yyyy-MM-dd";
-    console.log({ pickedMonth });
+    // console.log({ pickedMonth });
     return (
         <DatePickerWithBlocked
             lang={lang}

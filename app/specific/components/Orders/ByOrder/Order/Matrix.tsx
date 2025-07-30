@@ -74,7 +74,7 @@ const MealCell: FC<{
         }
     } = useOrderTableContext();
 
-    console.log(standards);
+    // console.log(standards);
 
     const isLocked = checkIfLocked(meal, isBetween, isAfterSecond, isManager);
 

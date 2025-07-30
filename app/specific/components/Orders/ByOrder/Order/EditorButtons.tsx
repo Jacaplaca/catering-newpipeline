@@ -17,8 +17,9 @@ const OrderEditorButtons: FC = () => {
             reset,
             onSubmitPlace,
             placing,
-            deadlines: { isBetween }
-        }
+            deadlines: { isBetween },
+        },
+        roles: { isManager }
     } = useOrderTableContext();
 
     //  We agree that we no longer need to save draft
@@ -49,7 +50,7 @@ const OrderEditorButtons: FC = () => {
                 {translate(dictionary, 'orders:draft_save_button')}
             </MyButton>
         </Tooltip> : <div />}
-        {(canEditInProgress || canSaveOrder) ? <div className='w-full sm:w-auto'>
+        {(canEditInProgress || canSaveOrder || isManager) ? <div className='w-full sm:w-auto'>
             <Buttons
                 submitLabel={translate(dictionary, canSaveOrder ? 'orders:send_button' : 'orders:edit_order_button')}
                 onSubmit={onSubmitPlace}

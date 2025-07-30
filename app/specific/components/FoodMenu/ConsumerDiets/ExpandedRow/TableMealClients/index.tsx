@@ -26,7 +26,7 @@ const TableMealHeader = ({ dishesByMeal, dictionary, minColumnWidth }: {
     minColumnWidth: number;
 }) => (
     <div className="flex bg-neutral-100 dark:bg-neutral-700 border-b border-neutral-200 dark:border-neutral-600">
-        <div className="w-[150px] flex-shrink-0 p-2 border-r border-neutral-200 dark:border-neutral-600">
+        <div className="w-[250px] flex-shrink-0 p-2 border-r border-neutral-200 dark:border-neutral-600">
             <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                 {translate(dictionary, 'menu-creator:consumer')}
             </h3>
@@ -60,7 +60,7 @@ const TableDishHeader = ({ dishesByMeal, dictionary, minColumnWidth }: {
     minColumnWidth: number;
 }) => (
     <div className="flex bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-600">
-        <div className="w-[150px] flex-shrink-0 p-2 border-r border-neutral-200 dark:border-neutral-600">
+        <div className="w-[250px] flex-shrink-0 p-2 border-r border-neutral-200 dark:border-neutral-600">
             {/* Empty cell for consumer column */}
         </div>
         <div className="flex flex-1">
@@ -89,7 +89,7 @@ const TableDishHeader = ({ dishesByMeal, dictionary, minColumnWidth }: {
 
 // Consumer row component
 const ConsumerRow = ({ consumer, dishesByMeal, assignments, totalDishColumns, minColumnWidth }: {
-    consumer: { id: string; name: string; allergens: { id: string; name: string }[] };
+    consumer: { id: string; name: string; allergens: { id: string; name: string }[], notes?: string | undefined, code: string, diet: { code: string | null, description: string | null } };
     dishesByMeal: MealWithDishes[];
     assignments: ClientFoodAssignment[];
     totalDishColumns: number;
@@ -97,11 +97,26 @@ const ConsumerRow = ({ consumer, dishesByMeal, assignments, totalDishColumns, mi
 }) => (
     <div className="flex border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
         {/* Consumer name */}
-        <div className="w-[150px] flex-shrink-0 p-3 border-r border-neutral-200 dark:border-neutral-600">
+        <div className="w-[250px] flex-shrink-0 p-3 border-r border-neutral-200 dark:border-neutral-600">
             <div className="flex flex-col gap-1">
-                <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {consumer.name}
-                </span>
+                <div className="flex items-baseline gap-2">
+                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                        {consumer.name}
+                    </span>
+                    <span className="text-xs text-neutral-700 dark:text-neutral-300">
+                        ({consumer.code})
+                    </span>
+                </div>
+                {consumer.diet.description && (
+                    <div className="text-xs text-neutral-600 dark:text-neutral-300">
+                        <span className="font-semibold">{consumer.diet.code}:</span> {consumer.diet.description}
+                    </div>
+                )}
+                {consumer.notes && (
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 italic mt-1">
+                        {consumer.notes}
+                    </p>
+                )}
                 <AllergenList allergens={consumer.allergens} variant="consumer" />
             </div>
         </div>
