@@ -7,7 +7,7 @@ import { monthAllClientsValid } from '@root/app/validators/specific/order';
 import type { OrderGroupedByClientAndMonthCustomTable } from '@root/types/specific';
 
 
-const count = createCateringProcedure([RoleType.manager])
+const count = createCateringProcedure([RoleType.manager, RoleType.dietician])
     .input(monthAllClientsValid.pick({ deliveryMonth: true }))
     .query(async ({ ctx, input }) => {
         const { session: { catering } } = ctx;
@@ -42,7 +42,7 @@ const count = createCateringProcedure([RoleType.manager])
         return countResult[0]?.count ?? 0
     });
 
-const table = createCateringProcedure([RoleType.manager])
+const table = createCateringProcedure([RoleType.manager, RoleType.dietician])
     .input(monthAllClientsValid)
     .query(async ({ ctx, input }) => {
         const { session: { catering } } = ctx;

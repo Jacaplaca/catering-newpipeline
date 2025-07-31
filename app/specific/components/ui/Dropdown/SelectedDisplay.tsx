@@ -60,7 +60,7 @@ const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
                     >
                         <span
                             className={`${isCrossed
-                                ? 'line-through text-neutral-400 dark:text-neutral-500'
+                                ? 'line-through text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50'
                                 : 'text-neutral-900 dark:text-neutral-50'
                                 }`}
                         >

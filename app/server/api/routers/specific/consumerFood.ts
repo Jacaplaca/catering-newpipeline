@@ -11,7 +11,7 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(consumerFoodValidator)
   .mutation(({ input }) => {
     // const { session: { catering } } = ctx;
-    const { id, food, exclusions, comment, alternativeFood } = input;
+    const { id, food, exclusions, comment, alternativeFood, ignoredAllergens } = input;
 
     if (!food.id) {
       throw new TRPCError({
@@ -30,6 +30,7 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
           ? { alternativeFood: { connect: { id: alternativeFood.id } } }
           : { alternativeFood: { disconnect: true } }),
         comment,
+        ignoredAllergens,
         exclusions: {
           deleteMany: {},
           create: exclusions.map(e => ({
@@ -146,42 +147,15 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
         id,
         cateringId: catering.id,
       },
-      include: {
-        regularMenu: true,
+      select: {
+        id: true,
+        foodId: true,
+        regularMenuId: true,
         consumer: {
-          include: {
+          select: {
             allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-          },
-        },
-        food: {
-          include: {
-            allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-          },
-        },
-        alternativeFood: {
-          include: {
-            allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-          },
-        },
-        exclusions: {
-          include: {
-            exclusion: {
-              include: {
-                allergens: {
-                  include: { allergen: true },
-                },
+              select: {
+                allergenId: true,
               },
             },
           },
@@ -189,14 +163,14 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
       },
     });
 
-    const message = 'menu-creator:no-similar-assignment'
-    const error = new TRPCError({
-      code: 'BAD_REQUEST',
-      message,
-    })
+    // const message = 'menu-creator:no-similar-assignment'
+    // const error = new TRPCError({
+    //   code: 'BAD_REQUEST',
+    //   message,
+    // })
 
     if (!currentAssignment) {
-      throw error;
+      return;
     }
 
     // Get allergen IDs from current consumer
@@ -226,6 +200,7 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
         foodId: currentAssignment.foodId,            // Same food
         cateringId: catering.id,
         consumer: consumerFilter,
+        regularMenuId: currentAssignment.regularMenuId,
       },
       include: {
         consumer: {
@@ -269,7 +244,7 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
 
     // Filter assignments to find safe ones (without common allergens)
     const safeAlternativeAssignments = alternativeAssignments.filter(assignment => {
-      const { consumer, food, alternativeFood, exclusions, comment } = assignment;
+      const { consumer, food, alternativeFood, exclusions, comment, ignoredAllergens } = assignment;
 
       // CRITICAL: Additional validation to ensure EXACT match of allergens
       const alternativeConsumerAllergenIds = consumer.allergens.map(ca => ca.allergenId);
@@ -302,7 +277,7 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
         e.exclusion.allergens.map(ea => ea.allergen)
       );
 
-      const commonAllergens = getCommonAllergens({ consumerAllergens, foodAllergens, exclusionAllergens, comment });
+      const commonAllergens = getCommonAllergens({ consumerAllergens, foodAllergens, exclusionAllergens, comment, ignoredAllergens });
 
       // Return true only if NO common allergens (safe assignment)
       return commonAllergens.length === 0;
@@ -312,10 +287,10 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
     const alternativeAssignment = safeAlternativeAssignments[0];
 
     if (!alternativeAssignment) {
-      throw error;
+      return;
     }
 
-    const { consumer, foodId, food, alternativeFoodId, alternativeFood, exclusions, comment } = alternativeAssignment;
+    const { foodId, alternativeFoodId, exclusions, comment } = alternativeAssignment;
 
     return db.consumerFood.update({
       where: { id },
@@ -388,13 +363,21 @@ const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.d
         cateringId: catering.id,
       },
       include: {
-        consumer: {
+        // consumer: {
+        //   include: {
+        //     allergens: true,
+        //   },
+        // },
+        food: {
           include: {
             allergens: true,
           },
         },
-        food: true,
-        alternativeFood: true,
+        alternativeFood: {
+          include: {
+            allergens: true,
+          },
+        },
       },
     });
 
@@ -402,17 +385,16 @@ const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.d
       return [];
     }
 
-    // Get allergen IDs from original consumer
-    const originalConsumerAllergenIds = originalConsumerFood.consumer.allergens.map(ca => ca.allergenId);
+    // Get allergen IDs from original food and alternative food
+    const originalFoodAllergenIds = originalConsumerFood.food.allergens.map(fa => fa.allergenId);
+    const originalAlternativeFoodAllergenIds = originalConsumerFood.alternativeFood?.allergens.map(fa => fa.allergenId) ?? [];
 
-    if (originalConsumerAllergenIds.length === 0) {
+    // Combine all allergen IDs from both foods
+    const allOriginalFoodAllergenIds = [...originalFoodAllergenIds, ...originalAlternativeFoodAllergenIds];
+    const uniqueOriginalFoodAllergenIds = [...new Set(allOriginalFoodAllergenIds)];
+
+    if (uniqueOriginalFoodAllergenIds.length === 0) {
       return [];
-    }
-
-    // Get food IDs to match (original food and alternative food)
-    const foodIdsToMatch = [originalConsumerFood.foodId];
-    if (originalConsumerFood.alternativeFoodId) {
-      foodIdsToMatch.push(originalConsumerFood.alternativeFoodId);
     }
 
     const similarConsumerFoods = await db.consumerFood.findMany({
@@ -427,36 +409,38 @@ const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.d
             not: originalConsumerFood.comment ?? '',
           },
         } : {}),
-        // Consumer must have at least one common allergen
-        consumer: {
-          allergens: {
-            some: {
-              allergenId: {
-                in: originalConsumerAllergenIds,
+        // Food or alternativeFood must have at least one common allergen
+        OR: [
+          // Food has at least one common allergen
+          {
+            food: {
+              allergens: {
+                some: {
+                  allergenId: {
+                    in: uniqueOriginalFoodAllergenIds,
+                  },
+                },
               },
             },
           },
-        },
-        // Food or alternativeFood must match (cross-check)
-        OR: [
-          // Original food matches food
-          { foodId: { in: foodIdsToMatch } },
-          // Original food matches alternativeFood
-          { alternativeFoodId: { in: foodIdsToMatch } },
+          // AlternativeFood has at least one common allergen
+          {
+            alternativeFood: {
+              allergens: {
+                some: {
+                  allergenId: {
+                    in: uniqueOriginalFoodAllergenIds,
+                  },
+                },
+              },
+            },
+          },
         ],
       },
-      include: {
-        consumer: {
-          include: {
-            allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-          },
-        },
-        food: true,
-        alternativeFood: true,
+      select: {
+        id: true,
+        comment: true,
+        updatedAt: true,
       },
       orderBy: {
         updatedAt: 'desc',

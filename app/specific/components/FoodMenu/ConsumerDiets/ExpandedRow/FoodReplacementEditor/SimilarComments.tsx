@@ -14,24 +14,24 @@ const SimilarComments = ({ comments, onCommentPick, dictionary, isLoading }: Sim
                 {translate(dictionary, 'menu-creator:similar_comments')}
             </div>
 
-            {/* Fixed height container with horizontal scroll */}
-            <div className="h-16 rounded-lg py-2 bg-neutral-100/50 dark:bg-neutral-800/50">
+            {/* Container with flexible height and vertical scroll when needed */}
+            <div className="min-h-[64px] max-h-[100px] rounded-lg py-2 bg-neutral-100/50 dark:bg-neutral-800/50">
                 {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex items-center justify-center min-h-[48px]">
                         <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">
                             <i className="fa-solid fa-spinner animate-spin" />
                             <span>{translate(dictionary, 'shared:loading')}</span>
                         </div>
                     </div>
                 ) : !comments.length ? (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex items-center justify-center min-h-[48px]">
                         <span className="text-sm text-neutral-600 dark:text-neutral-300">
                             {translate(dictionary, 'menu-creator:no_suggestions')}
                         </span>
                     </div>
                 ) : (
-                    <div className="flex gap-2 h-full overflow-x-auto overflow-y-hidden">
-                        <div className="flex gap-2 items-center min-w-fit">
+                    <div className="overflow-y-auto overflow-x-hidden h-full">
+                        <div className="flex flex-wrap gap-2 items-start">
                             {comments.filter(item => item !== null).map((item) => (
                                 <button
                                     key={item}

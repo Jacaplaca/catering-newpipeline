@@ -27,7 +27,7 @@ const Dashboard: FunctionComponent<{ children: React.ReactNode, menu: DashboardM
 
     const selectItem = async (key: string) => {
         setSelectedItem(key);
-        const newSearchParams = new URLSearchParams({ ...searchParams, key });
+        const newSearchParams = new URLSearchParams({ key });
         let forceSettingsHere = !hasFinishedSettings
         if (forceSettingsHere) {
             const { data } = await checkFinishedSettingsRefetch();

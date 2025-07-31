@@ -29,6 +29,7 @@ export const consumerFoodValidator = z.object({
         })),
     })),
     comment: z.string(),
+    ignoredAllergens: z.array(z.string()).optional(),
 });
 
 export const consumerFoodGetOneValidator = z.object({

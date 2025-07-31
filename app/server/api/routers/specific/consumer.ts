@@ -262,6 +262,7 @@ const deleteOne = createCateringProcedure([RoleType.dietician, RoleType.manager]
 
         // Function that fetches order ids with 'draft' status which include consumers from the given list.
         async function getDraftOrdersWithConsumers(consumerIds: string[], cateringId: string): Promise<string[]> {
+            console.log(consumerIds, cateringId);
             const orders = await db.order.findMany({
                 where: {
                     cateringId,
@@ -276,6 +277,7 @@ const deleteOne = createCateringProcedure([RoleType.dietician, RoleType.manager]
                 },
                 select: { id: true }
             });
+            console.log(orders);
             return orders.map(order => order.id);
         }
 
@@ -284,7 +286,7 @@ const deleteOne = createCateringProcedure([RoleType.dietician, RoleType.manager]
         const forDelete = Object.keys(deactivateMap).filter(id => !deactivateMap[id]);
 
         // Retrieve IDs of draft orders that include the consumers to be deactivated.
-        const draftOrderIds = await getDraftOrdersWithConsumers(forDeactivate, cateringId);
+        const draftOrderIds = forDeactivate.length > 0 ? await getDraftOrdersWithConsumers(forDeactivate, cateringId) : [];
 
         // Remove the consumers from the draft orders (delete join table records)
         await Promise.all([

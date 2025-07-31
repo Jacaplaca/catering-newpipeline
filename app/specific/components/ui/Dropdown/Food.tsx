@@ -125,6 +125,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
                     onRemove={handleRemoveItem}
                     onMouseEnter={handleFoodMouseEnter}
                     iconClassName='fa-solid fa-salad'
+                    fullWidth={limitItems === 1}
                 />
             )}
             {allergens && allergens.length > 0 && (

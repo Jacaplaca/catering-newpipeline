@@ -30,7 +30,7 @@ const MainModal: React.FC<Props> = ({ children, header, closeModal, footer, foot
       onClose={closeModal ?? (() => { return; })}
       disallowBackdropClose={disallowBackdropClose}
     >
-      <div className={`h-fit rounded-lg bg-modal-background dark:bg-darkmode-modal-background
+      <div className={`w-full max-w-4xl my-auto rounded-lg bg-modal-background dark:bg-darkmode-modal-background
       text-text dark:text-darkmode-text shadow-modal dark:shadow-darkmode-modal ${maxWidth ? maxWidth : ""}
       mx-2 sm:mx-0 sm:min-w-[400px] md:min-w-[500px] lg:min-w-[600px]`}
       // style={{ width }}
@@ -62,8 +62,8 @@ const MainModal: React.FC<Props> = ({ children, header, closeModal, footer, foot
             ? <i className="fas fa-exclamation-triangle mr-2 text-red-500" />
             : <i className="fas fa-check-circle mr-2 text-green-500" />}
           {message}</div>}
-        <div className={`pt-1 sm:pt-3  ${!header && "rounded-t-lg"} ${!footer && "rounded-b-lg py-1 sm:py-3"}`} >
-          <div className={`px-3 pb-3 max-h-[calc(100vh-5rem)] ${allowOverflow ? 'overflow-y-visible' : 'overflow-y-auto'}`}>{children}</div>
+        <div className={`pt-1 sm:pt-3 ${!header && "rounded-t-lg"} ${!footer && "rounded-b-lg py-1 sm:py-3"}`} >
+          <div className={`px-3 pb-3 ${allowOverflow ? '' : 'max-h-[85vh] overflow-y-auto'}`}>{children}</div>
         </div>
 
         {footer && <div className={`${footerColoring} w-full rounded-b-lg p-1 sm:p-3`}>

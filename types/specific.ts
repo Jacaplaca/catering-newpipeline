@@ -286,5 +286,6 @@ export type ClientFoodAssignment =
                 allergens: Array<ExclusionAllergen & { allergen: Allergen }>;
             };
         }>;
+        ignoredAllergens: string[];
     };
 // ... existing code ...

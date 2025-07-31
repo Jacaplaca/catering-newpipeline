@@ -12,7 +12,7 @@ interface ConsumerDishCellProps {
 }
 
 const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
-    const { consumer, food: originalFood, exclusions, mealId, comment, alternativeFood } = assignment;
+    const { consumer, food: originalFood, exclusions, mealId, comment, alternativeFood, ignoredAllergens } = assignment;
     const food = alternativeFood ?? originalFood;
     const [isConsumerDietEditorOpen, setConsumerDietEditorOpen] = useState(false);
     const { getFoodsByMealId } = useFoodMenuContext();
@@ -28,7 +28,8 @@ const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
         consumerAllergens: consumer.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
         foodAllergens: food.allergens.map(a => ({ id: a.allergen.id, name: a.allergen.name })),
         exclusionAllergens,
-        comment
+        comment,
+        ignoredAllergens
     });
 
     const hasAllergenWarning = commonAllergens.length > 0;

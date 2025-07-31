@@ -66,7 +66,7 @@ const useFoodDataGrid = ({
                 ...(showCheckboxes ? [checkboxes] : []),
                 {
                     component: <HighlightText
-                        className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                        className="whitespace-normal font-medium text-gray-900 dark:text-white"
                         text={name ?? ""}
                     // fragment={searchValue}
                     />,

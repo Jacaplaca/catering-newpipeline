@@ -6,9 +6,12 @@ const useAutoClientFood = () => {
     const utils = api.useUtils();
     const { dictionary, rowClick } = useConsumerDietsTableContext();
     const { mutate, isPending, isSuccess, isError } = api.specific.consumerFood.autoReplace.useMutation({
-        onSuccess: () => {
-            void utils.specific.consumerFood.getByClientId.invalidate();
-            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
+        onSuccess: (data) => {
+            // console.log(data);
+            if (data) {
+                void utils.specific.consumerFood.getByClientId.invalidate();
+                void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
+            }
         },
         onError: (error) => {
             rowClick.updateMessage({

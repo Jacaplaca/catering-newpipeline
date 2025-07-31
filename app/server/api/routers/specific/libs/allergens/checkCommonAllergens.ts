@@ -38,7 +38,7 @@ const checkCommonAllergens = async (cateringId: string, day: { year: number, mon
 
     // Check each consumer food until we find common allergens
     for (const { id: consumerFoodId } of consumerFoodIds) {
-        console.log('Checking consumer food:', consumerFoodId);
+        // console.log('Checking consumer food:', consumerFoodId);
         // Get consumer food with all necessary data for allergen checking
         const consumerFood = await db.consumerFood.findUnique({
             where: { id: consumerFoodId },
@@ -47,7 +47,8 @@ const checkCommonAllergens = async (cateringId: string, day: { year: number, mon
                 consumerId: true,
                 foodId: true,
                 alternativeFoodId: true,
-                comment: true
+                comment: true,
+                ignoredAllergens: true
             }
         });
 
@@ -106,7 +107,8 @@ const checkCommonAllergens = async (cateringId: string, day: { year: number, mon
                 id: ea.id,
                 name: ea.name
             })),
-            comment: consumerFood.comment
+            comment: consumerFood.comment,
+            ignoredAllergens: consumerFood.ignoredAllergens
         });
 
         // If we found common allergens, return true immediately

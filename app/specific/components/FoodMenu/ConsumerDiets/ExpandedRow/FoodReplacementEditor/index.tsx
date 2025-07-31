@@ -1,3 +1,4 @@
+import { api } from '@root/app/trpc/react';
 import MainModal from '@root/app/_components/Modals/MainModal';
 import { Form, FormField } from '@root/app/_components/ui/form';
 import Buttons from '@root/app/_components/ui/form/Buttons';
@@ -13,6 +14,7 @@ import SelectedDisplay from '@root/app/specific/components/ui/Dropdown/SelectedD
 import Info from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/FoodReplacementEditor/Info';
 import ExclusionDropdown from '@root/app/specific/components/ui/Dropdown/Exclusion';
 import { type ClientFoodAssignment } from '@root/types/specific';
+import { useDebounceValue } from 'usehooks-ts';
 import SimilarComments from './SimilarComments';
 
 interface FoodReplacementEditorProps {
@@ -36,11 +38,22 @@ interface FoodReplacementEditorProps {
 }
 
 const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: FoodReplacementEditorProps) => {
-    const { dictionary } = useConsumerDietsTableContext();
-    const { meal, consumer, food, mealId, exclusions } = assignment;
 
-    // const { form, onSubmit, commonAllergens, updateExclusions, allExcludedAllergen, editingId, isSubmitting } = useConsumerFood(assignment);
-    const { form, onSubmit, commonAllergens, updateFood, updateExclusions, allExcludedAllergen, isSubmitting, updateAlternativeFood, similarComments, isSimilarLoading } = consumerFood;
+
+
+    const { dictionary } = useConsumerDietsTableContext();
+    const { id, meal, consumer, food, mealId, exclusions } = assignment;
+
+    const { form, onSubmit, commonAllergens, updateFood, updateExclusions, allExcludedAllergen, isSubmitting, updateAlternativeFood, ignoreAllergen } = consumerFood;
+
+    const [debouncedComment] = useDebounceValue(form.watch('comment') || '', 500);
+
+    const { data: similarCommentsData, isPending: isSimilarLoading } = api.specific.consumerFood.getSimilarComments.useQuery({
+        consumerFoodId: id,
+        query: debouncedComment,
+    }, { enabled: !!id && isOpen });
+
+    const similarComments = similarCommentsData?.map(comment => comment).filter(c => c !== debouncedComment) ?? [];
 
     const commonAllergenIds = form.watch('comment') ? [] : commonAllergens.map((a) => a.id);
 
@@ -63,7 +76,6 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
             isOpen={isOpen}
             closeModal={onClose}
             header={translate(dictionary, 'menu-creator:food_replacement_editor')}
-            allowOverflow
         >
             <div className='relative flex flex-col gap-4 w-full mx-auto p-4'>
                 <Info
@@ -83,7 +95,8 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
                         label={translate(dictionary, 'menu-creator:food_allergens')}
                         selectedItems={form.watch('food')?.allergens ?? []}
                         highlightedItems={commonAllergenIds}
-                        crossedItems={allExcludedAllergen.map(a => a.id)}
+                        crossedItems={[...(allExcludedAllergen.map(a => a.id) ?? []), ...(form.watch('ignoredAllergens') ?? [])]}
+                        onRemove={e => ignoreAllergen(e)}
                     />
                     {allExcludedAllergen.length > 0 && <SelectedDisplay
                         label={translate(dictionary, 'menu-creator:exclusions_allergens')}

@@ -11,9 +11,8 @@ const FormSchema = consumerFoodValidator;
 type ConsumerFoodReplacementFormValues = z.infer<typeof FormSchema>;
 
 const useConsumerFood = (assignment: ClientFoodAssignment) => {
-    const { id, meal, consumer, food, exclusions, comment, alternativeFood } = assignment;
-    const { day: { day } } = useFoodMenuContext();
-    const { rowClick: { clientConsumers } } = useFoodMenuContext();
+    const { id, meal, consumer, food, exclusions, comment, alternativeFood, ignoredAllergens } = assignment;
+    const { day: { day }, rowClick: { expandedRowId } } = useFoodMenuContext();
     const utils = api.useUtils();
     const [isEditing, setIsEditing] = useState(!!assignment.id);
 
@@ -45,7 +44,8 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
             })),
         })),
         comment: comment ?? '',
-    }), [assignment.id, food, exclusions, comment, alternativeFood]);
+        ignoredAllergens: ignoredAllergens ?? [],
+    }), [assignment.id, food, exclusions, comment, alternativeFood, ignoredAllergens]);
 
     const form = useForm<ConsumerFoodReplacementFormValues>({
         resolver: zodResolver(FormSchema),
@@ -82,6 +82,12 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
         defaultValue: [],
     });
 
+    const watchedIgnoredAllergens = useWatch({
+        control: form.control,
+        name: 'ignoredAllergens',
+        defaultValue: [],
+    });
+
     const allExcludedAllergenIds = useMemo(() => {
         return new Set(
             (watchedExclusions ?? [])
@@ -106,9 +112,10 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
             (allergen, index, self) =>
                 consumerAllergenIds.has(allergen.id) &&              // wspólne konsument-posiłek
                 !allExcludedAllergenIds.has(allergen.id) &&            // pomniejszone o exclusions
+                !watchedIgnoredAllergens?.includes(allergen.id) &&      // pomniejszone o ignoredAllergens
                 self.findIndex(a => a.id === allergen.id) === index, // unikalność
         );
-    }, [watchedFoodAllergens, watchedAlternativeFoodAllergens, watchedAlternativeFoodId, allExcludedAllergenIds, consumer.allergens]);
+    }, [watchedFoodAllergens, watchedAlternativeFoodAllergens, watchedAlternativeFoodId, allExcludedAllergenIds, consumer.allergens, watchedIgnoredAllergens]);
     // --------------------------------------------------------------------
 
     // useEffect(() => {
@@ -209,12 +216,19 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
         void form.trigger();
     }
 
-    const { data: similarCommentsData, isPending: isSimilarLoading } = api.specific.consumerFood.getSimilarComments.useQuery({
-        consumerFoodId: id,
-        query: form.watch('comment'),
-    });
+    const ignoreAllergen = (allergenId: string) => {
+        const currentIgnored = watchedIgnoredAllergens ?? [];
+        const isAlreadyIgnored = currentIgnored.includes(allergenId);
 
-    const similarComments = similarCommentsData?.map(comment => comment).filter(c => c !== form.watch('comment')) ?? [];
+        const updatedIgnored = isAlreadyIgnored
+            ? currentIgnored.filter(id => id !== allergenId)
+            : [...currentIgnored, allergenId];
+
+        form.setValue('ignoredAllergens', updatedIgnored, { shouldValidate: true, shouldDirty: true });
+        void form.trigger();
+    }
+
+
 
     return {
         form,
@@ -226,8 +240,9 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
         updateExclusions,
         allExcludedAllergen,
         updateAlternativeFood,
-        similarComments,
-        isSimilarLoading,
+        ignoreAllergen,
+        // similarComments,
+        // isSimilarLoading,
         // existingReplacement,
         // isLoading,
         // refetch,

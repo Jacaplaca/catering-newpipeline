@@ -8,6 +8,7 @@ interface SelectedFoodsProps {
     label?: string;
     iconClassName?: string;
     highlightedItems?: string[];
+    fullWidth?: boolean;
 }
 
 const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
@@ -17,6 +18,7 @@ const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
     label = '',
     iconClassName = '',
     highlightedItems = [],
+    fullWidth = false,
 }) => {
     if (!selectedItems || selectedItems.length === 0) {
         return null;
@@ -47,7 +49,7 @@ const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
                         key={item.id}
                         className={`cursor-pointer hover:bg-neutral-200/80 
                                 dark:hover:bg-neutral-700
-                                transition-colors duration-200 group rounded-lg max-w-[300px]
+                                transition-colors duration-200 group rounded-lg ${fullWidth ? 'max-w-full' : 'max-w-[300px]'}
                                 p-3 flex flex-col justify-between
                                 ${backgroundClass}`}
                         // border border-neutral-200 dark:border-neutral-600
