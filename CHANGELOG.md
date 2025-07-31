@@ -1,3 +1,12 @@
+# [2.3.0](https://github.com/Jacaplaca/catering/compare/v2.2.1...v2.3.0) (2025-07-31)
+
+
+### Features
+
+* add ignoredAllergens field to consumer food management and update related components ([f94eb22](https://github.com/Jacaplaca/catering/commit/f94eb224896aab9838f5273c7912a9294a11bfec))
+
+
+
 ## [2.2.1](https://github.com/Jacaplaca/catering/compare/v2.2.0...v2.2.1) (2025-07-30)
 
 
@@ -36,15 +45,6 @@
 ### BREAKING CHANGES
 
 * diets creator
-
-
-
-# [1.6.0](https://github.com/Jacaplaca/catering/compare/v1.5.1...v1.6.0) (2025-04-05)
-
-
-### Features
-
-* mont report for manager pdf fix some ui ([d106eb8](https://github.com/Jacaplaca/catering/commit/d106eb85f3eba7a2d0ceb39703ca3ff47dc2e6d2))
 
 
 
