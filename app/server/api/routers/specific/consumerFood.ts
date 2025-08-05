@@ -357,27 +357,17 @@ const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.d
 
     const limit = 10;
 
+    // Get original assignment with only food IDs
     const originalConsumerFood = await db.consumerFood.findFirst({
       where: {
         id: consumerFoodId,
         cateringId: catering.id,
       },
-      include: {
-        // consumer: {
-        //   include: {
-        //     allergens: true,
-        //   },
-        // },
-        food: {
-          include: {
-            allergens: true,
-          },
-        },
-        alternativeFood: {
-          include: {
-            allergens: true,
-          },
-        },
+      select: {
+        id: true,
+        foodId: true,
+        alternativeFoodId: true,
+        comment: true,
       },
     });
 
@@ -385,78 +375,84 @@ const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.d
       return [];
     }
 
-    // Get allergen IDs from original food and alternative food
-    const originalFoodAllergenIds = originalConsumerFood.food.allergens.map(fa => fa.allergenId);
-    const originalAlternativeFoodAllergenIds = originalConsumerFood.alternativeFood?.allergens.map(fa => fa.allergenId) ?? [];
+    const { foodId: originalFoodId, alternativeFoodId: originalAlternativeFoodId } = originalConsumerFood;
 
-    // Combine all allergen IDs from both foods
-    const allOriginalFoodAllergenIds = [...originalFoodAllergenIds, ...originalAlternativeFoodAllergenIds];
-    const uniqueOriginalFoodAllergenIds = [...new Set(allOriginalFoodAllergenIds)];
+    // Build search conditions - look for assignments where food or alternativeFood matches
+    const searchFoodIds = [originalFoodId, originalAlternativeFoodId].filter((id): id is string => Boolean(id));
 
-    if (uniqueOriginalFoodAllergenIds.length === 0) {
+    if (searchFoodIds.length === 0) {
       return [];
     }
 
-    const similarConsumerFoods = await db.consumerFood.findMany({
-      where: {
-        id: { not: originalConsumerFood.id },
-        cateringId: catering.id,
-        // Check if comment contains query (if provided)
-        ...(query ? {
-          comment: {
-            contains: query,
-            mode: 'insensitive',
-            not: originalConsumerFood.comment ?? '',
-          },
-        } : {}),
-        // Food or alternativeFood must have at least one common allergen
-        OR: [
-          // Food has at least one common allergen
-          {
-            food: {
-              allergens: {
-                some: {
-                  allergenId: {
-                    in: uniqueOriginalFoodAllergenIds,
-                  },
-                },
-              },
-            },
-          },
-          // AlternativeFood has at least one common allergen
-          {
-            alternativeFood: {
-              allergens: {
-                some: {
-                  allergenId: {
-                    in: uniqueOriginalFoodAllergenIds,
-                  },
-                },
-              },
-            },
-          },
-        ],
-      },
-      select: {
-        id: true,
-        comment: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
+    // Build match conditions for comment field
+    const commentMatchConditions: Record<string, unknown> = {
+      $exists: true,
+      $ne: null,
+      $nin: ['', ...(originalConsumerFood.comment ? [originalConsumerFood.comment] : [])],
+      ...(query ? { $regex: query, $options: 'i' } : {}),
+    };
 
-    // Filter comments, remove duplicates using Set, and apply limit
-    const comments = Array.from(new Set(
-      similarConsumerFoods
-        .filter(cf => cf.comment && cf.comment.trim().length > 0)
-        .map(cf => cf.comment)
-        .filter(comment => comment !== originalConsumerFood.comment)
-        .filter(comment => comment)
-    )).slice(0, limit);
+    // Build aggregation pipeline to group and count comments directly in MongoDB
+    const pipeline = [
+      // Match stage - filter documents
+      {
+        $match: {
+          // _id: { $ne: { $oid: originalConsumerFood.id } }, // exclude original (commented out as per user request)
+          cateringId: catering.id,
+          comment: commentMatchConditions,
+          $or: [
+            { foodId: { $in: searchFoodIds } },
+            { alternativeFoodId: { $in: searchFoodIds } },
+          ],
+        },
+      },
+      // Add stage to trim comments
+      {
+        $addFields: {
+          trimmedComment: { $trim: { input: '$comment' } },
+        },
+      },
+      // Filter out empty trimmed comments
+      {
+        $match: {
+          trimmedComment: { $ne: '' },
+        },
+      },
+      // Group by comment and count occurrences
+      {
+        $group: {
+          _id: '$trimmedComment',
+          count: { $sum: 1 },
+        },
+      },
+      // Sort by count descending
+      {
+        $sort: { count: -1 },
+      },
+      // Limit results
+      {
+        $limit: limit,
+      },
+      // Project only the comment field
+      {
+        $project: {
+          _id: 0,
+          comment: '$_id',
+        },
+      },
+    ];
 
-    return comments;
+    // Execute aggregation pipeline using $aggregateRaw (better for aggregation than $runCommandRaw)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+    const result = await db.consumerFood.aggregateRaw({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+      pipeline: pipeline as any,
+    }) as unknown as Array<{ comment: string }>;
+
+    // Result is already the array of documents, no need to extract from cursor
+    const sortedComments = result.map(item => item.comment);
+
+    return sortedComments;
   });
 
 const consumerFoodRouter = {

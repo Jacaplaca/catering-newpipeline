@@ -124,4 +124,6 @@ export const monthAllClientsValid = z.object({
     sortDirection: z.enum(['asc', 'desc']).optional(),
 });
 
-
+export const monthSummaryValid = z.object({
+    deliveryMonth: z.string(),
+});

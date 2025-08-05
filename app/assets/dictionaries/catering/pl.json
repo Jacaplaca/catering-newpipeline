@@ -249,7 +249,24 @@
         "routes_pdf_title": "Trasy",
         "no_route_pdf": "Bez trasy",
         "cancelled_meals": "Anulowane posiłki",
-        "edit_order": "Edytuj zamówienie"
+        "edit_order": "Edytuj zamówienie",
+        "month_summary": "Podsumowanie miesiąca",
+        "month_summary_title": "Podsumowanie miesiąca",
+        "month_summary_description": "Szczegółowy raport dotyczący zamówień i posiłków",
+        "total_orders": "Łączna liczba zamówień",
+        "total_meals": "Łączna liczba posiłków",
+        "standard_meals": "Posiłki standardowe",
+        "diet_meals": "Posiłki dietetyczne",
+        "breakfasts": "Śniadania",
+        "lunches": "Obiady",
+        "dinners": "Kolacje",
+        "before_deadline": "Przed terminem",
+        "diet_breakfasts": "Śniadania dietetyczne",
+        "diet_lunches": "Obiady dietetyczne",
+        "diet_dinners": "Kolacje dietetyczne",
+        "no_data_available": "Brak danych do wyświetlenia",
+        "summary": "Podsumowanie",
+        "details": "Szczegóły"
     },
     "client-files":{
         "file_type_menu": "Menu",
@@ -381,7 +398,10 @@
         "individual_menu": "Indywidualne menu",
         "edit_standard_menu_confirmation": "Czy na pewno chcesz edytować standardowe menu?",
         "similar_comments": "Proponowane komentarze",
-        "no_suggestions": "Brak proponowanych komentarzy"
+        "no_suggestions": "Brak proponowanych komentarzy",
+        "add_meals_for_new_consumer": "Dodaj brakujące dania",
+        "add_meals_for_new_consumer_tooltip": "Dziecko zostało dodane do jadłospisu, czy chcesz dodać dania do tego dziecka?"
+
     },
     "exclusion": {
         "duplicate_name_error": "Istnieje już wykluczenie z taką nazwą",

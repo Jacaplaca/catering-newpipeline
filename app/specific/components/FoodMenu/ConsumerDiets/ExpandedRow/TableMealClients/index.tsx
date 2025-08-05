@@ -2,6 +2,7 @@ import translate from '@root/app/lib/lang/translate';
 import { useConsumerDietsTableContext } from '@root/app/specific/components/FoodMenu/ConsumerDiets/context';
 import AllergenList from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/AllergenList';
 import ConsumerDishCell from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/ConsumerDishCell';
+import Consumer, { type MealTableConsumerType } from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/TableMealClients/Consumer';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import { type ClientFoodAssignment } from '@root/types/specific';
 
@@ -89,77 +90,59 @@ const TableDishHeader = ({ dishesByMeal, dictionary, minColumnWidth }: {
 
 // Consumer row component
 const ConsumerRow = ({ consumer, dishesByMeal, assignments, totalDishColumns, minColumnWidth }: {
-    consumer: { id: string; name: string; allergens: { id: string; name: string }[], notes?: string | undefined, code: string, diet: { code: string | null, description: string | null } };
+    consumer: MealTableConsumerType;
     dishesByMeal: MealWithDishes[];
     assignments: ClientFoodAssignment[];
     totalDishColumns: number;
     minColumnWidth: number;
-}) => (
-    <div className="flex border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
-        {/* Consumer name */}
-        <div className="w-[250px] flex-shrink-0 p-3 border-r border-neutral-200 dark:border-neutral-600">
-            <div className="flex flex-col gap-1">
-                <div className="flex items-baseline gap-2">
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                        {consumer.name}
-                    </span>
-                    <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                        ({consumer.code})
-                    </span>
-                </div>
-                {consumer.diet.description && (
-                    <div className="text-xs text-neutral-600 dark:text-neutral-300">
-                        <span className="font-semibold">{consumer.diet.code}:</span> {consumer.diet.description}
-                    </div>
-                )}
-                {consumer.notes && (
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 italic mt-1">
-                        {consumer.notes}
-                    </p>
-                )}
-                <AllergenList allergens={consumer.allergens} variant="consumer" />
-            </div>
-        </div>
-        {/* Cells for each dish */}
-        <div className="flex flex-1">
-            {dishesByMeal.map(({ dishes, mealId }) =>
-                dishes.map((food) => {
-                    const assignment = assignments.find(a =>
-                        a.consumer.id === consumer.id &&
-                        a.mealId === mealId &&
-                        a.food.id === food.id
-                    );
+}) => {
 
-                    if (assignment) {
+    return (
+        <div className="flex border-b border-neutral-200 dark:border-neutral-600 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+            {/* Consumer name */}
+            <Consumer
+                consumer={consumer}
+                hasAssignments={assignments.length > 0} />
+            {/* Cells for each dish */}
+            <div className="flex flex-1">
+                {dishesByMeal.map(({ dishes, mealId }) =>
+                    dishes.map((food) => {
+                        const assignment = assignments.find(a =>
+                            a.mealId === mealId &&
+                            a.food.id === food.id
+                        );
+
+                        if (assignment) {
+                            return (
+                                <div
+                                    key={`${consumer.id}-${food.id}`}
+                                    className="border-r border-neutral-200 dark:border-neutral-600 last:border-r-0"
+                                    style={{
+                                        flex: `1 1 calc(100% / ${totalDishColumns})`,
+                                        minWidth: `${minColumnWidth}px`
+                                    }}
+                                >
+                                    <ConsumerDishCell assignment={assignment} />
+                                </div>
+                            );
+                        }
+
                         return (
                             <div
-                                key={`${consumer.id}-${food.id}`}
-                                className="border-r border-neutral-200 dark:border-neutral-600 last:border-r-0"
+                                key={`empty-${consumer.id}-${food.id}`}
+                                className="p-3 border-r border-neutral-200 dark:border-neutral-600 last:border-r-0"
                                 style={{
                                     flex: `1 1 calc(100% / ${totalDishColumns})`,
                                     minWidth: `${minColumnWidth}px`
                                 }}
-                            >
-                                <ConsumerDishCell assignment={assignment} />
-                            </div>
+                            />
                         );
-                    }
-
-                    return (
-                        <div
-                            key={`empty-${consumer.id}-${food.id}`}
-                            className="p-3 border-r border-neutral-200 dark:border-neutral-600 last:border-r-0"
-                            style={{
-                                flex: `1 1 calc(100% / ${totalDishColumns})`,
-                                minWidth: `${minColumnWidth}px`
-                            }}
-                        />
-                    );
-                })
-            )}
+                    })
+                )}
+            </div>
         </div>
-    </div>
-);
+    )
+};
 
 // Empty state component
 const EmptyConsumersState = ({ dictionary }: { dictionary: Record<string, string> }) => (
@@ -243,7 +226,7 @@ const TableMealClients = () => {
                         key={consumer.id}
                         consumer={consumer}
                         dishesByMeal={dishesByMeal}
-                        assignments={assignments}
+                        assignments={assignments.filter(a => a.consumer.id === consumer.id)}
                         totalDishColumns={totalDishColumns}
                         minColumnWidth={minColumnWidth}
                     />

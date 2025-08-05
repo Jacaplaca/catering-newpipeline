@@ -11,6 +11,7 @@ import useRemoveMenu from '@root/app/specific/components/FoodMenu/ConsumerDiets/
 import useToggleMenuForConsumers from '@root/app/specific/components/FoodMenu/ConsumerDiets/useToggleMenuForConsumers';
 import useToggleEditable4Client from '@root/app/specific/components/FoodMenu/ConsumerDiets/useToggleEditable4Client';
 import useToggleMenuStandard from '@root/app/specific/components/FoodMenu/useToggleMenuStandard';
+import useCreateAssignments from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/useCreateAssgnments';
 
 const useFoodMenu = ({
     lang,
@@ -30,6 +31,7 @@ const useFoodMenu = ({
 
     const { messageObj, resetMessage, updateMessage } = useMessage(dictionary);
     const rowClick = useConsumerDietsRow({ updateMessage, resetMessage, day: day.day });
+    const createAssignments = useCreateAssignments({ day: day.day, clientId: rowClick.expandedRowId ?? '' });
 
     const clientId = rowClick.expandedRowId ?? '';
 
@@ -156,6 +158,7 @@ const useFoodMenu = ({
         handleShowMenuForConsumers,
         isStandardMenuCreatorShown,
         toggleStandardMenuCreator,
+        createAssignments,
     }
 };
 export default useFoodMenu;

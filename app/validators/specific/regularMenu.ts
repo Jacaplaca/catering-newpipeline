@@ -72,3 +72,13 @@ export const getClientsWithCommonAllergensValidator = z.object({
     showColumns: z.array(z.string()).optional(),
     tagId: z.string().optional(),
 });
+
+export const createAssignmentsValidator = z.object({
+    day: z.object({
+        year: z.number(),
+        month: z.number(),
+        day: z.number(),
+    }),
+    clientId: z.string(),
+    consumerId: z.string(),
+});

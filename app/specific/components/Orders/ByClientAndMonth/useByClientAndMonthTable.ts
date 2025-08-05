@@ -11,6 +11,7 @@ import useByClientAndMonthColumns from '@root/app/specific/components/Orders/ByC
 import useFetchByClientAndMonth from '@root/app/specific/components/Orders/ByClientAndMonth/useFetch';
 import useDeliveryMonth from '@root/app/specific/components/Orders/ByClientAndMonth/useDeliveryMonth';
 import useClientMonth from '@root/app/specific/components/Orders/ByClientAndMonth/ExpandedRow/useClientMonth';
+import useFetchMonthSummary from '@root/app/specific/components/Orders/ByClientAndMonth/useFetchMonthSummary';
 
 const useByClientAndMonthTable = ({
     session,
@@ -49,6 +50,10 @@ const useByClientAndMonthTable = ({
         deliveryMonth: month.deliveryMonth
     });
 
+    const monthSummary = useFetchMonthSummary({
+        deliveryMonth: month.deliveryMonth
+    });
+
     const [rows] = useRows<OrderGroupedByClientAndMonthCustomTable>(fetchedRows);
 
     const row = useClientMonth(month.deliveryMonth);
@@ -78,7 +83,8 @@ const useByClientAndMonthTable = ({
         row,
         sort: { sortName, sortDirection },
         message: { messageObj, resetMessage, updateMessage },
-        month
+        month,
+        monthSummary
     };
 }
 export default useByClientAndMonthTable;

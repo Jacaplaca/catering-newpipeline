@@ -41,7 +41,7 @@ const ByClientAndMonthTable: FunctionComponent = () => {
                     title={'orders:title'}
                     searchPlaceholder={'orders:search_placeholder'}
                 >
-                    <Month />
+                    {/* <Month /> */}
                 </TableHeader>
 
                 <Table
