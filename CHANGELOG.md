@@ -1,3 +1,12 @@
+# [2.4.0](https://github.com/Jacaplaca/catering/compare/v2.3.0...v2.4.0) (2025-08-05)
+
+
+### Features
+
+* month summary add foods to new consumer new comments suggestions ([3ab80cb](https://github.com/Jacaplaca/catering/commit/3ab80cb324be70112ba81766f0048a95af8c6fae))
+
+
+
 # [2.3.0](https://github.com/Jacaplaca/catering/compare/v2.2.1...v2.3.0) (2025-07-31)
 
 
@@ -31,20 +40,6 @@
 ### Features
 
 * group standard and diet orders by delivery route in PDF generation ([8e8a22c](https://github.com/Jacaplaca/catering/commit/8e8a22cdb9d1f7fc05fa73c643dfa2f0d15fdaeb))
-
-
-
-# [2.0.0](https://github.com/Jacaplaca/catering/compare/v1.6.0...v2.0.0) (2025-06-23)
-
-
-### Features
-
-* individual menu for clients and routes in pdfs ([58b3e71](https://github.com/Jacaplaca/catering/commit/58b3e7181181511772dd59fe925ef1e11b17697d))
-
-
-### BREAKING CHANGES
-
-* diets creator
 
 
 
