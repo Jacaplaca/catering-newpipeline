@@ -1,3 +1,12 @@
+## [2.4.1](https://github.com/Jacaplaca/catering/compare/v2.4.0...v2.4.1) (2025-08-06)
+
+
+### Bug Fixes
+
+* filter by allergens in customer table in food menu assignments big scroll eslint and more ([d19206b](https://github.com/Jacaplaca/catering/commit/d19206bfc18f2b38090a55c18c57389653254fa6))
+
+
+
 # [2.4.0](https://github.com/Jacaplaca/catering/compare/v2.3.0...v2.4.0) (2025-08-05)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * add NEXT_PUBLIC_DOMAIN to environment variables, create menu page component, full order edit for manager ([e472902](https://github.com/Jacaplaca/catering/commit/e47290226e15bc5eb5970c7e90d2aa230e834c93))
-
-
-
-# [2.1.0](https://github.com/Jacaplaca/catering/compare/v2.0.0...v2.1.0) (2025-07-14)
-
-
-### Features
-
-* group standard and diet orders by delivery route in PDF generation ([8e8a22c](https://github.com/Jacaplaca/catering/commit/8e8a22cdb9d1f7fc05fa73c643dfa2f0d15fdaeb))
 
 
 
