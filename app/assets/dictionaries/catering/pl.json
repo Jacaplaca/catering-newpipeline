@@ -353,7 +353,8 @@
         "selected_allergens": "Alergeny:",
         "name_required": "Nazwa jest wymagana",
         "food_category_required": "Kategoria jest wymagana",
-        "alternative_food": "Zamieniona potrawa"
+        "alternative_food": "Zamieniona potrawa",
+        "clear_allergens": "Wyczyść"
     },
     "menu-creator": {
         "title-standard-menu": "Standardowe menu",
@@ -400,8 +401,9 @@
         "similar_comments": "Proponowane komentarze",
         "no_suggestions": "Brak proponowanych komentarzy",
         "add_meals_for_new_consumer": "Dodaj brakujące dania",
-        "add_meals_for_new_consumer_tooltip": "Dziecko zostało dodane do jadłospisu, czy chcesz dodać dania do tego dziecka?"
-
+        "add_meals_for_new_consumer_tooltip": "Dziecko zostało dodane do jadłospisu, czy chcesz dodać dania do tego dziecka?",
+        "showing_consumers_with_allergens": "Pokazują się tylko dzieci z alergenami:",
+        "no_consumers_with_allergens": "Brak dzieci z alergenami:"
     },
     "exclusion": {
         "duplicate_name_error": "Istnieje już wykluczenie z taką nazwą",

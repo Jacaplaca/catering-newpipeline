@@ -47,7 +47,7 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
         currentClient,
     } = menuQueries;
 
-    const { data: currentClientMenu, isFetching: currentClientMenuFetching, isLoading: currentClientMenuLoading } = currentClient;
+    const { data: currentClientMenu } = currentClient;
 
     const [defaultFormValues, setDefaultFormValues] = useState<RegularMenuFormValues>(getEmptyValues(day));
     const formAll = useForm<RegularMenuFormValues>({

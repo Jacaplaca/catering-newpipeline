@@ -15,7 +15,7 @@ const ClientInputs = () => {
 
     const {
         dictionary,
-        rowClick: { form, isFetching, updateClient, client, chooseDeliveryRoute, expandedRowId },
+        rowClick: { form, isFetching, updateClient, client, expandedRowId },
         lang,
     } = useClientTableContext();
 

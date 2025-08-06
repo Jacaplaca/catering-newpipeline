@@ -1,5 +1,5 @@
 'use client';
-import { RoleType } from '@prisma/client';
+import { type RoleType } from '@prisma/client';
 import ConsumersTable from '@root/app/specific/components/Consumers/ConsumersTable';
 import { ConsumerTableContextProvider } from '@root/app/specific/components/Consumers/context';
 import useConsumerTable from '@root/app/specific/components/Consumers/useConsumerTable';

@@ -9,9 +9,10 @@ const Drop: FunctionComponent<{
     lang: LocaleApp;
 }> = () => {
 
-    const [prefix, setPrefix] = useState<string>("some-prefix");
-    const [uploadCompleted, setUploadCompleted] = useState<string>("");
+    const [prefix,] = useState<string>("some-prefix");
+    const [, setUploadCompleted] = useState<string>("");
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const onUploadComplete = ({ key, fileName }: { key: string, fileName: string }) => {
         setUploadCompleted(key);
     };
@@ -19,7 +20,7 @@ const Drop: FunctionComponent<{
     const {
         previewAttachments,
         totalSize,
-        progress,
+        // progress,
         uploading,
         uploadComplete,
         onSubmit,
@@ -35,7 +36,7 @@ const Drop: FunctionComponent<{
 
     useEffect(() => {
         const files = acceptedFiles.reduce((acc, file) => {
-            const { name, size, type } = file;
+            const { name, size } = file;
             acc[name] = {
                 file,
                 attachment: {
@@ -62,7 +63,7 @@ const Drop: FunctionComponent<{
         }, {} as Record<string, FileAndAttachment>);
 
         setPreviewAttachments(files);
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [acceptedFiles]);
 
     // const removeFile = (fileName: string) => {

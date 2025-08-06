@@ -15,6 +15,7 @@ import useOrderByDayTable from '@root/app/specific/components/Orders/ByDay/useOr
 import useByClientAndMonthTable from '@root/app/specific/components/Orders/ByClientAndMonth/useByClientAndMonthTable';
 import { ByClientAndMonthTableContextProvider } from '@root/app/specific/components/Orders/ByClientAndMonth/context';
 import ByClientAndMonth from '@root/app/specific/components/Orders/ByClientAndMonth';
+import { RoleType } from '@prisma/client';
 
 const OrdersComponent: FunctionComponent<{
     lang: LocaleApp
@@ -24,6 +25,10 @@ const OrdersComponent: FunctionComponent<{
     session: Session | null
     clientId?: string
 }> = (props) => {
+
+
+    const { user } = props.session ?? {};
+    const showForManager = user?.roleId === RoleType.manager;
 
     return (
         <SessionProvider session={props.session}>
@@ -40,7 +45,7 @@ const OrdersComponent: FunctionComponent<{
                 </FlowbiteTabs.Item>
                 <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_client_and_month')}>
                     <ByClientAndMonthTableContextProvider store={useByClientAndMonthTable(props)} >
-                        <ByClientAndMonth dictionary={props.dictionary} />
+                        {showForManager && <ByClientAndMonth dictionary={props.dictionary} />}
                     </ByClientAndMonthTableContextProvider>
                 </FlowbiteTabs.Item>
             </Tabs>

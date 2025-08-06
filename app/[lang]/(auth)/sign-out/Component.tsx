@@ -8,6 +8,7 @@ const SignOutComponent: React.FC<{ lang: LocaleApp }> = ({ lang }) => {
 
     useEffect(() => {
         void redirect();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return null;

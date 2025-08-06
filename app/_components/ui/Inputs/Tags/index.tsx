@@ -43,6 +43,7 @@ const Tags: React.FC<{
 
     useEffect(() => {
         autoFocus && inputRef?.current?.focus();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const highlightSame = (label: string) => {
@@ -129,6 +130,7 @@ const Tags: React.FC<{
             default:
                 break;
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keyPressed]);
 
     const delHashtag = (label: string) => {

@@ -88,6 +88,7 @@ const useFoodMenu = ({
             setNotEditable4Client();
             void utils.specific.regularMenu.getOne.invalidate();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clientId]);
 
 
@@ -95,6 +96,7 @@ const useFoodMenu = ({
         if (menuQueries.currentClient.data && clientId) {
             setEditable4Client();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [menuQueries.currentClient.data, clientId]);
 
     const standardMenuForm = useStandardMenu({

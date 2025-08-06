@@ -1,5 +1,4 @@
 import { env } from '@root/app/env';
-import getBaseUrl from '@root/app/lib/url/getBaseUrl';
 import translatePageName from '@root/app/lib/url/translatePageName';
 import { type Locale, i18n } from '@root/i18n-config';
 

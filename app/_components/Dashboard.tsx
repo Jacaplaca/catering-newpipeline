@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useBoolean } from 'usehooks-ts';
 import { useCheckSettings } from '@root/app/hooks/calls';
 
-const Dashboard: FunctionComponent<{ children: React.ReactNode, menu: DashboardMenuElement[], searchParams: Record<string, string> }> = ({ children, menu, searchParams }) => {
+const Dashboard: FunctionComponent<{ children: React.ReactNode, menu: DashboardMenuElement[], searchParams: Record<string, string> }> = ({ children, menu }) => {
     const { value: isOpen, setTrue, setFalse, toggle } = useBoolean(false);
     const [selectedItem, setSelectedItem] = useState<string>('');
     const breakpoint = useBreakpoint();

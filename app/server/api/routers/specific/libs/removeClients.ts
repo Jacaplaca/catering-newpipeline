@@ -1,43 +1,43 @@
 import { db } from '@root/app/server/db';
-import { s3deleteKeys } from '@root/app/server/s3/delete';
+// import { s3deleteKeys } from '@root/app/server/s3/delete';
 
-const getClientS3Keys = async (clientId: string) => {
-    const clientFiles = await db.clientFile.findMany({
-        where: {
-            clientId
-        },
-        select: {
-            s3Key: true
-        }
-    });
-    return clientFiles.map((file) => file.s3Key);
-}
+// const getClientS3Keys = async (clientId: string) => {
+//     const clientFiles = await db.clientFile.findMany({
+//         where: {
+//             clientId
+//         },
+//         select: {
+//             s3Key: true
+//         }
+//     });
+//     return clientFiles.map((file) => file.s3Key);
+// }
 
-const removeClientFiles = async (s3Keys: string[]) => {
-    if (s3Keys.length === 0) return;
+// const removeClientFiles = async (s3Keys: string[]) => {
+//     if (s3Keys.length === 0) return;
 
-    const usedKeys = await db.clientFile.groupBy({
-        by: ['s3Key'],
-        where: {
-            s3Key: { in: s3Keys }
-        },
-        _count: {
-            s3Key: true
-        }
-    });
+//     const usedKeys = await db.clientFile.groupBy({
+//         by: ['s3Key'],
+//         where: {
+//             s3Key: { in: s3Keys }
+//         },
+//         _count: {
+//             s3Key: true
+//         }
+//     });
 
-    const usedKeysSet = new Set(
-        usedKeys
-            .filter(k => k._count.s3Key > 1)
-            .map(k => k.s3Key)
-    );
+//     const usedKeysSet = new Set(
+//         usedKeys
+//             .filter(k => k._count.s3Key > 1)
+//             .map(k => k.s3Key)
+//     );
 
-    const s3KeysToDelete = s3Keys.filter(key => !usedKeysSet.has(key));
+//     const s3KeysToDelete = s3Keys.filter(key => !usedKeysSet.has(key));
 
-    if (s3KeysToDelete.length > 0) {
-        await s3deleteKeys(s3KeysToDelete);
-    }
-}
+//     if (s3KeysToDelete.length > 0) {
+//         await s3deleteKeys(s3KeysToDelete);
+//     }
+// }
 
 type RemoveClientsParams = {
     clientsIds: string[];

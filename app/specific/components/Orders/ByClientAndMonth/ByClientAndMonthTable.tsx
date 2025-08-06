@@ -10,7 +10,6 @@ import TableWrapper from '@root/app/_components/Table/Wrapper';
 import { Table } from 'flowbite-react';
 import TableToast from '@root/app/_components/Table/Toast';
 import { useByClientAndMonthTableContext } from '@root/app/specific/components/Orders/ByClientAndMonth/context';
-import Month from '@root/app/specific/components/Orders/ByClientAndMonth/Month';
 import ExpandedRow from '@root/app/specific/components/Orders/ByClientAndMonth/ExpandedRow';
 
 const ByClientAndMonthTable: FunctionComponent = () => {

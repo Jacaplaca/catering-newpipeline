@@ -1,4 +1,4 @@
-import { type DeliveryRoute, type RoleType } from '@prisma/client';
+import { type DeliveryRoute } from '@prisma/client';
 import useRows from '@root/app/hooks/table/useRows';
 import useTableSort from '@root/app/hooks/table/useTableSort';
 import useMessage from '@root/app/hooks/useMessage';

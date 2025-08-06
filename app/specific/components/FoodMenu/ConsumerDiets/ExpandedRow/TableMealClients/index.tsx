@@ -55,7 +55,7 @@ const TableMealHeader = ({ dishesByMeal, dictionary, minColumnWidth }: {
 );
 
 // Header component for individual dishes (second level)
-const TableDishHeader = ({ dishesByMeal, dictionary, minColumnWidth }: {
+const TableDishHeader = ({ dishesByMeal, minColumnWidth }: {
     dishesByMeal: MealWithDishes[];
     dictionary: Record<string, string>;
     minColumnWidth: number;
@@ -145,16 +145,18 @@ const ConsumerRow = ({ consumer, dishesByMeal, assignments, totalDishColumns, mi
 };
 
 // Empty state component
-const EmptyConsumersState = ({ dictionary }: { dictionary: Record<string, string> }) => (
-    <div className="p-6 text-center text-neutral-500 dark:text-neutral-400">
-        {translate(dictionary, 'menu-creator:no-consumers-available')}
+const EmptyConsumersState = ({ dictionary, allergens }: { dictionary: Record<string, string>, allergens: string[] }) => (
+    <div className="p-6 text-center text-neutral-600 dark:text-neutral-300">
+        {translate(dictionary, allergens.length ? 'menu-creator:no_consumers_with_allergens' : 'menu-creator:no-consumers-available')}
+        {allergens.length > 0 && <span className="text-neutral-600 dark:text-neutral-300"> {allergens.map(a => a).join(', ')}</span>}
     </div>
 );
 
 // Main component
 const TableMealClients = () => {
-    const { dictionary } = useConsumerDietsTableContext();
-    const { rowClick: { clientConsumers, clientFoods: { data: rawAssignments } } } = useFoodMenuContext();
+    const { dictionary, filter: { allergens } } = useConsumerDietsTableContext();
+    const { rowClick: { clientConsumers, clientFoods: { data: rawAssignments, isFetching: clientFoodsFetching } } } = useFoodMenuContext();
+    // console.log(clientConsumers, allergens);
 
     const assignments = rawAssignments ?? [];
     const { meals } = useFoodMenuContext();
@@ -192,6 +194,12 @@ const TableMealClients = () => {
     const totalDishColumns = dishesByMeal.reduce((sum, { dishes }) => sum + Math.max(1, dishes.length), 0);
     const minColumnWidth = 150;
 
+    if (clientFoodsFetching) {
+        return <div className='flex justify-center items-center h-full'>
+            <i className={`my-4 animate-spin fas fa-spinner text-2xl`} />
+        </div>;
+    }
+
     // If no meals have dishes, show empty state
     if (dishesByMeal.length === 0) {
         return (
@@ -202,6 +210,11 @@ const TableMealClients = () => {
             </div>
         );
     }
+
+    const filteredConsumers = clientConsumers?.filter(consumer => {
+        const consumerAllergens = consumer.allergens.map(a => a.id);
+        return allergens.every(allergen => consumerAllergens.includes(allergen.id));
+    });
 
     return (
         <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
@@ -221,7 +234,7 @@ const TableMealClients = () => {
 
             {/* Data rows: Consumers */}
             <div>
-                {clientConsumers?.map((consumer) => (
+                {filteredConsumers?.map((consumer) => (
                     <ConsumerRow
                         key={consumer.id}
                         consumer={consumer}
@@ -231,8 +244,11 @@ const TableMealClients = () => {
                         minColumnWidth={minColumnWidth}
                     />
                 ))}
-                {(!clientConsumers || clientConsumers.length === 0) && (
-                    <EmptyConsumersState dictionary={dictionary} />
+                {(!filteredConsumers || filteredConsumers.length === 0) && (
+                    <EmptyConsumersState
+                        dictionary={dictionary}
+                        allergens={allergens.map(a => a.name)}
+                    />
                 )}
             </div>
         </div>

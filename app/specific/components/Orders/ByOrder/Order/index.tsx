@@ -31,6 +31,7 @@ const Order: FC = () => {
 
     useEffect(() => {
         setConsumersPickerOpen(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return <div className="flex flex-col gap-2 sm:gap-4 py-2 sm:py-4">

@@ -1,17 +1,20 @@
-import useFilterByTagId from '@root/app/hooks/table/useFilterByTagId';
+import { useState } from 'react';
 
-const useFilter = ({
-    lang,
-    pageName,
-}: {
-    lang: LocaleApp
-    pageName: string
-}) => {
-    const tags = useFilterByTagId({ lang, pageName });
+const useConsumerDietsFilter = () => {
+    const [allergens, setAllergens] = useState<{ id: string, name: string }[]>([]);
+    const addRemoveAllergen = (allergensProp: { id: string, name: string }[]) => {
+        setAllergens(allergensProp);
+    }
+
+    const clearAllergens = () => {
+        setAllergens([]);
+    }
 
     return {
-        tags
+        allergens,
+        addRemoveAllergen,
+        clearAllergens,
     };
-}
+};
 
-export default useFilter;
+export default useConsumerDietsFilter;

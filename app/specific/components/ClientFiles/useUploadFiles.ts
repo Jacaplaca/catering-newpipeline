@@ -36,6 +36,7 @@ function useUploadFiles({
         if (client) {
             updateRow(client);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [client]);
 
     const onSave = (values: z.infer<typeof FormSchema>) => {

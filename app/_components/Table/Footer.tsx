@@ -51,11 +51,13 @@ const TableFooter: FunctionComponent<{
     pageName: string
     lang: LocaleApp
     dictionary: Record<string, string>
+    isLoading?: boolean
 }> = ({
     totalCount,
     pageName,
     lang,
-    dictionary
+    dictionary,
+    isLoading
 }) => {
 
         const router = useRouter();
@@ -103,7 +105,7 @@ const TableFooter: FunctionComponent<{
                         >
                             {translate(dictionary, "shared:per_page")}
                         </Label>
-                        <Dropdown
+                        {isLoading ? <i className={`my-4 animate-spin fas fa-spinner`} /> : <Dropdown
                             onChange={onChangeLimit}
                             options={limits}
                             value={limit.toString()}
@@ -113,8 +115,8 @@ const TableFooter: FunctionComponent<{
                                     width: '70px',
                                 }
                             }}
-                        />
-                        <div className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                        />}
+                        {isLoading ? null : <div className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
                             <span className="font-semibold text-neutral-900 dark:text-white">
                                 {firstElement}-{lastElement}
                             </span>
@@ -122,9 +124,9 @@ const TableFooter: FunctionComponent<{
                             <span className="font-semibold text-neutral-900 dark:text-white">
                                 {totalCount}
                             </span>
-                        </div>
+                        </div>}
                     </div>
-                    <Pagination
+                    {isLoading ? null : <Pagination
                         currentPage={currentPage}
                         nextLabel=""
                         onPageChange={onChangePage}
@@ -132,7 +134,7 @@ const TableFooter: FunctionComponent<{
                         showIcons
                         totalPages={totalPages}
                         theme={paginationTheme}
-                    />
+                    />}
                 </div>
             </div>
         );

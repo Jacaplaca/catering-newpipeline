@@ -1,4 +1,3 @@
-import { HiX } from "react-icons/hi";
 import { type FunctionComponent } from "react";
 
 interface SelectedDisplayProps {
@@ -11,6 +10,8 @@ interface SelectedDisplayProps {
     noBorder?: boolean;
     noBackground?: boolean;
     crossedItems?: string[];
+    clearAll?: () => void;
+    clearAllLabel?: string;
 }
 
 const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
@@ -22,7 +23,9 @@ const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
     highlightedItems = [],
     noBorder = false,
     noBackground = false,
-    crossedItems
+    crossedItems,
+    clearAll,
+    clearAllLabel
 }) => {
     if (!selectedItems || selectedItems.length === 0) {
         return null;
@@ -34,11 +37,25 @@ const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
 
     return (
         <div className={`flex flex-wrap gap-2 p-2 ${!noBackground ? 'bg-neutral-50 dark:bg-neutral-800' : ''} rounded-md ${!noBorder ? 'border border-neutral-200 dark:border-neutral-600' : ''}`}>
-            <div className="text-sm text-neutral-600 dark:text-neutral-300 font-medium mr-2 flex items-center gap-2">
-                {iconClassName && (
-                    <i className={`${iconClassName} text-neutral-600 dark:text-neutral-300`} />
+            <div className="flex items-center justify-between w-full">
+                <div className="text-sm text-neutral-600 dark:text-neutral-300 font-medium mr-2 flex items-center gap-2">
+                    {iconClassName && (
+                        <i className={`${iconClassName} text-neutral-600 dark:text-neutral-300`} />
+                    )}
+                    {label}
+                </div>
+                {clearAll && clearAllLabel && (
+                    <button
+                        onClick={clearAll}
+                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 
+                                 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 
+                                 rounded-md transition-colors duration-200"
+                        title={clearAllLabel}
+                    >
+                        <i className="fas fa-trash text-xs" />
+                        {clearAllLabel}
+                    </button>
                 )}
-                {label}
             </div>
             {selectedItems.map((item) => {
                 const isHighlighted = highlightedItems.includes(item.id);
@@ -67,7 +84,7 @@ const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
                             {item.name}
                         </span>
                         {onRemove && (
-                            <HiX className="h-3 w-3 text-neutral-800 dark:text-neutral-50 group-hover:scale-110 transition-all duration-200" />
+                            <i className="fas fa-times text-xs text-neutral-800 dark:text-neutral-50 group-hover:scale-110 transition-all duration-200" />
                         )}
                     </div>
                 );

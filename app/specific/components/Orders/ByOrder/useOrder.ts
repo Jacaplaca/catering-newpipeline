@@ -146,6 +146,7 @@ const useOrder = ({ orderForEdit, setRows, session, updateMessage, newOrder, cli
                 setHideNewOrder(false);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderedDates, cateringSettings]);
 
     const getNextAvailableDate = () => {

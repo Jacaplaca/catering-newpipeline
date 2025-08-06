@@ -21,7 +21,7 @@ const Switch4ClientStandardEdit = () => {
                 </MyButton>
             </div>}
             <div className='flex items-center gap-2 mb-4'>
-                <div className='text-neutral-500 dark:text-neutral-400'>
+                <div className='text-neutral-600 dark:text-neutral-300'>
                     {translate(dictionary, 'menu-creator:is-menu-editable-for-client')}
                 </div>
                 <Switch

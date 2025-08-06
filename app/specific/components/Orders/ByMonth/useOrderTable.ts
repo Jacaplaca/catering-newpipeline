@@ -12,7 +12,6 @@ import { useEffect } from 'react';
 import useMonth from '@root/app/specific/components/Orders/ByMonth/ExpandedRow/useMonth';
 
 const useOrderByMonthTable = ({
-    session,
     lang,
     pageName,
     settings,

@@ -14,7 +14,6 @@ import useClientMonth from '@root/app/specific/components/Orders/ByClientAndMont
 import useFetchMonthSummary from '@root/app/specific/components/Orders/ByClientAndMonth/useFetchMonthSummary';
 
 const useByClientAndMonthTable = ({
-    session,
     lang,
     pageName,
     settings,

@@ -23,13 +23,15 @@ const useFoodRow = ({
     refetchAll,
     updateMessage,
     resetMessage,
-    dictionary
+    dictionary,
+    afterSubmit
 }: {
     setRows: Dispatch<SetStateAction<FoodCustomTable[]>>
     refetchAll: () => Promise<void>
     updateMessage: UpdateMessageType,
     resetMessage: () => void
     dictionary: Record<string, string>
+    afterSubmit: () => void
 }) => {
     // const [defaultForm, setDefaultForm] = useState<z.infer<typeof FormSchema>>();
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
@@ -104,6 +106,7 @@ const useFoodRow = ({
                 ? await fullFoodRefetch()
                 : await refetchAll();
             updateMessage('saved');
+            afterSubmit();
         },
         onError: (error) => {
             console.log(error.data, error.message, error.shape);

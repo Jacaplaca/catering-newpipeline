@@ -13,6 +13,8 @@ import { Table } from 'flowbite-react';
 import TableToast from '@root/app/_components/Table/Toast';
 import { useConsumerDietsTableContext } from '@root/app/specific/components/FoodMenu/ConsumerDiets/context';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
+import AllergenDropdown from '@root/app/specific/components/ui/Dropdown/Allergen';
+import translate from '@root/app/lib/lang/translate';
 
 const ConsumerDietsTable: FunctionComponent = () => {
 
@@ -20,13 +22,13 @@ const ConsumerDietsTable: FunctionComponent = () => {
         pageName,
         lang,
         dictionary,
-        settings,
         data: { table, skeleton },
         columns,
         isFetching,
         totalCount,
         search,
         sort: { sortName, sortDirection },
+        filter: { allergens, addRemoveAllergen, clearAllergens },
     } = useConsumerDietsTableContext();
     const { rowClick: { onRowClick, expandedRowId }, message, getConfirmationData } = useFoodMenuContext();
 
@@ -42,7 +44,22 @@ const ConsumerDietsTable: FunctionComponent = () => {
                     dictionary={dictionary}
                     title={'clients:title'}
                     searchPlaceholder={'clients:search_placeholder'}
-                ></TableHeader>
+                >
+                    <div className='flex items-center gap-2 max-w-72'>
+                        <AllergenDropdown
+                            dictionary={dictionary}
+                            inputClassName='w-72'
+                            foundLimitChars={35}
+                            selectedItems={allergens}
+                            onItemsChange={addRemoveAllergen}
+                            showSelectionIcon
+                            placeholder={translate(dictionary, 'food:allergens_placeholder')}
+                            selectedLabel={translate(dictionary, 'food:selected_allergens')}
+                            clearAll={clearAllergens}
+                            clearAllLabel={translate(dictionary, 'food:clear_allergens')}
+                        />
+                    </div>
+                </TableHeader>
                 <Table
                     theme={tableTheme}
                     hoverable

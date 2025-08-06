@@ -37,6 +37,7 @@ const useMealPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) => {
             setDayId(null);
             setMealType(null);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pdfError]);
 
     return {

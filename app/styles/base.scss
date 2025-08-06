@@ -1,5 +1,11 @@
 html {
   @apply text-base;
+  scrollbar-gutter: stable;
+}
+
+html::-webkit-scrollbar{
+  width: 16px;
+  height: 16px;
 }
 
 body {
@@ -117,27 +123,27 @@ code {
 //   @apply block mx-auto;
 // }
 
-.scrollbar::-webkit-scrollbar {
-  @apply w-2 h-3
-}
+// .scrollbar::-webkit-scrollbar {
+//   @apply w-2 h-3
+// }
 
-.scrollbar-thin::-webkit-scrollbar {
-  @apply w-1 h-1
-}
+// .scrollbar-thin::-webkit-scrollbar {
+//   @apply w-1 h-1
+// }
 
-.scrollbar::-webkit-scrollbar-track {
-  @apply dark:bg-zinc-700 bg-white;
-}
+// .scrollbar::-webkit-scrollbar-track {
+//   @apply dark:bg-zinc-700 bg-white;
+// }
 
-.scrollbar::-webkit-scrollbar-thumb {
-  @apply dark:bg-zinc-500 bg-zinc-400;
-  border-radius: 100vh;
-}
+// .scrollbar::-webkit-scrollbar-thumb {
+//   @apply dark:bg-zinc-500 bg-zinc-400;
+//   border-radius: 100vh;
+// }
 
-.scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply dark:bg-zinc-500 bg-zinc-400;
-}
+// .scrollbar::-webkit-scrollbar-thumb:hover {
+//   @apply dark:bg-zinc-500 bg-zinc-400;
+// }
 
-body {
-  @apply scrollbar
-}
+// body {
+//   @apply scrollbar
+// }

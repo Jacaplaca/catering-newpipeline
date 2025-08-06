@@ -49,7 +49,7 @@ const OrdersTable: FunctionComponent = () => {
         filter: {
             clients: { clientForFilter, chooseClient },
             status: { statusForFilter, chooseStatus },
-            tags: { updateTagId },
+            // tags: { updateTagId },
         },
         order: {
             hideNewOrder

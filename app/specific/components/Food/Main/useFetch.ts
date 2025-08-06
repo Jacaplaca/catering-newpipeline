@@ -46,6 +46,7 @@ function useFetchFood({
             rowsRefetch,
         },
         pagination: {
+            countIsFetching,
             page,
             limit,
         }

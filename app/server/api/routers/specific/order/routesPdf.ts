@@ -1,7 +1,6 @@
 // import { db } from '@root/app/server/db';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
-import type { MealType, OrderMealPopulated } from '@root/types/specific';
-import { RoleType, type Client, type OrderConsumerBreakfast, type OrderStatus } from '@prisma/client';
+import { RoleType } from '@prisma/client';
 import translate from '@root/app/lib/lang/translate';
 import { format } from 'date-fns-tz';
 import { pl } from 'date-fns/locale';
@@ -11,10 +10,9 @@ import safeFileName from '@root/app/lib/safeFileName';
 import PDFDocument from 'pdfkit';
 import { loadFonts } from '@root/app/lib/loadFonts';
 import dayIdParser from '@root/app/server/api/routers/specific/libs/dayIdParser';
-import limitTextToMaxLines from '@root/app/server/api/routers/specific/libs/pdf/limitTextToMaxLines';
 import returnPdfForFront from '@root/app/server/api/routers/specific/libs/pdf/returnPdfForFront';
 import getDayOrders from '@root/app/server/api/routers/specific/libs/getDayOrders';
-import groupStandardOrdersByDay, { type RouteStandardDetails, type ClientStandardMeals } from '@root/app/server/api/routers/specific/libs/groupStandardOrdersByDay';
+import groupStandardOrdersByDay, { type RouteStandardDetails } from '@root/app/server/api/routers/specific/libs/groupStandardOrdersByDay';
 
 const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getRoutesPdfValid)

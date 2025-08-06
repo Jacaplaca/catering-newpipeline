@@ -4,13 +4,12 @@ import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { getRouteListValid, getRoutesValidator, removeRouteValidator, routeCreateValidator, routeEditValidator, routeGetOneValidator } from '@root/app/validators/specific/deliveryRoute';
 import { getQueryOrder } from '@root/app/lib/safeDbQuery';
 import { getQueryPagination } from '@root/app/lib/safeDbQuery';
-import { ClientCustomTable, routeSortNames } from '@root/types/specific';
+import { routeSortNames } from '@root/types/specific';
 import getLowerCaseSort from '@root/app/lib/lower-case-sort-pipeline';
 import getDeliveryRoutesDbQuery from './libs/getDeliveryRoutesDbQuery';
 import { options } from '@root/app/server/api/specific/aggregate';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import getClientsDbQuery from '@root/app/server/api/routers/specific/libs/getClientsDbQuery';
 
 const checkUnique = async (code: string, cateringId: string) => {
   const route = await db.deliveryRoute.findFirst({

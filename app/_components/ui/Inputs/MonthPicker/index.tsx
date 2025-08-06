@@ -20,7 +20,7 @@ type MonthPickerProps = {
     disabled?: boolean;
 }
 
-const MonthPicker: FC<MonthPickerProps> = ({ locale, selected, minDate, CustomInput, onSelect, dateFormat = "MM/yyyy", filterDate, maxDate, dayClassName, disabled }) => {
+const MonthPicker: FC<MonthPickerProps> = ({ locale, selected, minDate, CustomInput, onSelect, dateFormat = "MM/yyyy", filterDate, maxDate, disabled }) => {
 
     return (
         <div>

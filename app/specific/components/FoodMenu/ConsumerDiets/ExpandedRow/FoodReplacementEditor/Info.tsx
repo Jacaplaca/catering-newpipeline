@@ -7,8 +7,8 @@ type Food = {
     ingredients: string | null;
 }
 
-const Info = ({ mealName, consumerName, food, exclusions, alternativeFood }:
-    { mealName: string, consumerName: string, food: Food | null, exclusions: string[], alternativeFood: Food | null }) => {
+const Info = ({ mealName, consumerName, consumerDescription, food, exclusions, alternativeFood }:
+    { mealName: string, consumerName: string, consumerDescription: string, food: Food | null, exclusions: string[], alternativeFood: Food | null }) => {
 
     const isFoodReplaced = alternativeFood?.id ? alternativeFood.id !== food?.id : false;
 
@@ -21,7 +21,7 @@ const Info = ({ mealName, consumerName, food, exclusions, alternativeFood }:
             </p>
             <p>
                 <span className='font-semibold'>{translate(dictionary, 'menu-creator:consumer')}: </span>
-                {consumerName}
+                {consumerName} {consumerDescription && `(${consumerDescription})`}
             </p>
             <p>
                 <span className='font-semibold'>{translate(dictionary, 'menu-creator:original_food')}: </span>

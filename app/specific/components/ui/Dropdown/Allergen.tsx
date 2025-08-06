@@ -1,7 +1,6 @@
 import SearchWithResults from '@root/app/_components/ui/Inputs/SearchWithResults';
 import ListWrapper from '@root/app/_components/ui/Inputs/SearchWithResults/ListWrapper';
 import useVirtualizedList from '@root/app/hooks/useVirtualizedListl';
-import translate from '@root/app/lib/lang/translate';
 import { api } from '@root/app/trpc/react';
 import { type FunctionComponent } from "react";
 import Item from '@root/app/_components/ui/Inputs/SearchWithResults/Item';
@@ -20,6 +19,8 @@ type AllergenDropdownProps = {
     onItemsChange: (items: { id: string, name: string }[]) => void;
     placeholder: string;
     selectedLabel: string;
+    clearAll?: () => void;
+    clearAllLabel?: string;
 }
 
 const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
@@ -32,6 +33,8 @@ const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
     onItemsChange,
     placeholder,
     selectedLabel,
+    clearAll,
+    clearAllLabel,
 }) => {
 
     const { searchValue, searchItems, onResultClick, handleRemoveItem, ref } = useDropdownMultiple({
@@ -85,6 +88,8 @@ const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
                     selectedItems={selectedItems}
                     onRemove={handleRemoveItem}
                     iconClassName='fa-solid fa-wheat-slash'
+                    clearAll={clearAll}
+                    clearAllLabel={clearAllLabel}
                 />
             )}
         </div>

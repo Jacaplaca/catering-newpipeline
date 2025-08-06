@@ -8,7 +8,7 @@ import getLowerCaseSort from '@root/app/lib/lower-case-sort-pipeline';
 import { options } from '@root/app/server/api/specific/aggregate';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { removeMealValidator, mealCreateValidator, mealEditValidator, mealGetOneValidator, getMealsValidator, getMealListValidator } from '@root/app/validators/specific/meal';
+import { removeMealValidator, mealCreateValidator, mealEditValidator, mealGetOneValidator, getMealsValidator } from '@root/app/validators/specific/meal';
 import getMealsDbQuery from '@root/app/server/api/routers/specific/libs/getMealsDbQuery';
 
 const checkUnique = async (name: string, cateringId: string, mealId?: string) => {

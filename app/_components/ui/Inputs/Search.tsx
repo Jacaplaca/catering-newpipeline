@@ -32,6 +32,7 @@ const SearchInput: FunctionComponent<{
 
     useEffect(() => {
         everyChar && search(debouncedValue);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedValue]);
 
     const handleSubmit = (): void => {

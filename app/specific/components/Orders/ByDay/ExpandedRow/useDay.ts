@@ -60,7 +60,7 @@ const useDay = () => {
 
     useEffect(() => {
         if (dayData) {
-            const { summary, standard, diet } = dayData;
+            const { summary, diet } = dayData;
             const processSummary = () => {
                 const { breakfastStandard, lunchStandard, dinnerStandard } = summary;
                 setSummaryStandard({

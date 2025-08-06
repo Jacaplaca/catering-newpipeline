@@ -87,6 +87,7 @@ const useClientFilesRow = ({
             form.reset(client);
         }
         resetMessage();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clientData, form]);
 
 
@@ -133,6 +134,7 @@ const useClientFilesRow = ({
 
     useEffect(() => {
         resetMessage();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [expandedRowId]);
 
     return {

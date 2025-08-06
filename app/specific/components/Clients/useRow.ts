@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type DeliveryRoute } from '@prisma/client';
 import { type UpdateMessageType } from '@root/app/hooks/useMessage';
 import translate from '@root/app/lib/lang/translate';
 // import useTags from '@root/app/specific/components/Clients/ExpandedRow/useTags';
@@ -99,6 +98,7 @@ const useClientRow = ({
             form.reset(defaultValues);
         }
         resetMessage();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clientData, form, expandedRowId]);
 
 
@@ -155,6 +155,7 @@ const useClientRow = ({
 
     useEffect(() => {
         resetMessage();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [expandedRowId]);
 
     return {

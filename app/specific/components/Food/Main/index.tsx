@@ -8,13 +8,12 @@ import TableFooter from '@root/app/_components/Table/Footer';
 import TableHeader from '@root/app/_components/Table/Header.tsx';
 import QuickFilterRow from '@root/app/_components/Table/QuickFilterRow';
 import t from '@root/app/lib/lang/translate';
-import { useState, type FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import RowActions from '@root/app/_components/Table/Actions';
 import TableWrapper from '@root/app/_components/Table/Wrapper';
 import TableActionConfirm from '@root/app/_components/Table/ActionConfirm';
 import MyButton from '@root/app/_components/ui/buttons/MyButton';
 import { Table } from 'flowbite-react';
-import { api } from '@root/app/trpc/react';
 import TableToast from '@root/app/_components/Table/Toast';
 import FoodExpandedRow from '@root/app/specific/components/Food/Main/ExpandedRow';
 import { useFoodTableContext } from '@root/app/specific/components/Food/Main/context';
@@ -31,6 +30,7 @@ const FoodTable: FunctionComponent = () => {
         columns: { columns },
         isFetching,
         totalCount,
+        countIsFetching,
         rowClick: { expandedRowId, onRowClick },
         sort: { sortName, sortDirection },
         action: {
@@ -41,19 +41,9 @@ const FoodTable: FunctionComponent = () => {
             actions
         },
         message,
-        filter: { search, addRemoveFoodCategory, addRemoveAllergen, allergens, foodCategory }
+        filter: { search, addRemoveFoodCategory, addRemoveAllergen, allergens, foodCategory },
+        addModal: { isAddOpen, addOpen, addClose },
     } = useFoodTableContext();
-
-
-    const [isAddOpen, setAddOpen] = useState(false);
-    const utils = api.useUtils();
-
-    const addOpen = () => {
-        onRowClick(null);
-        setAddOpen(true);
-        void utils.specific.allergen.getMany.invalidate();
-    }
-    const addClose = () => { setAddOpen(false) }
 
     return (
         <div className='relative'>
@@ -141,6 +131,7 @@ const FoodTable: FunctionComponent = () => {
                     pageName={pageName}
                     lang={lang}
                     dictionary={dictionary}
+                    isLoading={countIsFetching}
                 />
             </TableWrapper>
             <TableToast

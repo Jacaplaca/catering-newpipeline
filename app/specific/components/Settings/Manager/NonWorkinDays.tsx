@@ -1,6 +1,6 @@
 import { type FunctionComponent } from 'react';
 import DatePicker from '@root/app/_components/ui/Inputs/DatePicker';
-import { format, addYears, getDay, isEqual, startOfDay, isAfter, parseISO } from 'date-fns';
+import { format, addYears, getDay, startOfDay, isAfter, parseISO } from 'date-fns';
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
 import { pl } from 'date-fns/locale/pl';
 import { registerLocale } from 'react-datepicker';

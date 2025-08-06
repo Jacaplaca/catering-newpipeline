@@ -4,7 +4,7 @@ import useSearch from '@root/app/hooks/useSearch';
 import useConsumerDietsColumns from '@root/app/specific/components/FoodMenu/ConsumerDiets/useColumns';
 import useConsumerDietsDataGrid from '@root/app/specific/components/FoodMenu/ConsumerDiets/useDataGrid';
 import useFetchConsumerDiets from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFetch';
-import useFilter from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFilter';
+import useConsumerDietsFilter from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFilter';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import { type SettingParsedType } from '@root/types';
 import { type ClientWithCommonAllergens, type ClientWithCommonAllergensSortName } from '@root/types/specific';
@@ -24,7 +24,7 @@ const useConsumerDietsTable = ({
 
     const { sort, sortDirection, sortName } = useTableSort<ClientWithCommonAllergensSortName>("info.name")
     const { searchValue, search } = useSearch({ lang, pageName });
-    const filter = useFilter({ lang, pageName });
+    const filter = useConsumerDietsFilter();
 
     const columns = useConsumerDietsColumns({ sort });
     const { rowClick } = useFoodMenuContext();
@@ -44,7 +44,6 @@ const useConsumerDietsTable = ({
             limit
         },
     } = useFetchConsumerDiets({
-        tagId: filter.tags.tagId,
         columns,
         searchValue,
         sortName,

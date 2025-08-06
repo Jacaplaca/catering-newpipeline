@@ -11,8 +11,8 @@ const FormSchema = consumerFoodValidator;
 type ConsumerFoodReplacementFormValues = z.infer<typeof FormSchema>;
 
 const useConsumerFood = (assignment: ClientFoodAssignment) => {
-    const { id, meal, consumer, food, exclusions, comment, alternativeFood, ignoredAllergens } = assignment;
-    const { day: { day }, rowClick: { expandedRowId } } = useFoodMenuContext();
+    const { consumer, food, exclusions, comment, alternativeFood, ignoredAllergens } = assignment;
+    const { day: { day } } = useFoodMenuContext();
     const utils = api.useUtils();
     const [isEditing, setIsEditing] = useState(!!assignment.id);
 

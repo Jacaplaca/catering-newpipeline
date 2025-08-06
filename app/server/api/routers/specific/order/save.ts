@@ -1,4 +1,4 @@
-import { Order, OrderStatus, RoleType } from '@prisma/client';
+import { OrderStatus, RoleType } from '@prisma/client';
 import { orderValidator } from '@root/app/validators/specific/order';
 import { type z } from 'zod';
 import { type Context, createCateringProcedure } from '@root/app/server/api/specific/trpc';

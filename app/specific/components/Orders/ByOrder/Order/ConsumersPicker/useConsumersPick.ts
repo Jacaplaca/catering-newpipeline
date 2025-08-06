@@ -53,6 +53,7 @@ const useConsumersPick = ({
                 setSelectedItems(newSelectedItems);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedIds, allowedItems]);
 
     return {

@@ -42,9 +42,9 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
 
 
     const { dictionary } = useConsumerDietsTableContext();
-    const { id, meal, consumer, food, mealId, exclusions } = assignment;
+    const { id, meal, consumer } = assignment;
 
-    const { form, onSubmit, commonAllergens, updateFood, updateExclusions, allExcludedAllergen, isSubmitting, updateAlternativeFood, ignoreAllergen } = consumerFood;
+    const { form, onSubmit, commonAllergens, updateExclusions, allExcludedAllergen, isSubmitting, updateAlternativeFood, ignoreAllergen } = consumerFood;
 
     const [debouncedComment] = useDebounceValue(form.watch('comment') || '', 500);
 
@@ -81,6 +81,7 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
                 <Info
                     mealName={meal.name}
                     consumerName={consumer.name ?? ''}
+                    consumerDescription={consumer.diet?.description ?? ''}
                     food={form.watch('food') ?? null}
                     exclusions={form.watch('exclusions')?.map(e => e.name) ?? []}
                     alternativeFood={form.watch('alternativeFood') ?? null}

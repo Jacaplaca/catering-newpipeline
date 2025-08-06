@@ -32,6 +32,7 @@ const useRoutesPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) => {
             setIsLoading(false);
             setDayId(null);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pdfError]);
 
     return {

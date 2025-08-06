@@ -89,7 +89,6 @@ const CancelledConsumers = ({
 const StandardMealCount = ({
     current,
     beforeDeadline,
-    mealType
 }: {
     current: number;
     beforeDeadline?: number;

@@ -10,7 +10,6 @@ import InputsWrapper from '@root/app/_components/ui/Inputs/InputsWrapper';
 import FormSection from '@root/app/_components/ui/form/Section';
 import ClientDropdown from '@root/app/specific/components/ui/Dropdown/Client';
 import AllergenDropdown from '@root/app/specific/components/ui/Dropdown/Allergen';
-import { UseFormReturn } from 'react-hook-form';
 
 const ConsumerInputs = () => {
 

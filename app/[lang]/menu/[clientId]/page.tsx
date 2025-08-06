@@ -19,7 +19,7 @@ const menu: NextPage<{
   const lang = params.lang;
 
   const page = await getContentFromApi({ lang, key: pageName }) as Page;
-  const { title, h1, description, content } = page;
+  const { title, h1, description } = page;
   const schemaBreadcrumb = breadcrumbGen({ title, lang, page: pageName });
 
   const clientName = await getClientFromApi({ clientId: params.clientId });

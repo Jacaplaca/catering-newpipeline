@@ -7,9 +7,10 @@ import useFetch from '@root/app/specific/components/Food/Main/useFetch';
 import useFoodFilter from '@root/app/specific/components/Food/Main/useFilter';
 import useRow from '@root/app/specific/components/Food/Main/useRow';
 import useAction from '@root/app/specific/components/Food/Main/useRowAction';
+import { api } from '@root/app/trpc/react';
 import { type SettingParsedType } from '@root/types';
 import { type FoodCustomTable, type FoodSortName } from '@root/types/specific';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const useFoodTable = ({
     lang,
@@ -22,6 +23,7 @@ const useFoodTable = ({
     settings: { main: SettingParsedType },
     dictionary: Record<string, string>,
 }) => {
+    const utils = api.useUtils();
     const { messageObj, resetMessage, updateMessage } = useMessage(dictionary);
     const { sort, sortDirection, sortName } = useTableSort<FoodSortName>("name");
     const { foodCategory, allergens, addRemoveFoodCategory, addRemoveAllergen, search, searchValue } = useFoodFilter();
@@ -41,7 +43,8 @@ const useFoodTable = ({
         },
         pagination: {
             page,
-            limit
+            limit,
+            countIsFetching
         },
     } = useFetch({
         columns,
@@ -52,8 +55,10 @@ const useFoodTable = ({
 
 
     const [rows, setRows] = useRows<FoodCustomTable>(fetchedRows);
+    const [isAddOpen, setAddOpen] = useState(false);
+    const addClose = () => { setAddOpen(false) }
 
-    const rowClick = useRow({ setRows, refetchAll: resetTable, updateMessage, resetMessage, dictionary });
+    const rowClick = useRow({ setRows, refetchAll: resetTable, updateMessage, resetMessage, dictionary, afterSubmit: addClose });
 
     const action = useAction({
         onSuccess: resetTable,
@@ -83,6 +88,14 @@ const useFoodTable = ({
         action.uncheckAll();
     }
 
+
+
+    const addOpen = () => {
+        rowClick.onRowClick(null);
+        setAddOpen(true);
+        void utils.specific.allergen.getMany.invalidate();
+    }
+
     return {
         pageName,
         lang,
@@ -92,11 +105,13 @@ const useFoodTable = ({
         columns: { columns },
         isFetching,
         totalCount,
+        countIsFetching,
         rowClick,
         sort: { sortName, sortDirection },
         action,
         message: { messageObj, resetMessage, updateMessage },
         filter: { foodCategory, allergens, addRemoveFoodCategory, addRemoveAllergen, search, searchValue },
+        addModal: { isAddOpen, addOpen, addClose },
     }
 };
 export default useFoodTable;
