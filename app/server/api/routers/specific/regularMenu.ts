@@ -289,7 +289,7 @@ const create = createCateringProcedure([RoleType.manager, RoleType.dietician])
       // Add meals and foods to menu
       await addMealFoodsToMenu(tx, regularMenu.id, foods);
 
-      await addFoodToConsumers(tx, { cateringId, menu: regularMenu, foods, consumerIds: [] });
+      await addFoodToConsumers(tx, { cateringId, menu: regularMenu, foods });
 
       return regularMenu;
     });
