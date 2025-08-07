@@ -1,3 +1,12 @@
+## [2.4.2](https://github.com/Jacaplaca/catering/compare/v2.4.1...v2.4.2) (2025-08-07)
+
+
+### Bug Fixes
+
+* remove unnecessary consumerIds parameter in addFoodToConsumers function ([acf6aa8](https://github.com/Jacaplaca/catering/commit/acf6aa884e88b4319d8a7b1b381a6b1edc56971a))
+
+
+
 ## [2.4.1](https://github.com/Jacaplaca/catering/compare/v2.4.0...v2.4.1) (2025-08-06)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * save on ready. More info about consumer in diet creator ([e180d3d](https://github.com/Jacaplaca/catering/commit/e180d3d1a29faf2acd7547ea6eb2e1b9ed7adbf0))
-
-
-
-# [2.2.0](https://github.com/Jacaplaca/catering/compare/v2.1.0...v2.2.0) (2025-07-22)
-
-
-### Features
-
-* add NEXT_PUBLIC_DOMAIN to environment variables, create menu page component, full order edit for manager ([e472902](https://github.com/Jacaplaca/catering/commit/e47290226e15bc5eb5970c7e90d2aa230e834c93))
 
 
 
