@@ -110,6 +110,14 @@ const table = createCateringProcedure([RoleType.manager, RoleType.dietician])
                     dinnerStandardBeforeDeadline: 1,
                     lunchDietCountBeforeDeadline: 1,
                     dinnerDietCountBeforeDeadline: 1,
+                    isChanged: {
+                        $or: [
+                            { $ne: ['$lunchStandard', '$lunchStandardBeforeDeadline'] },
+                            { $ne: ['$dinnerStandard', '$dinnerStandardBeforeDeadline'] },
+                            { $ne: ['$lunchDiet', '$lunchDietCountBeforeDeadline'] },
+                            { $ne: ['$dinnerDiet', '$dinnerDietCountBeforeDeadline'] },
+                        ]
+                    }
                 }
             },
             {

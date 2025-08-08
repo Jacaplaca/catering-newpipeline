@@ -111,10 +111,19 @@ export type OrdersCustomTable = {
     clientId: string;
     breakfastStandard: number;
     lunchStandard: number;
+    lunchStandardBeforeDeadline: number;
     dinnerStandard: number;
+    dinnerStandardBeforeDeadline: number;
     breakfastDietCount: number;
     lunchDietCount: number;
+    lunchDietCountBeforeDeadline: number;
     dinnerDietCount: number;
+    dinnerDietCountBeforeDeadline: number;
+    isChanged?: boolean;
+    isLunchStandardChanged?: boolean;
+    isDinnerStandardChanged?: boolean;
+    isLunchDietCountChanged?: boolean;
+    isDinnerDietCountChanged?: boolean;
     sentToCateringAt: { $date: Date };
 };
 
@@ -150,6 +159,7 @@ export type OrderGroupedByClientAndMonthCustomTable = {
     lunchDiet: number;
     dinnerStandard: number;
     dinnerDiet: number;
+    isChanged?: boolean;
     sentToCateringAt: { $date: Date };
 }
 

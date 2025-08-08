@@ -7,14 +7,46 @@ import { type OrdersCustomTable } from '@root/types/specific';
 import { format } from 'date-fns-tz';
 import { type FC } from 'react';
 
-const MealCount: FC<{ count: number }> = ({ count }) => {
-    return <div className={`
-    flex justify-center
-    text-gray-900 dark:text-gray-100 font-bold text-base
-    ${count ? "opacity-100" : "opacity-70"}
-    `}>
-        {count ? count : '-'}
-    </div>
+const MealCount: FC<{ count: number, beforeDeadline?: number }> = ({ count, beforeDeadline }) => {
+    const hasBeforeDeadline = typeof beforeDeadline === 'number';
+    const hasDifference = hasBeforeDeadline && beforeDeadline !== count;
+
+    if (!hasDifference) {
+        return (
+            <div
+                className={`
+                flex justify-center
+                text-gray-900 dark:text-gray-100 font-bold text-base
+                ${count ? 'opacity-100' : 'opacity-70'}
+            `}
+            >
+                {count ? count : '-'}
+            </div>
+        );
+    }
+
+    const difference = count - (beforeDeadline ?? count);
+    const isIncrease = difference > 0;
+    const diffText = isIncrease ? `+${difference}` : `${difference}`;
+    const diffColor = isIncrease
+        ? 'text-green-600 dark:text-green-400'
+        : 'text-red-600 dark:text-red-400';
+
+    return (
+        <div
+            className={`
+            flex justify-center
+            text-gray-900 dark:text-gray-100 font-bold text-base
+            opacity-100
+        `}
+        >
+            <div className="flex flex-row items-center gap-3">
+                <span>{count}</span>
+                <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600" />
+                <span className={`text-sm font-semibold ${diffColor}`}>{diffText}</span>
+            </div>
+        </div>
+    );
 }
 
 const useOrderDataGrid = ({
@@ -52,7 +84,7 @@ const useOrderDataGrid = ({
                         skeleton
                         onChange={() => { return void 0 }}
                     />,
-                    className: "p-1 md:p-4 w-6"
+                    className: "p-1 md:p-4 w-6 border-l-2 border-red-500"
                 },
                 ...columns.map(({ key }) => {
                     return {
@@ -64,8 +96,22 @@ const useOrderDataGrid = ({
         }
     })
 
+    // const getMealDeltaClass = (count?: number, before?: number) => {
+    //     if (typeof before !== 'number') return '';
+    //     if (typeof count !== 'number') return '';
+    //     if (count === before) return '';
+    //     if (count < before) {
+    //         return "relative after:content-[''] after:absolute after:bottom-0 after:right-0 after:w-0 after:h-0 after:border-b-[10px] after:border-l-[10px] after:border-b-red-500 after:border-l-transparent";
+    //     }
+    //     return "relative after:content-[''] after:absolute after:top-0 after:left-0 after:w-0 after:h-0 after:border-t-[10px] after:border-r-[10px] after:border-t-green-500 after:border-r-transparent";
+    // }
+
     const table = rows.map(({ id, client, deliveryDay, status, breakfastStandard,
-        lunchStandard, dinnerStandard, breakfastDietCount, lunchDietCount, dinnerDietCount, sentToCateringAt }, i) => {
+        lunchStandard, dinnerStandard, breakfastDietCount, lunchDietCount,
+        dinnerDietCount, sentToCateringAt, isChanged,
+        lunchStandardBeforeDeadline, dinnerStandardBeforeDeadline,
+        lunchDietCountBeforeDeadline, dinnerDietCountBeforeDeadline
+    }, i) => {
         const isDraft = status === OrderStatus.draft;
         const isClient = roleId === RoleType.client;
         const isDietician = roleId === RoleType.dietician;
@@ -73,6 +119,7 @@ const useOrderDataGrid = ({
         const deliveryDayDate = new Date(deliveryDay?.year ?? 0,
             deliveryDay?.month ?? 0,
             deliveryDay?.day ?? 0);
+        const classNameChanged = "relative after:content-[''] after:absolute after:inset-y-0 after:left-0 after:w-1 after:bg-yellow-500"
         return {
             key: id ?? `placeholderData-${i}`,
             rows: [
@@ -85,7 +132,8 @@ const useOrderDataGrid = ({
                         disabled={disableMainCheckbox}
                         className={`${disableMainCheckbox ? "opacity-50" : ""}`}
                     />,
-                    className: "p-1 md:p-4 w-6",
+                    className: `p-1 md:p-4 w-6  
+                    ${isChanged ? classNameChanged : ""}`,
                 },
                 {
                     component: <HighlightText
@@ -114,27 +162,43 @@ const useOrderDataGrid = ({
                 },
                 {
                     component: <MealCount count={breakfastStandard} />,
-                    key: 'breakfastStandard'
+                    key: 'breakfastStandard',
                 },
                 {
-                    component: <MealCount count={lunchStandard} />,
-                    key: 'lunchStandard'
+                    component: <MealCount
+                        count={lunchStandard}
+                        beforeDeadline={lunchStandardBeforeDeadline}
+                    />,
+                    key: 'lunchStandard',
+                    // className: `${getMealDeltaClass(lunchStandard, lunchStandardBeforeDeadline)}`
                 },
                 {
-                    component: <MealCount count={dinnerStandard} />,
-                    key: 'dinnerStandard'
+                    component: <MealCount
+                        count={dinnerStandard}
+                        beforeDeadline={dinnerStandardBeforeDeadline}
+                    />,
+                    key: 'dinnerStandard',
+                    // className: `${getMealDeltaClass(dinnerStandard, dinnerStandardBeforeDeadline)}`
                 },
                 {
                     component: <MealCount count={breakfastDietCount} />,
                     key: 'breakfastDietCount'
                 },
                 {
-                    component: <MealCount count={lunchDietCount} />,
-                    key: 'lunchDietCount'
+                    component: <MealCount
+                        count={lunchDietCount}
+                        beforeDeadline={lunchDietCountBeforeDeadline}
+                    />,
+                    key: 'lunchDietCount',
+                    // className: `${getMealDeltaClass(lunchDietCount, lunchDietCountBeforeDeadline)}`
                 },
                 {
-                    component: <MealCount count={dinnerDietCount} />,
-                    key: 'dinnerDietCount'
+                    component: <MealCount
+                        count={dinnerDietCount}
+                        beforeDeadline={dinnerDietCountBeforeDeadline}
+                    />,
+                    key: 'dinnerDietCount',
+                    // className: `${getMealDeltaClass(dinnerDietCount, dinnerDietCountBeforeDeadline)}`
                 },
                 {
                     component: <HighlightText

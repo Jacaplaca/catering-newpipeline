@@ -147,15 +147,39 @@ const getOrderDbQuery = ({
         },
         breakfastStandard: 1,
         lunchStandard: 1,
+        lunchStandardBeforeDeadline: 1,
         dinnerStandard: 1,
+        dinnerStandardBeforeDeadline: 1,
         breakfastDiet: 1,
         breakfastDietCount: 1,
         lunchDiet: 1,
         lunchDietCount: 1,
+        lunchDietCountBeforeDeadline: 1,
         dinnerDiet: 1,
         dinnerDietCount: 1,
+        dinnerDietCountBeforeDeadline: 1,
         updatedAt: 1,
         sentToCateringAt: 1,
+        isLunchStandardChanged: {
+            $ne: ['$lunchStandard', '$lunchStandardBeforeDeadline']
+        },
+        isDinnerStandardChanged: {
+            $ne: ['$dinnerStandard', '$dinnerStandardBeforeDeadline']
+        },
+        isLunchDietCountChanged: {
+            $ne: ['$lunchDietCount', '$lunchDietCountBeforeDeadline']
+        },
+        isDinnerDietCountChanged: {
+            $ne: ['$dinnerDietCount', '$dinnerDietCountBeforeDeadline']
+        },
+        isChanged: {
+            $or: [
+                { $ne: ['$lunchStandard', '$lunchStandardBeforeDeadline'] },
+                { $ne: ['$dinnerStandard', '$dinnerStandardBeforeDeadline'] },
+                { $ne: ['$lunchDietCount', '$lunchDietCountBeforeDeadline'] },
+                { $ne: ['$dinnerDietCount', '$dinnerDietCountBeforeDeadline'] },
+            ]
+        },
     } as Record<string, unknown>;
 
     const pipelineOrg = [
