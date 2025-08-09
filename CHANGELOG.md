@@ -1,3 +1,12 @@
+# [2.5.0](https://github.com/Jacaplaca/catering/compare/v2.4.3...v2.5.0) (2025-08-09)
+
+
+### Features
+
+* food order drag and many optimizations ([92a3856](https://github.com/Jacaplaca/catering/commit/92a385633b3dafd52d01addeb53ca40eb5af0e1f))
+
+
+
 ## [2.4.3](https://github.com/Jacaplaca/catering/compare/v2.4.2...v2.4.3) (2025-08-08)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * month summary add foods to new consumer new comments suggestions ([3ab80cb](https://github.com/Jacaplaca/catering/commit/3ab80cb324be70112ba81766f0048a95af8c6fae))
-
-
-
-# [2.3.0](https://github.com/Jacaplaca/catering/compare/v2.2.1...v2.3.0) (2025-07-31)
-
-
-### Features
-
-* add ignoredAllergens field to consumer food management and update related components ([f94eb22](https://github.com/Jacaplaca/catering/commit/f94eb224896aab9838f5273c7912a9294a11bfec))
 
 
 
