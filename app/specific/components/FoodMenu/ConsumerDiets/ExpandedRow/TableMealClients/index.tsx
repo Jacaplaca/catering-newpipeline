@@ -155,8 +155,10 @@ const EmptyConsumersState = ({ dictionary, allergens }: { dictionary: Record<str
 // Main component
 const TableMealClients = () => {
     const { dictionary, filter: { allergens } } = useConsumerDietsTableContext();
-    const { rowClick: { clientConsumers, clientFoods: { data: rawAssignments, isFetching: clientFoodsFetching } } } = useFoodMenuContext();
-    // console.log(clientConsumers, allergens);
+    const { rowClick: { clientConsumers, clientFoods: { data, isFetching: clientFoodsFetching } } } = useFoodMenuContext();
+    const { rawAssignments, menuMealFoods } = data ?? { rawAssignments: [], menuMealFoods: [] };
+
+    // console.log(rawAssignments);
 
     const assignments = rawAssignments ?? [];
     const { meals } = useFoodMenuContext();
@@ -189,7 +191,20 @@ const TableMealClients = () => {
 
     const allDishesByMeal = getAllDishesByMeal();
     // Filter out meals with no dishes
-    const dishesByMeal = allDishesByMeal.filter(meal => meal.dishes.length > 0);
+    let dishesByMeal = allDishesByMeal.filter(meal => meal.dishes.length > 0);
+    dishesByMeal = dishesByMeal.map(meal => {
+        const dishesInOrder = meal.dishes.map(dish => {
+            const menuMealFood = menuMealFoods.find(m => m.foodId === dish.id);
+            return {
+                ...dish,
+                order: menuMealFood?.order ?? 0
+            }
+        }).sort((a, b) => a.order - b.order);
+        return {
+            ...meal,
+            dishes: dishesInOrder
+        }
+    })
 
     const totalDishColumns = dishesByMeal.reduce((sum, { dishes }) => sum + Math.max(1, dishes.length), 0);
     const minColumnWidth = 150;

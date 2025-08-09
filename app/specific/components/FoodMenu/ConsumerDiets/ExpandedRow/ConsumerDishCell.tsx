@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { type ClientFoodAssignment } from '@root/types/specific';
 import FoodReplacementEditor from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/FoodReplacementEditor';
 import getCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/getCommonAllergens';
-import AutoReplaceButton from './AutoReplaceButton';
+// import AutoReplaceButton from './AutoReplaceButton';
 import ResetButton from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/ResetButton';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import useConsumerFood from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/FoodReplacementEditor/useConsumerFood';
@@ -66,9 +66,9 @@ const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
             <div className="flex justify-between items-center p-1 min-h-[2rem]">
                 <div className="flex gap-1">
                     {showResetButton() && <ResetButton assignmentId={assignment.id} />}
-                    {hasAllergenWarning && (
+                    {/* {hasAllergenWarning && (
                         <AutoReplaceButton assignmentId={assignment.id} />
-                    )}
+                    )} */}
                 </div>
                 <div>
                     {hasAllergenWarning && (

@@ -29,8 +29,11 @@ const ConsumerDietsTable: FunctionComponent = () => {
         search,
         sort: { sortName, sortDirection },
         filter: { allergens, addRemoveAllergen, clearAllergens },
+        fetchOneWithCommonAllergens
     } = useConsumerDietsTableContext();
-    const { rowClick: { onRowClick, expandedRowId }, message, getConfirmationData } = useFoodMenuContext();
+    const { rowClick: { onRowClick, expandedRowId }, message, getConfirmationData } = useFoodMenuContext(
+        // { updateClientRow: fetchOneWithCommonAllergens.actions.fetchForClient }
+    );
 
     return (
         <div className='relative'>

@@ -71,6 +71,11 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
         return form.watch('food') ? [form.watch('food')] : []
     }
 
+    // [...(form.watch('food')?.allergens.map(a => a.id) ?? []), ...(form.watch('alternativeFood')?.allergens.map(a => a.id) ?? [])]
+    const allergensForExclusions = form.watch('alternativeFood')
+        ? form.watch('alternativeFood')?.allergens.map(a => a.id)
+        : form.watch('food')?.allergens.map(a => a.id)
+
     return (
         <MainModal
             isOpen={isOpen}
@@ -149,7 +154,7 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
                                     selectedItems={form.watch('exclusions') ?? []}
                                     onItemsChange={updateExclusions}
                                     placeholder={translate(dictionary, 'menu-creator:exclusions_placeholder')}
-                                    withAllergens={form.watch('food')?.allergens.map(a => a.id)}
+                                    withAllergens={allergensForExclusions}
                                     inputClassName='w-full'
                                     // limitItems={1}
                                     showSelectionIcon

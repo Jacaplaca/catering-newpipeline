@@ -12,7 +12,7 @@ type ConsumerFoodReplacementFormValues = z.infer<typeof FormSchema>;
 
 const useConsumerFood = (assignment: ClientFoodAssignment) => {
     const { consumer, food, exclusions, comment, alternativeFood, ignoredAllergens } = assignment;
-    const { day: { day } } = useFoodMenuContext();
+    const { day: { day }, rowClick } = useFoodMenuContext();
     const utils = api.useUtils();
     const [isEditing, setIsEditing] = useState(!!assignment.id);
 
@@ -136,23 +136,35 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
     // }, [existingReplacement, day, consumerId, form]);
 
     const updateMutation = api.specific.consumerFood.update.useMutation({
-        onSuccess: () => {
+        onSuccess: (updatedAssignment) => {
             // Invalidate relevant queries to refetch data, for example, a list of replacements.
             // await utils.specific.consumerFoodReplacement.invalidate();
-            console.log('Food replacement created successfully');
+            // console.log('Food replacement created successfully');
+            updatedAssignment && rowClick.updateRawAssignment(updatedAssignment);
             // You might want to call refetch() here if you have one.
-            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
+            // void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
+
+            void utils.specific.regularMenu.getOneClientWithCommonAllergens.invalidate({
+                day: day ?? { year: 0, month: 0, day: 0 },
+                clientId: consumer.clientId,
+                showColumns: [],
+            });
         },
         onError: (error) => {
             console.error('Error creating food replacement:', error);
             // Handle and display error messages to the user.
         },
-        onSettled: () => {
-            void utils.specific.consumerFood.getByClientId.invalidate({
-                clientId: consumer.clientId,
-                day: day ?? undefined,
-            });
-        },
+        // onSettled: () => {
+        //     // void utils.specific.consumerFood.getByClientId.invalidate({
+        //     //     clientId: consumer.clientId,
+        //     //     day: day ?? undefined,
+        //     // });
+        //     // void utils.specific.regularMenu.getOneClientWithCommonAllergens.invalidate({
+        //     //     day: day ?? { year: 0, month: 0, day: 0 },
+        //     //     clientId: consumer.clientId,
+        //     //     showColumns: [],
+        //     // });
+        // },
     });
 
     // const updateMutation = api.specific.consumerFoodReplacement.update.useMutation({

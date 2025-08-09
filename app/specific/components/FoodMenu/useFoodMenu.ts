@@ -40,6 +40,7 @@ const useFoodMenu = ({
     const { isStandardMenuCreatorShown, toggleStandardMenuCreator } = useToggleMenuStandard({ clientId, day: day.day, isMenuEditableForClient });
 
     const menuQueries = useMenuQueries(day.day, templateDayObject, clientId);
+    // const { updateFoodsOrderMutation } = useFoodOrder();
     const removeByClient = useRemoveMenu({
         clientId,
         day: day.day ?? { year: 0, month: 0, day: 0 },
@@ -86,7 +87,7 @@ const useFoodMenu = ({
     useEffect(() => {
         if (clientId) {
             setNotEditable4Client();
-            void utils.specific.regularMenu.getOne.invalidate();
+            // void utils.specific.regularMenu.getOne.invalidate();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clientId]);
@@ -161,6 +162,7 @@ const useFoodMenu = ({
         isStandardMenuCreatorShown,
         toggleStandardMenuCreator,
         createAssignments,
+        // updateFoodsOrderMutation,
     }
 };
 export default useFoodMenu;

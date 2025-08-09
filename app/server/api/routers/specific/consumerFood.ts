@@ -6,10 +6,109 @@ import { type ClientFoodAssignment } from '@root/types/specific';
 import { TRPCError } from '@trpc/server';
 import getCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/getCommonAllergens';
 
+const getRawAssignments = async ({
+  menuId,
+  cateringId,
+  clientId,
+  consumerId,
+  id,
+}: {
+  id?: string;
+  menuId?: string;
+  cateringId?: string;
+  clientId?: string;
+  consumerId?: string;
+}) => {
+  return await db.consumerFood.findMany({
+    where: {
+      id,
+      consumer: {
+        clientId,
+        id: consumerId,
+      },
+      regularMenu: {
+        id: menuId,
+      },
+      cateringId,
+    },
+    include: {
+      regularMenu: true,
+      consumer: {
+        include: {
+          allergens: {
+            include: {
+              allergen: true,
+            },
+          },
+        },
+      },
+      food: {
+        include: {
+          allergens: {
+            include: {
+              allergen: true,
+            },
+          },
+        },
+      },
+      alternativeFood: {
+        include: {
+          allergens: {
+            include: {
+              allergen: true,
+            },
+          },
+        },
+      },
+      meal: true,
+      exclusions: {
+        include: {
+          exclusion: {
+            include: {
+              allergens: {
+                include: { allergen: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+}
+
+const getMenuId = async ({
+  clientId,
+  day,
+  cateringId,
+}: {
+  clientId: string;
+  day: { year: number, month: number, day: number };
+  cateringId: string;
+}) => {
+  const clientMenu = await db.regularMenu.findFirst({
+    where: {
+      clientId,
+      day,
+      cateringId,
+    },
+  });
+
+  const standardMenu = await db.regularMenu.findFirst({
+    where: {
+      day,
+      cateringId,
+      clientId: { isSet: false }
+    },
+  });
+
+  const menuId = clientMenu?.id ?? standardMenu?.id;
+
+  return menuId;
+}
 
 const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(consumerFoodValidator)
-  .mutation(({ input }) => {
+  .mutation(async ({ input }) => {
     // const { session: { catering } } = ctx;
     const { id, food, exclusions, comment, alternativeFood, ignoredAllergens } = input;
 
@@ -20,7 +119,7 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
       });
     }
 
-    return db.consumerFood.update({
+    await db.consumerFood.update({
       where: { id },
       data: {
         food: {
@@ -41,6 +140,8 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
         },
       },
     });
+    const rawAssignments = await getRawAssignments({ id });
+    return rawAssignments[0] as unknown as ClientFoodAssignment;
   });
 
 const getOne = createCateringProcedure([RoleType.manager])
@@ -56,84 +157,27 @@ const getOne = createCateringProcedure([RoleType.manager])
     });
   });
 
+
+
 const getByClientId = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(consumerFoodGetByClientIdValidator)
   .query(async ({ input, ctx }) => {
     const { session: { catering } } = ctx;
     const { clientId, day } = input;
 
-    const clientMenu = await db.regularMenu.findFirst({
+    const menuId = await getMenuId({ clientId, day, cateringId: catering.id });
+
+    const menuMealFoods = await db.menuMealFood.findMany({
       where: {
-        clientId,
-        day,
-        cateringId: catering.id,
+        regularMenuId: menuId,
       },
     });
 
-    const standardMenu = await db.regularMenu.findFirst({
-      where: {
-        day,
-        cateringId: catering.id,
-        clientId: { isSet: false }
-      },
-    });
-
-    const menuId = clientMenu?.id ?? standardMenu?.id;
-
-    const data = await db.consumerFood.findMany({
-      where: {
-        consumer: {
-          clientId,
-        },
-        regularMenu: {
-          id: menuId,
-        },
-        cateringId: catering.id,
-      },
-      include: {
-        regularMenu: true,
-        consumer: {
-          include: {
-            allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-          },
-        },
-        food: {
-          include: {
-            allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-          },
-        },
-        alternativeFood: {
-          include: {
-            allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-          },
-        },
-        meal: true,
-        exclusions: {
-          include: {
-            exclusion: {
-              include: {
-                allergens: {
-                  include: { allergen: true },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-    return data as unknown as ClientFoodAssignment[]
+    const rawAssignments = await getRawAssignments({ menuId, cateringId: catering.id, clientId });
+    return {
+      rawAssignments: rawAssignments as unknown as ClientFoodAssignment[],
+      menuMealFoods,
+    }
   });
 
 const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dietician])
@@ -334,7 +378,7 @@ const resetOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
       return null;
     }
 
-    return db.consumerFood.update({
+    await db.consumerFood.update({
       where: { id },
       data: {
         food: {
@@ -347,6 +391,8 @@ const resetOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
         comment: '',
       },
     });
+    const rawAssignments = await getRawAssignments({ id });
+    return rawAssignments[0] as unknown as ClientFoodAssignment;
   });
 
 const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.dietician])

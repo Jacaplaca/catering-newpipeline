@@ -10,6 +10,7 @@ export const regularMenuCreateValidator = z.object({
     }),
     foods: z.array(z.object({
         id: z.string(),
+        order: z.number().optional(),
         name: z.string().optional(),
         mealId: z.string(),
     }))
@@ -24,6 +25,7 @@ export const regularMenuEditValidator = z.object({
     }),
     foods: z.array(z.object({
         id: z.string(),
+        order: z.number().optional(),
         name: z.string().optional(),
         mealId: z.string(),
     }))
@@ -73,6 +75,16 @@ export const getClientsWithCommonAllergensValidator = z.object({
     tagId: z.string().optional(),
 });
 
+export const getOneClientWithCommonAllergensValidator = z.object({
+    day: z.object({
+        year: z.number(),
+        month: z.number(),
+        day: z.number(),
+    }),
+    showColumns: z.array(z.string()).optional(),
+    clientId: z.string(),
+});
+
 export const createAssignmentsValidator = z.object({
     day: z.object({
         year: z.number(),
@@ -82,3 +94,10 @@ export const createAssignmentsValidator = z.object({
     clientId: z.string(),
     consumerId: z.string(),
 });
+
+export const updateFoodsOrderInput = z.object({
+    items: z.array(z.object({
+        id: z.string(),
+        order: z.number().int().min(0),
+    })).min(1),
+})

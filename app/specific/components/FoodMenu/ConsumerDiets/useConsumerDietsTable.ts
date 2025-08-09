@@ -4,6 +4,7 @@ import useSearch from '@root/app/hooks/useSearch';
 import useConsumerDietsColumns from '@root/app/specific/components/FoodMenu/ConsumerDiets/useColumns';
 import useConsumerDietsDataGrid from '@root/app/specific/components/FoodMenu/ConsumerDiets/useDataGrid';
 import useFetchConsumerDiets from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFetch';
+import useFetchOneWithCommonAllergens from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFetchOneWithCommonAllergens';
 import useConsumerDietsFilter from '@root/app/specific/components/FoodMenu/ConsumerDiets/useFilter';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import { type SettingParsedType } from '@root/types';
@@ -50,7 +51,13 @@ const useConsumerDietsTable = ({
         sortDirection,
     });
 
-    const [rows] = useRows<ClientWithCommonAllergens>(fetchedRows);
+    const [rows, , updateRow] = useRows<ClientWithCommonAllergens>(fetchedRows);
+    const fetchOneWithCommonAllergens = useFetchOneWithCommonAllergens({
+        columns,
+        clientId: rowClick.expandedRowId,
+        updateRow
+    })
+    // console.log(JSON.stringify(rows, null, 2));
 
 
     useEffect(() => {
@@ -88,7 +95,8 @@ const useConsumerDietsTable = ({
         sort: { sortName, sortDirection },
         filter,
         resetTable,
-        rowClick
+        rowClick,
+        fetchOneWithCommonAllergens
     }
 };
 export default useConsumerDietsTable;

@@ -12,7 +12,7 @@ const ITEMS_PER_PAGE = 20;
 
 type FoodDropdownProps = {
     dictionary: Record<string, string>;
-    selectedItems: { id: string, name: string, ingredients: string | null, allergens: { id: string, name: string }[] }[];
+    selectedItems: { id: string, name: string, order?: number | null, ingredients: string | null, allergens: { id: string, name: string }[] }[];
     inputClassName?: string;
     foundLimitChars?: number;
     hideSelected?: boolean;
@@ -22,6 +22,7 @@ type FoodDropdownProps = {
     allergens?: { id: string, name: string }[];
     excludeAllergens?: string[];
     limitItems?: number;
+    updateFoodsOrder?: (items: { id: string, order: number }[]) => void;
 }
 
 const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
@@ -36,6 +37,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
     allergens,
     excludeAllergens,
     limitItems,
+    updateFoodsOrder,
 }) => {
 
     const [foodIdsFromHoveredAllergenId, setFoodIdsFromHoveredAllergenId] = useState<string[]>([]);
@@ -126,6 +128,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
                     onMouseEnter={handleFoodMouseEnter}
                     iconClassName='fa-solid fa-salad'
                     fullWidth={limitItems === 1}
+                    updateFoodsOrder={updateFoodsOrder}
                 />
             )}
             {allergens && allergens.length > 0 && (

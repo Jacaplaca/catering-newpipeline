@@ -5,13 +5,15 @@ const getClientsDbQuery = ({
     showColumns,
     catering,
     id,
-    tagId
+    tagId,
+    clientId
 }: {
     searchValue?: string,
     catering: Catering,
     showColumns?: string[],
     id?: string,
-    tagId?: string
+    tagId?: string,
+    clientId?: string
     // role?: RoleType | 'all'
 }) => {
     const orConditions = showColumns?.map(column => ({
@@ -39,6 +41,10 @@ const getClientsDbQuery = ({
 
     if (searchValue && showColumns?.length) {
         query.$or = orConditions
+    }
+
+    if (clientId) {
+        query.id = clientId;
     }
 
     const pipeline = [

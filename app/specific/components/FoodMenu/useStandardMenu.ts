@@ -7,7 +7,7 @@ import { api } from '@root/app/trpc/react';
 import type useMenuQueries from '@root/app/specific/components/FoodMenu/useMenuQueries';
 
 // Define the shape of the form values, including 'id' which is always present in the form state
-type FoodSelectItem = { id: string; name: string, ingredients: string | null, allergens: { id: string, name: string }[], mealId: string | null };
+type FoodSelectItem = { id: string; name: string, order?: number | null, ingredients: string | null, allergens: { id: string, name: string }[], mealId: string | null };
 
 interface RegularMenuFormValues {
     id: string;
@@ -80,20 +80,41 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
         }
     }
 
-    const updateMenu = (menu: { id: string, name: string, ingredients: string | null, allergens: { id: string, name: string }[] }[], mealId: string) => {
+    const updateMenu = (menu: { id: string, name: string, order?: number | null, ingredients: string | null, allergens: { id: string, name: string }[] }[], mealId: string) => {
         const currentFoods = form.watch('foods');
+
+        // Find the highest order in ALL current foods first
+        const maxOrder = currentFoods.reduce((max, food) => {
+            const order = food.order ?? 0;
+            return order > max ? order : max;
+        }, 0);
 
         // Remove all foods with the same mealId
         const foodsWithoutCurrentMeal = currentFoods.filter(food => food.mealId !== mealId);
 
-        // Add new foods with the mealId
-        const updatedFoods = menu.map(food => ({ ...food, mealId }));
+        // Add new foods with the mealId and assign sequential orders for items without order
+        let nextOrder = maxOrder + 1;
+        const updatedFoods = menu.map(food => {
+            if (food.order === null || food.order === undefined) {
+                return { ...food, mealId, order: nextOrder++ };
+            }
+            return { ...food, mealId };
+        });
 
         // Combine: existing foods (without current mealId) + new foods
         const newFoods = [...foodsWithoutCurrentMeal, ...updatedFoods];
 
         form.setValue('foods', newFoods, { shouldDirty: true });
         setTemplateDayObject(null);
+    }
+
+    const updateFoodsOrder = (items: { id: string, order: number }[]) => {
+        const currentFoods = form.watch('foods');
+        const updatedFoods = currentFoods.map(food => {
+            const item = items.find(i => i.id === food.id);
+            return { ...food, order: item?.order ?? food.order };
+        });
+        form.setValue('foods', updatedFoods, { shouldDirty: true });
     }
 
 
@@ -168,10 +189,10 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
 
     const updateMutation = api.specific.regularMenu.update.useMutation({
         onSuccess: () => {
-            console.log('Menu updated successfully bbbbbv');
+            console.log('Menu updated successfully');
             void utils.specific.regularMenu.getOne.invalidate();
             void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
-            console.log('Menu updated successfully     asdfasdf');
+            console.log('Menu updated successfully');
         },
         onError: (error) => {
             console.error('Error updating menu:', error);
@@ -245,6 +266,7 @@ const useStandardMenu = (props: UseStandardMenuProps) => {
         clearForm,
         backToDefault,
         chooseTemplateDay,
+        updateFoodsOrder,
     };
 };
 

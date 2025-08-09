@@ -8,7 +8,7 @@ const Meal: FC<{
     id: string,
 }> = ({ name, id }) => {
     const { dictionary, standardMenuForm, getAllergens, getFoodsByMealId } = useFoodMenuContext();
-    const { updateMenu } = standardMenuForm;
+    const { updateMenu, updateFoodsOrder } = standardMenuForm;
     return <div className={`gap-2 border  border-neutral-50 dark:border-neutral-800  rounded-md p-4 `}>
 
         <div className="font-semibold mb-2 text-lg">{name}</div>
@@ -21,6 +21,7 @@ const Meal: FC<{
             placeholder={translate(dictionary, 'menu-creator:food_placeholder')}
             showSelectionIcon={true}
             allergens={getAllergens(id)}
+            updateFoodsOrder={updateFoodsOrder}
         />
     </div>
 }

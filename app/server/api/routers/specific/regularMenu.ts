@@ -1,11 +1,14 @@
 import { db } from '@root/app/server/db';
 import { type Prisma, type RegularMenu, RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
-import { regularMenuCreateValidator, regularMenuEditValidator, regularMenuGetOneValidator, regularMenuRemoveValidator, regularMenuListValidator, regularMenuConfigureDaysValidator, getClientsWithCommonAllergensValidator, createAssignmentsValidator } from '@root/app/validators/specific/regularMenu';
+import { regularMenuCreateValidator, regularMenuEditValidator, regularMenuGetOneValidator, regularMenuRemoveValidator, regularMenuListValidator, regularMenuConfigureDaysValidator, getClientsWithCommonAllergensValidator, createAssignmentsValidator, updateFoodsOrderInput, getOneClientWithCommonAllergensValidator } from '@root/app/validators/specific/regularMenu';
 import { TRPCError } from '@trpc/server';
 import getManyClients from '@root/app/server/api/routers/specific/libs/getManyClients';
 import checkCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/checkCommonAllergens';
 import checkIndividualMenu from '@root/app/server/api/routers/specific/libs/checkIndividualMenu';
+import { options } from '@root/app/server/api/specific/aggregate';
+import getClientsDbQuery from '@root/app/server/api/routers/specific/libs/getClientsDbQuery';
+import { type ClientCustomTable } from '@root/types/specific';
 
 const getClientsWithMenus = async (tx: Prisma.TransactionClient, cateringId: string) => {
   return await tx.regularMenu.findMany({
@@ -248,12 +251,13 @@ const addFoodToConsumers = async (
 const addMealFoodsToMenu = async (
   tx: Prisma.TransactionClient,
   regularMenuId: string,
-  foods: { id: string; mealId: string }[]
+  foods: { id: string; mealId: string, order?: number | null }[]
 ) => {
   const menuMealFoodsData = foods.map(food => ({
     regularMenuId,
     mealId: food.mealId,
     foodId: food.id,
+    order: food.order,
   }));
 
   if (menuMealFoodsData.length > 0) {
@@ -357,6 +361,7 @@ const getOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
         name: menuMealFood.food.name,
         ingredients: menuMealFood.food.ingredients,
         mealId: menuMealFood.mealId,
+        order: menuMealFood.order,
         allergens: menuMealFood.food.allergens.map(foodAllergen => ({
           id: foodAllergen.allergen.id,
           name: foodAllergen.allergen.name,
@@ -397,7 +402,7 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
 
       const existingMenuMealFoods = await tx.menuMealFood.findMany({
         where: { regularMenuId },
-        select: { foodId: true, mealId: true },
+        select: { id: true, foodId: true, mealId: true, order: true },
       });
 
       const existingFoodsSet = new Set(existingMenuMealFoods.map(f => `${f.foodId}:${f.mealId}`));
@@ -406,33 +411,113 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
       const foodsToAdd = foods.filter(f => !existingFoodsSet.has(`${f.id}:${f.mealId}`));
       const foodsToRemove = existingMenuMealFoods.filter(f => !newFoodsSet.has(`${f.foodId}:${f.mealId}`));
 
-      if (foodsToRemove.length > 0) {
-        const removeConditions = foodsToRemove.map(f => ({ foodId: f.foodId, mealId: f.mealId }));
+      // Check if only order has changed (no additions/removals)
+      const isOnlyOrderChange = foodsToAdd.length === 0 && foodsToRemove.length === 0;
 
-        await tx.consumerFood.deleteMany({
-          where: {
-            regularMenuId,
-            OR: removeConditions,
-          },
-        });
+      if (isOnlyOrderChange) {
+        // Only update orders without deleting/adding records
+        const orderUpdatePromises = foods
+          .filter(food => food.order !== undefined)
+          .map(food => {
+            const existingItem = existingMenuMealFoods.find(
+              existing => existing.foodId === food.id && existing.mealId === food.mealId
+            );
 
-        await tx.menuMealFood.deleteMany({
-          where: {
-            regularMenuId,
-            OR: removeConditions,
-          },
-        });
+            if (existingItem && existingItem.order !== food.order) {
+              return tx.menuMealFood.update({
+                where: { id: existingItem.id },
+                data: { order: food.order },
+              });
+            }
+            return null;
+          })
+          .filter(promise => promise !== null);
+
+        if (orderUpdatePromises.length > 0) {
+          await Promise.all(orderUpdatePromises);
+        }
+      }
+
+      // Only perform add/remove operations if it's not just an order change
+      if (!isOnlyOrderChange) {
+        if (foodsToRemove.length > 0) {
+          const removeConditions = foodsToRemove.map(f => ({ foodId: f.foodId, mealId: f.mealId }));
+
+          await tx.consumerFood.deleteMany({
+            where: {
+              regularMenuId,
+              OR: removeConditions,
+            },
+          });
+
+          await tx.menuMealFood.deleteMany({
+            where: {
+              regularMenuId,
+              OR: removeConditions,
+            },
+          });
+
+          // Normalize order for remaining items - get all remaining menuMealFoods and reorder them
+          const remainingMenuMealFoods = await tx.menuMealFood.findMany({
+            where: {
+              regularMenuId,
+            },
+            orderBy: [
+              { mealId: 'asc' },
+              { order: 'asc' },
+            ],
+          });
+
+          // Update order for remaining items to be sequential starting from 0
+          const updateOrderPromises = remainingMenuMealFoods.map((item, index) =>
+            tx.menuMealFood.update({
+              where: {
+                id: item.id,
+              },
+              data: {
+                order: index,
+              },
+            })
+          );
+
+          await Promise.all(updateOrderPromises);
+        }
+
+        if (foodsToAdd.length > 0) {
+          await addMealFoodsToMenu(tx, regularMenuId, foodsToAdd);
+          await addFoodToConsumers(tx, { cateringId, menu: clientMenu, foods: foodsToAdd, update: true });
+        }
+
+        // Update order for existing items that weren't added or removed but have order changes
+        const existingFoodsToUpdate = foods
+          .filter(food =>
+            food.order !== undefined &&
+            !foodsToAdd.some(addedFood => addedFood.id === food.id && addedFood.mealId === food.mealId)
+          )
+          .map(food => {
+            const existingItem = existingMenuMealFoods.find(
+              existing => existing.foodId === food.id && existing.mealId === food.mealId
+            );
+
+            if (existingItem && existingItem.order !== food.order) {
+              return tx.menuMealFood.update({
+                where: { id: existingItem.id },
+                data: { order: food.order },
+              });
+            }
+            return null;
+          })
+          .filter(promise => promise !== null);
+
+        if (existingFoodsToUpdate.length > 0) {
+          await Promise.all(existingFoodsToUpdate);
+        }
       }
 
       const regularMenu = await tx.regularMenu.update({
         where: { id: regularMenuId },
         data: { day },
       });
-
-      if (foodsToAdd.length > 0) {
-        await addMealFoodsToMenu(tx, regularMenuId, foodsToAdd);
-        await addFoodToConsumers(tx, { cateringId, menu: clientMenu, foods: foodsToAdd, update: true });
-      }
 
       return regularMenu;
     });
@@ -648,6 +733,29 @@ const getClientsWithCommonAllergens = createCateringProcedure([RoleType.manager,
     return clientsWithCommonAllergens;
   });
 
+const getOneClientWithCommonAllergens = createCateringProcedure([RoleType.manager, RoleType.dietician])
+  .input(getOneClientWithCommonAllergensValidator)
+  .query(async ({ input, ctx }) => {
+    const { session: { catering } } = ctx;
+    const { day } = input;
+
+    const pipeline = [
+      ...getClientsDbQuery({ catering, clientId: input.clientId, showColumns: input.showColumns }),
+    ]
+
+    const clients = await db.client.aggregateRaw({
+      pipeline,
+      options
+    }) as unknown as ClientCustomTable[];
+
+    const clientsWithCommonAllergens = await Promise.all(clients.map(async (client) => {
+      const hasCommonAllergens = await checkCommonAllergens(catering.id, day, client.id);
+      const hasIndividualMenu = await checkIndividualMenu(catering.id, day, client.id);
+      return { ...client, hasCommonAllergens, hasIndividualMenu };
+    }));
+    return clientsWithCommonAllergens[0];
+  });
+
 const createAssignments = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(createAssignmentsValidator)
   .mutation(async ({ input, ctx }) => {
@@ -697,6 +805,38 @@ const createAssignments = createCateringProcedure([RoleType.manager, RoleType.di
   });
 
 
+const updateFoodsOrder = createCateringProcedure([RoleType.manager, RoleType.dietician])
+  .input(updateFoodsOrderInput)
+  .mutation(async ({ input, ctx }) => {
+    const { session: { catering } } = ctx;
+    const { items } = input;
+
+    return db.$transaction(async (tx) => {
+      // Update order for each MenuMealFood item
+      const updatePromises = items.map(item =>
+        tx.menuMealFood.updateMany({
+          where: {
+            foodId: item.id,
+            regularMenu: {
+              cateringId: catering.id,
+            },
+          },
+          data: {
+            order: item.order,
+          },
+        })
+      );
+
+      await Promise.all(updatePromises);
+
+      return {
+        success: true,
+        updatedCount: items.length,
+      };
+    });
+  });
+
+
 const regularRouter = {
   // getMany,
   create,
@@ -707,6 +847,8 @@ const regularRouter = {
   configuredDays,
   getClientsWithCommonAllergens,
   createAssignments,
+  updateFoodsOrder,
+  getOneClientWithCommonAllergens,
   // count,
 }
 

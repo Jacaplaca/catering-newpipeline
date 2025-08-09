@@ -4,11 +4,16 @@ const useCreateAssignments = ({ day, clientId }: { day: { year: number, month: n
     const utils = api.useUtils();
     const { mutate, isPending } = api.specific.regularMenu.createAssignments.useMutation({
         onSuccess: () => {
+            console.log('onSuccess createAssignments refetch <<<<<<<<');
             void utils.specific.consumerFood.getByClientId.invalidate({
                 clientId,
                 day: day ?? { year: 0, month: 0, day: 0 },
             });
-            // void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
+            void utils.specific.regularMenu.getOneClientWithCommonAllergens.refetch({
+                day: day ?? { year: 0, month: 0, day: 0 },
+                clientId,
+                showColumns: [],
+            });
         },
     });
 

@@ -9,6 +9,7 @@ export const getClients = z.object({
     searchValue: z.string().optional(),
     showColumns: z.array(z.string()).optional(),
     tagId: z.string().optional(),
+    clientId: z.string().optional(),
 });
 
 export const getClientListValid = z.object({
