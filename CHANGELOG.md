@@ -1,3 +1,12 @@
+# [2.6.0](https://github.com/Jacaplaca/catering/compare/v2.5.0...v2.6.0) (2025-08-15)
+
+
+### Features
+
+* new pdfs ([9444360](https://github.com/Jacaplaca/catering/commit/944436025e291f40a59ae2212253333baa7f677f))
+
+
+
 # [2.5.0](https://github.com/Jacaplaca/catering/compare/v2.4.3...v2.5.0) (2025-08-09)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * filter by allergens in customer table in food menu assignments big scroll eslint and more ([d19206b](https://github.com/Jacaplaca/catering/commit/d19206bfc18f2b38090a55c18c57389653254fa6))
-
-
-
-# [2.4.0](https://github.com/Jacaplaca/catering/compare/v2.3.0...v2.4.0) (2025-08-05)
-
-
-### Features
-
-* month summary add foods to new consumer new comments suggestions ([3ab80cb](https://github.com/Jacaplaca/catering/commit/3ab80cb324be70112ba81766f0048a95af8c6fae))
 
 
 
