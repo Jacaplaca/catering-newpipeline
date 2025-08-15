@@ -155,6 +155,7 @@ model Catering {
     consumerFoods ConsumerFood[]
     meals Meal[]
     exclusions Exclusion[]
+    mealCategories MealCategory[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -764,13 +765,38 @@ model MenuMealFood {
     @@unique([regularMenuId, mealId, foodId])
 }
 
-model Meal {
+//Model for meal category, should be used instead of meal group
+model MealCategory {
     id String @id @default(cuid()) @map("_id")
     name String
     cateringId String
     catering Catering @relation(fields: [cateringId], references: [id])
+    meals Meal[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+//Temporary model for meal group, should be deleted after meal category is implemented
+model MealGroup {
+    id String @id @default(cuid()) @map("_id")
+    name         String
+    order        Int
+    meals Meal[]
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+}
+
+model Meal {
+    id String @id @default(cuid()) @map("_id")
+    name String
+    separateLabel Boolean?
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
     consumerFoods ConsumerFood[]
     menuMealFoods MenuMealFood[]
+    mealCategoryId String?
+    mealCategory MealCategory? @relation(fields: [mealCategoryId], references: [id], onDelete: SetNull)
+    mealGroupId String?
+    mealGroup MealGroup? @relation(fields: [mealGroupId], references: [id], onDelete: SetNull)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

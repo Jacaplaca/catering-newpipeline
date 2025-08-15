@@ -16,6 +16,9 @@ import useByClientAndMonthTable from '@root/app/specific/components/Orders/ByCli
 import { ByClientAndMonthTableContextProvider } from '@root/app/specific/components/Orders/ByClientAndMonth/context';
 import ByClientAndMonth from '@root/app/specific/components/Orders/ByClientAndMonth';
 import { RoleType } from '@prisma/client';
+import { OrderByDayMealsTableContextProvider } from '@root/app/specific/components/Orders/ByDayMeals/context';
+import useOrderByDayMealsTable from '@root/app/specific/components/Orders/ByDayMeals/useOrderMealsTable';
+import OrdersByDayMealsTable from '@root/app/specific/components/Orders/ByDayMeals/OrdersMealsTable';
 
 const OrdersComponent: FunctionComponent<{
     lang: LocaleApp
@@ -37,6 +40,11 @@ const OrdersComponent: FunctionComponent<{
                     <OrderByDayTableContextProvider store={useOrderByDayTable(props)} >
                         <OrdersByDayTable />
                     </OrderByDayTableContextProvider>
+                </FlowbiteTabs.Item>
+                <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_day_meals')}>
+                    <OrderByDayMealsTableContextProvider store={useOrderByDayMealsTable(props)} >
+                        <OrdersByDayMealsTable />
+                    </OrderByDayMealsTableContextProvider>
                 </FlowbiteTabs.Item>
                 <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_order')}>
                     <OrderTableContextProvider store={useOrderTable(props)} >

@@ -1,5 +1,5 @@
-import { mealSortNames } from '@root/types/specific';
-import { z } from 'zod';
+import { mealSortNames } from "@root/types/specific";
+import { z } from "zod";
 
 export const getMealsValidator = z.object({
     limit: z.number().int().min(1).default(10),
@@ -13,13 +13,33 @@ export const getMealsValidator = z.object({
 //     searchValue: z.string().optional(),
 // });
 
-export const mealCreateValidator = z.object({
+const mealBaseValidator = z.object({
     name: z.string(),
+    mealCategory: z
+        .object({
+            id: z.string().optional(),
+            name: z.string(),
+        })
+        .optional(),
+    mealGroup: z
+        .object({
+            id: z.string().optional(),
+            name: z.string(),
+        })
+        .optional(),
+    separateLabel: z.boolean().optional(),
 });
 
-export const mealEditValidator = z.object({
+export const mealCreateValidator = mealBaseValidator;
+
+export const mealEditValidator = mealBaseValidator.extend({
     id: z.string(),
-    name: z.string(),
+    mealCategory: mealBaseValidator.shape.mealCategory.unwrap().extend({
+        id: z.string(),
+    }).optional(),
+    mealGroup: mealBaseValidator.shape.mealGroup.unwrap().extend({
+        id: z.string(),
+    }).optional(),
 });
 
 export const removeMealValidator = z.object({

@@ -15,6 +15,8 @@ import regularMenu from '@root/app/server/api/routers/specific/regularMenu';
 import consumerFood from '@root/app/server/api/routers/specific/consumerFood';
 import meal from '@root/app/server/api/routers/specific/meal';
 import exclusion from '@root/app/server/api/routers/specific/exclusion';
+import mealCategory from '@root/app/server/api/routers/specific/mealCategory';
+import mealGroup from '@root/app/server/api/routers/specific/mealGroup';
 // Ensure that each of these routers is created by createTRPCRouter
 const specificRouter = createTRPCRouter({
     client,
@@ -37,6 +39,8 @@ const specificRouter = createTRPCRouter({
     consumerFood,
     meal,
     exclusion,
+    mealCategory,
+    mealGroup,
 });
 
 export default specificRouter;

@@ -1,5 +1,5 @@
 import { OrderStatus, type RoleType, ClientFileType } from '@prisma/client';
-import { type TableType } from '@root/types/specific';
+import { MealType, type TableType } from '@root/types/specific';
 
 export const settingColumnsRole = {
     'consumers_columns': {
@@ -36,3 +36,15 @@ export const clientFileTypeDictionary = {
     [ClientFileType.checklist]: { type: 'client-files:file_type_checklist', tooltip: 'client-files:file_type_checklist_tooltip' },
     [ClientFileType.diets]: { type: 'client-files:file_type_diets', tooltip: 'client-files:file_type_diets_tooltip' },
 } as Record<ClientFileType, { type: string, tooltip: string }>;
+
+export const mealGroup2orderField = {
+    breakfast: { standard: 'breakfastStandard', diet: 'breakfastDietCount', dietCollection: 'OrderConsumerBreakfast' },
+    lunch: { standard: 'lunchStandard', diet: 'lunchDietCount', dietCollection: 'OrderConsumerLunch' },
+    dinner: { standard: 'dinnerStandard', diet: 'dinnerDietCount', dietCollection: 'OrderConsumerDinner' },
+    // breakfastStandard: 'breakfast',
+    // breakfastDiet: 'breakfast',
+    // lunchStandard: 'lunch',
+    // lunchDiet: 'lunch',
+    // dinnerStandard: 'dinner',
+    // dinnerDiet: 'dinner',
+} as Record<MealType, { standard: string, diet: string, dietCollection: string }>

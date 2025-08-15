@@ -1,5 +1,5 @@
 import { type UpdateMessageType } from '@root/app/hooks/useMessage';
-import downloadPdfFromBase64 from '@root/app/specific/components/Orders/ByDay/DayMealsCell/downloadPdfFromBase64';
+import downloadPdfFromBase64 from '@root/app/lib/pdf/downloadPdfFromBase64';
 import { api } from '@root/app/trpc/react';
 import { MealType } from '@root/types/specific';
 import { useEffect, useState } from 'react';

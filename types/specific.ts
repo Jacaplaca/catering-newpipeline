@@ -1,4 +1,4 @@
-import { type Client, type Diet, type Dietician, type ClientInfo, type OrderStatus, type Consumer, type DeliveryDay, type DeliveryRoute, type Allergen, type FoodCategory, type ConsumerFood, type RegularMenu, type Food, type ConsumerAllergen, type FoodAllergen, type ConsumerFoodExclusion, type Exclusion, type ExclusionAllergen, type Meal } from '@prisma/client';
+import { type Client, type Diet, type Dietician, type ClientInfo, type OrderStatus, type Consumer, type DeliveryDay, type DeliveryRoute, type Allergen, type FoodCategory, type ConsumerFood, type RegularMenu, type Food, type ConsumerAllergen, type FoodAllergen, type ConsumerFoodExclusion, type Exclusion, type ExclusionAllergen, type Meal, type MealCategory, type MealGroup } from '@prisma/client';
 import { type TableTypeValues } from '@root/app/validators/settings';
 
 export const clientSortNames = ['name', 'email', 'code', "info.name", "info.email", "info.phone",
@@ -17,11 +17,14 @@ export type RouteSortName = typeof routeSortNames[number];
 export const allergenSortNames = ['name'] as const;
 export type AllergenSortName = typeof allergenSortNames[number];
 
-export const mealSortNames = ['name'] as const;
+export const mealSortNames = ['name', 'mealCategory.name', 'mealGroup.name'] as const;
 export type MealSortName = typeof mealSortNames[number];
 
 export const foodCategorySortNames = ['name'] as const;
 export type FoodCategorySortName = typeof foodCategorySortNames[number];
+
+export const mealCategorySortNames = ['name'] as const;
+export type MealCategorySortName = typeof mealCategorySortNames[number];
 
 export const clientFilesSortNames = ['name', 'code'] as const;
 
@@ -298,4 +301,5 @@ export type ClientFoodAssignment =
         }>;
         ignoredAllergens: string[];
     };
-// ... existing code ...
+
+export type MealCustomTable = Meal & { mealCategory?: MealCategory, mealGroup?: MealGroup }

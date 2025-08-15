@@ -24,9 +24,9 @@ const Consumer: React.FC<{
                     ({consumer.code})
                 </span>
             </div>
-            {consumer.diet.description && (
+            {consumer.diet && (
                 <div className="text-xs text-neutral-600 dark:text-neutral-300">
-                    <span className="font-semibold">{consumer.diet.code}:</span> {consumer.diet.description}
+                    <span className="font-semibold">{consumer.diet.code}:</span> {consumer.diet.description ? consumer.diet.description : "---"}
                 </div>
             )}
             {consumer.notes && (

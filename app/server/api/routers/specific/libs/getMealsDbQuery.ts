@@ -5,11 +5,15 @@ const getMealsDbQuery = ({
     // showColumns,
     catering,
     id,
+    withMealCategory,
+    withMealGroup,
 }: {
     // searchValue?: string,
     catering: Catering,
     // showColumns?: string[],
     id?: string,
+    withMealCategory?: boolean,
+    withMealGroup?: boolean,
     // role?: RoleType | 'all'
 }) => {
     // const orConditions = showColumns?.map(column => ({
@@ -28,6 +32,8 @@ const getMealsDbQuery = ({
     const query: MatchObject = {
         cateringId: catering.id,
     }
+
+
 
     if (id) {
         query.id = id;
@@ -67,6 +73,48 @@ const getMealsDbQuery = ({
             $match: query
         },
     ] as Prisma.InputJsonValue[]
+
+    if (withMealCategory) {
+        pipeline.push({
+            $lookup: {
+                from: 'MealCategory',
+                localField: 'mealCategoryId',
+                foreignField: '_id',
+                as: 'mealCategory'
+            }
+        });
+        pipeline.push({
+            $addFields: {
+                mealCategory: { $arrayElemAt: ['$mealCategory', 0] }
+            }
+        });
+        pipeline.push({
+            $addFields: {
+                'mealCategory.id': '$mealCategory._id',
+            }
+        });
+    }
+
+    if (withMealGroup) {
+        pipeline.push({
+            $lookup: {
+                from: 'MealGroup',
+                localField: 'mealGroupId',
+                foreignField: '_id',
+                as: 'mealGroup'
+            }
+        });
+        pipeline.push({
+            $addFields: {
+                mealGroup: { $arrayElemAt: ['$mealGroup', 0] }
+            }
+        });
+        pipeline.push({
+            $addFields: {
+                'mealGroup.id': '$mealGroup._id',
+            }
+        });
+    }
 
     return pipeline;
 

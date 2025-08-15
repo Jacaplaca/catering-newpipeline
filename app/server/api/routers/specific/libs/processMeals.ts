@@ -8,10 +8,11 @@ const processMeals = (meals: (OrderConsumerBreakfast & OrderMealPopulated | Orde
             acc[code] = {
                 code: meal.consumer.diet?.code ? meal.consumer.diet?.code : '---',
                 description: meal.consumer.diet?.description ? meal.consumer.diet?.description : '',
+                consumerId: meal.consumerId,
             };
         }
         return acc;
-    }, {} as Record<string, { code: string, description: string }>);
+    }, {} as Record<string, { code: string, description: string, consumerId: string }>);
 }
 
 export default processMeals;

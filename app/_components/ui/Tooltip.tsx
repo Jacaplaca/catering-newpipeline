@@ -20,7 +20,7 @@ const theme = {
         "light": "border border-neutral-200 bg-white text-neutral-900",
         "auto": "border border-neutral-200 bg-white text-neutral-900 dark:border-none dark:bg-neutral-700 dark:text-white"
     },
-    "content": "relative z-20"
+    "content": "relative z-20 normal-case"
 }
 
 const Tooltip: FC<TooltipProps> = ({ children, ...props }) => {

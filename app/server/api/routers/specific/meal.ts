@@ -1,9 +1,9 @@
 import { db } from '@root/app/server/db';
-import { type Meal, RoleType } from '@prisma/client';
+import { RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { getQueryOrder } from '@root/app/lib/safeDbQuery';
 import { getQueryPagination } from '@root/app/lib/safeDbQuery';
-import { mealSortNames } from '@root/types/specific';
+import { type MealCustomTable, mealSortNames } from '@root/types/specific';
 import getLowerCaseSort from '@root/app/lib/lower-case-sort-pipeline';
 import { options } from '@root/app/server/api/specific/aggregate';
 import { TRPCError } from '@trpc/server';
@@ -49,7 +49,7 @@ const getMany = createCateringProcedure([RoleType.manager, RoleType.dietician])
     });
 
     const pipeline = [
-      ...getMealsDbQuery({ catering }),
+      ...getMealsDbQuery({ catering, withMealCategory: false, withMealGroup: true }),
       ...getLowerCaseSort(orderBy),
       { $skip: pagination.skip },
       { $limit: pagination.take },
@@ -58,7 +58,7 @@ const getMany = createCateringProcedure([RoleType.manager, RoleType.dietician])
     return db.meal.aggregateRaw({
       pipeline,
       options
-    }) as unknown as Meal[];
+    }) as unknown as MealCustomTable[];
   });
 
 const count = createCateringProcedure([RoleType.manager, RoleType.dietician])
@@ -80,7 +80,7 @@ const create = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(mealCreateValidator)
   .mutation(async ({ input, ctx }) => {
     const { session: { catering } } = ctx;
-    const { name } = input;
+    const { name, mealCategory, mealGroup, separateLabel } = input;
 
     await checkUnique(name, catering.id);
 
@@ -88,6 +88,9 @@ const create = createCateringProcedure([RoleType.manager, RoleType.dietician])
       data: {
         name,
         cateringId: catering.id,
+        mealCategoryId: mealCategory?.id,
+        mealGroupId: mealGroup?.id,
+        separateLabel,
       }
     })
 
@@ -104,6 +107,10 @@ const getOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
       where: {
         id,
         cateringId: catering.id,
+      },
+      include: {
+        mealCategory: true,
+        mealGroup: true,
       }
     });
 
@@ -111,14 +118,14 @@ const getOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
       throw new TRPCError({ code: 'NOT_FOUND', message: 'meals:meal_not_found' });
     }
 
-    return meal;
+    return meal as unknown as MealCustomTable;
   });
 
 const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(mealEditValidator)
   .mutation(async ({ input, ctx }) => {
     const { session: { catering } } = ctx;
-    const { id, name } = input;
+    const { id, name, mealCategory, mealGroup, separateLabel } = input;
 
     await checkUnique(name, catering.id, id);
 
@@ -129,6 +136,9 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
       },
       data: {
         name,
+        mealCategoryId: mealCategory?.id,
+        mealGroupId: mealGroup?.id,
+        separateLabel,
       }
     });
 
@@ -152,13 +162,16 @@ const remove = createCateringProcedure([RoleType.manager, RoleType.dietician])
   });
 
 const getAll = createCateringProcedure([RoleType.manager, RoleType.dietician])
-  .query(async ({ ctx }) => {
+  .query(({ ctx }) => {
     const { session: { catering } } = ctx;
     return db.meal.findMany({
       where: {
         cateringId: catering.id,
+      },
+      include: {
+        mealGroup: true,
       }
-    });
+    }) as unknown as MealCustomTable[];
   });
 
 const mealRouter = {

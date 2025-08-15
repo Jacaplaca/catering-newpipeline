@@ -6,7 +6,47 @@ import type { OrderGroupedByDayCustomTable } from '@root/types/specific';
 import { RoleType } from '@prisma/client';
 import processMeals from '@root/app/server/api/routers/specific/libs/processMeals';
 import groupStandardOrdersByDay from '@root/app/server/api/routers/specific/libs/groupStandardOrdersByDay';
-import getDayOrders from '@root/app/server/api/routers/specific/libs/getDayOrders';
+import getDayOrders, { type DayOrder } from '@root/app/server/api/routers/specific/libs/getDayOrders';
+import getGroupedFoodData from '@root/app/server/api/routers/specific/libs/pdf/getGroupedFoodData';
+import { type RoutesWithConsumersByIdMap } from '@root/app/server/api/routers/specific/libs/getGroupedConsumerFoodDataObject';
+
+const getSummary = (dayData: DayOrder[]) => {
+    return dayData.reduce((acc, {
+        breakfastStandard,
+        lunchStandard,
+        dinnerStandard,
+    }) => {
+        acc.breakfastStandard += breakfastStandard;
+        acc.lunchStandard += lunchStandard;
+        acc.dinnerStandard += dinnerStandard;
+        return acc;
+    }, {
+        breakfastStandard: 0,
+        lunchStandard: 0,
+        dinnerStandard: 0,
+    })
+};
+
+const getDiet = (dayData: DayOrder[]) => {
+    return dayData.reduce((acc, {
+        client,
+        breakfastDiet,
+        lunchDiet,
+        dinnerDiet,
+    }) => {
+        const code = client?.info?.code;
+        if (code) {
+            acc.breakfast[code] = processMeals(breakfastDiet);
+            acc.lunch[code] = processMeals(lunchDiet);
+            acc.dinner[code] = processMeals(dinnerDiet);
+        }
+        return acc;
+    }, {
+        breakfast: {} as Record<string, Record<string, { code: string, description: string }>>,
+        lunch: {} as Record<string, Record<string, { code: string, description: string }>>,
+        dinner: {} as Record<string, Record<string, { code: string, description: string }>>,
+    })
+}
 
 const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleType.dietician])
     .input(getDayValid)
@@ -16,40 +56,8 @@ const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTyp
 
         const dayData = await getDayOrders(dayId, catering.id);
         const sortedStandard = groupStandardOrdersByDay(dayData);
-
-        const summary = dayData.reduce((acc, {
-            breakfastStandard,
-            lunchStandard,
-            dinnerStandard,
-        }) => {
-            acc.breakfastStandard += breakfastStandard;
-            acc.lunchStandard += lunchStandard;
-            acc.dinnerStandard += dinnerStandard;
-            return acc;
-        }, {
-            breakfastStandard: 0,
-            lunchStandard: 0,
-            dinnerStandard: 0,
-        })
-
-        const diet = dayData.reduce((acc, {
-            client,
-            breakfastDiet,
-            lunchDiet,
-            dinnerDiet,
-        }) => {
-            const code = client?.info?.code;
-            if (code) {
-                acc.breakfast[code] = processMeals(breakfastDiet);
-                acc.lunch[code] = processMeals(lunchDiet);
-                acc.dinner[code] = processMeals(dinnerDiet);
-            }
-            return acc;
-        }, {
-            breakfast: {} as Record<string, Record<string, { code: string, description: string }>>,
-            lunch: {} as Record<string, Record<string, { code: string, description: string }>>,
-            dinner: {} as Record<string, Record<string, { code: string, description: string }>>,
-        })
+        const summary = getSummary(dayData);
+        const diet = getDiet(dayData);
 
         const dayDataCleaned = dayData.map(({
             breakfastDiet: _breakfastDiet,
@@ -59,6 +67,39 @@ const day = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTyp
         }) => rest);
 
         return { dayData: dayDataCleaned, summary, standard: sortedStandard, diet };
+    });
+
+
+const day2 = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleType.dietician])
+    .input(getDayValid)
+    .query(async ({ input, ctx }) => {
+        const { session: { catering } } = ctx;
+        const { dayId } = input;
+
+        const dayData = await getDayOrders(dayId, catering.id);
+        const sortedStandard = groupStandardOrdersByDay(dayData);
+        const summary = getSummary(dayData);
+        const diet = getDiet(dayData);
+
+
+        const mealGroups = await db.mealGroup.findMany();
+        const meal2data: Record<string, RoutesWithConsumersByIdMap> = {};
+        for (const mealGroup of mealGroups) {
+            const { consumerFoodByRoute } = await getGroupedFoodData({ dayId, mealGroupIdProp: mealGroup.id, cateringId: catering.id, groupBy: 'byConsumer' });
+            meal2data[mealGroup.name ?? mealGroup.id] = consumerFoodByRoute;
+        }
+
+        // const { consumerFoodByRoute } = await getGroupedFoodData({ dayId, cateringId: catering.id, groupBy: 'byConsumer' });
+
+
+        const dayDataCleaned = dayData.map(({
+            breakfastDiet: _breakfastDiet,
+            lunchDiet: _lunchDiet,
+            dinnerDiet: _dinnerDiet,
+            ...rest
+        }) => rest);
+
+        return { dayData: dayDataCleaned, summary, standard: sortedStandard, diet, meal2data };
     });
 
 const table = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleType.dietician])
@@ -194,6 +235,7 @@ const count = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleT
 
 const getTable = {
     day,
+    day2,
     table,
     count,
 };

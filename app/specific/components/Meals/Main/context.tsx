@@ -1,5 +1,5 @@
 import { createGenericContext } from '@root/app/specific/lib/contextGenerator';
-import type useMealTable from '@root/app/specific/components/Meals/useTable';
+import type useMealTable from '@root/app/specific/components/Meals/Main/useTable';
 
 type UseTable = ReturnType<typeof useMealTable>;
 

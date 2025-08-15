@@ -13,6 +13,20 @@ const useMealColumns = ({
             title: 'meals:name_column',
             sort: () => sort('name')
         },
+        // {
+        //     key: "mealCategory.name",
+        //     title: 'meals:category_column',
+        //     sort: () => sort('mealCategory.name')
+        // },
+        {
+            key: "separateLabel",
+            title: 'meals:separate_label_column',
+        },
+        {
+            key: "mealGroup.name",
+            title: 'meals:group_column',
+            sort: () => sort('mealGroup.name')
+        },
     ]
 
     return columns

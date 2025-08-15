@@ -14,10 +14,10 @@ import TableWrapper from '@root/app/_components/Table/Wrapper';
 import TableActionConfirm from '@root/app/_components/Table/ActionConfirm';
 import MyButton from '@root/app/_components/ui/buttons/MyButton';
 import { Table } from 'flowbite-react';
-import { useMealTableContext } from '@root/app/specific/components/Meals/context';
-import MealExpandedRow from '@root/app/specific/components/Meals/ExpandedRow';
+import MealExpandedRow from '@root/app/specific/components/Meals/Main/ExpandedRow';
 import { api } from '@root/app/trpc/react';
 import TableToast from '@root/app/_components/Table/Toast';
+import { useMealTableContext } from '@root/app/specific/components/Meals/Main/context';
 
 const MealsTable: FunctionComponent = () => {
     const {
@@ -61,6 +61,7 @@ const MealsTable: FunctionComponent = () => {
                 isOpen={isAddOpen}
                 closeModal={addClose}
                 header={t(dictionary, 'meals:add_meal')}
+                allowOverflow
             >
                 <MealExpandedRow />
             </MainModal>

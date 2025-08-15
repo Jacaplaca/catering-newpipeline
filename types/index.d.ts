@@ -191,7 +191,9 @@ export type TableColumnType = {
     action: () => void,
     icon: string,
     tooltip?: string
-  }
+  },
+  children?: TableColumnType[],
+  tooltip?: string
 };
 
 export type InputsBulkType<T = string> = {

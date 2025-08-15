@@ -18,7 +18,7 @@ type Props = {
   customCloseAction?: () => void,
   disallowBackdropClose?: boolean,
   closeTooltip?: string
-  allowOverflow?: boolean
+  allowOverflow?: boolean //allow overflow of dropdowns
 };
 
 const MainModal: React.FC<Props> = ({ children, header, closeModal, footer, footerColor, isOpen, maxWidth, closeTimeSec, message, isError, customCloseIcon, customCloseAction, disallowBackdropClose, closeTooltip, allowOverflow }) => {

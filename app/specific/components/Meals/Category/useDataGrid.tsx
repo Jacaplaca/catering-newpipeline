@@ -1,9 +1,9 @@
-import { type Allergen } from '@prisma/client';
+import { type MealCategory } from '@prisma/client';
 import HighlightText from '@root/app/_components/Table/HighlightText';
 import SkeletonCell from '@root/app/_components/Table/SkeletonCell';
 import Checkbox from '@root/app/_components/ui/Inputs/Checkbox';
 
-const useMealsDataGrid = ({
+const useMealCategoryDataGrid = ({
     rows,
     idsChecked,
     toggleCheck,
@@ -11,7 +11,7 @@ const useMealsDataGrid = ({
     totalCount,
     columns,
 }: {
-    rows: Allergen[]
+    rows: MealCategory[]
     idsChecked: string[]
     toggleCheck: (id: string) => void
     limit: number,
@@ -79,4 +79,4 @@ const useMealsDataGrid = ({
 
 }
 
-export default useMealsDataGrid;
+export default useMealCategoryDataGrid;

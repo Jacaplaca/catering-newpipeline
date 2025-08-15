@@ -1,9 +1,8 @@
 import getDictFromApi from '@root/app/lib/lang/getDictFromApi';
 import getSettingsFromApi from '@root/app/lib/settings/getSettingsFromApi';
-import MainComponent from '@root/app/specific/components/Meals/MainComponent';
 import { type FunctionComponent } from 'react';
-
-const Meals: FunctionComponent<{
+import MealMainComponent from './MainComponent';
+const Food: FunctionComponent<{
     lang: LocaleApp,
     pageName: string,
 }> = async ({ lang, pageName }) => {
@@ -16,16 +15,17 @@ const Meals: FunctionComponent<{
         getSettingsFromApi('main'),
     ])
 
+
     return (
-        <MainComponent
-            lang={lang}
-            pageName={pageName}
-            dictionary={dictionary}
-            settings={{
-                main: mainSettings,
-            }}
-        />
+        <div>
+            <MealMainComponent
+                lang={lang}
+                pageName={pageName}
+                dictionary={dictionary}
+                settings={{ main: mainSettings }}
+            />
+        </div>
     );
 };
 
-export default Meals;
+export default Food;

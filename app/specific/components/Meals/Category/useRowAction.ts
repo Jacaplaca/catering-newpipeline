@@ -1,9 +1,9 @@
 import useTableCheckbox from '@root/app/hooks/table/useTableCheckbox';
-import useRemoveMeal from '@root/app/specific/components/Meals/actions/useRemove';
+import useRemoveFoodCategory from '@root/app/specific/components/Food/Category/actions/useRemove';
 import { type TableActionType } from '@root/types';
 import { useState } from 'react';
 
-const useMealAction = ({
+const useFoodCategoryAction = ({
     rows,
     onSuccess,
 }: {
@@ -14,7 +14,7 @@ const useMealAction = ({
 
     const [activeAction, setActiveAction] = useState<'remove' | null>(null);
 
-    const remove = useRemoveMeal({ onSuccess, ids: idsChecked })
+    const remove = useRemoveFoodCategory({ onSuccess, ids: idsChecked })
 
     const showConfirmation = (type: 'remove') => {
         switch (type) {
@@ -66,4 +66,4 @@ const useMealAction = ({
 
 };
 
-export default useMealAction;
+export default useFoodCategoryAction;

@@ -3,22 +3,22 @@ import ExpandedRow from '@root/app/_components/Table/ExpandedRow';
 import { Form } from '@root/app/_components/ui/form';
 import Buttons from '@root/app/_components/ui/form/Buttons';
 import translate from '@root/app/lib/lang/translate';
-import MealInputs from '@root/app/specific/components/Meals/ExpandedRow/Inputs';
-import { useMealTableContext } from '@root/app/specific/components/Meals/context';
+import { useMealCategoryTableContext } from '@root/app/specific/components/Meals/Category/context';
+import MealCategoryInputs from '@root/app/specific/components/Meals/Category/ExpandedRow/Inputs';
 
-const MealExpandedRow = () => {
+const MealCategoryExpandedRow = () => {
 
     const {
         dictionary,
         rowClick: { onRowClick, update, form, onSubmit, expandedRowId },
-    } = useMealTableContext();
+    } = useMealCategoryTableContext();
 
     const Wrapper = expandedRowId ? ExpandedRow : 'div';
 
     return (<Wrapper>
         <Form {...form} >
             <form onSubmit={onSubmit} className='relative max-w-[1200px] ' >
-                <MealInputs />
+                <MealCategoryInputs />
                 <Buttons
                     cancelLabel={expandedRowId ? translate(dictionary, 'shared:cancel') : undefined}
                     onCancel={() => onRowClick(null)}
@@ -38,4 +38,4 @@ const MealExpandedRow = () => {
 }
 
 
-export default MealExpandedRow;
+export default MealCategoryExpandedRow;

@@ -1,17 +1,17 @@
-import { type Allergen } from '@prisma/client';
+import { type MealCategory } from '@prisma/client';
 import useRows from '@root/app/hooks/table/useRows';
 import useTableSort from '@root/app/hooks/table/useTableSort';
 import useMessage from '@root/app/hooks/useMessage';
-import useColumns from '@root/app/specific/components/Meals/useColumns';
-import useDataGrid from '@root/app/specific/components/Meals/useDataGrid';
-import useFetch from '@root/app/specific/components/Meals/useFetch';
-import useRow from '@root/app/specific/components/Meals/useRow';
-import useAction from '@root/app/specific/components/Meals/useRowAction';
+import useColumns from '@root/app/specific/components/Meals/Category/useColumns';
+import useDataGrid from '@root/app/specific/components/Meals/Category/useDataGrid';
+import useFetch from '@root/app/specific/components/Meals/Category/useFetch';
+import useRow from '@root/app/specific/components/Meals/Category/useRow';
+import useAction from '@root/app/specific/components/Food/Category/useRowAction';
 import { type SettingParsedType } from '@root/types';
-import { type AllergenSortName } from '@root/types/specific';
+import { type MealCategorySortName } from '@root/types/specific';
 import { useEffect } from 'react';
 
-const useMealTable = ({
+const useMealCategoryTable = ({
     lang,
     pageName,
     settings,
@@ -23,7 +23,7 @@ const useMealTable = ({
     dictionary: Record<string, string>,
 }) => {
     const { messageObj, resetMessage, updateMessage } = useMessage(dictionary);
-    const { sort, sortDirection, sortName } = useTableSort<AllergenSortName>("name")
+    const { sort, sortDirection, sortName } = useTableSort<MealCategorySortName>("name")
 
 
     const columns = useColumns({ sort });
@@ -49,7 +49,7 @@ const useMealTable = ({
     });
 
 
-    const [rows, setRows] = useRows<Allergen>(fetchedRows);
+    const [rows, setRows] = useRows<MealCategory>(fetchedRows);
 
     const rowClick = useRow({ setRows, refetchAll: resetTable, updateMessage, resetMessage, dictionary });
 
@@ -96,4 +96,4 @@ const useMealTable = ({
         message: { messageObj, resetMessage, updateMessage },
     }
 };
-export default useMealTable;
+export default useMealCategoryTable;

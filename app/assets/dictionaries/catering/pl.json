@@ -266,7 +266,8 @@
         "diet_dinners": "Kolacje dietetyczne",
         "no_data_available": "Brak danych do wyświetlenia",
         "summary": "Podsumowanie",
-        "details": "Szczegóły"
+        "details": "Szczegóły",
+        "orders_by_day_meals": "Dni dostaw (nowe)"
     },
     "client-files":{
         "file_type_menu": "Menu",
@@ -423,7 +424,12 @@
         "add_meal": "Dodaj posiłek",
         "search_placeholder": "Szukaj posiłków",
         "name_column": "Nazwa",
-        "name_placeholder": "Wpisz nazwę posiłku"
+        "name_placeholder": "Wpisz nazwę posiłku",
+        "title": "Posiłki",
+        "separate_label_column": "Odrębna etykieta",
+        "group_column": "Grupa",
+        "group_label": "Grupa",
+        "meal_group_placeholder": "Wpisz nazwę grupy posiłków"
     }
 }
 

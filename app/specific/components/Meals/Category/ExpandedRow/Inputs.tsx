@@ -2,20 +2,20 @@ import { type z } from 'zod';
 import getInputsBulk from '@root/app/lib/table/getInputsBulk';
 import InputsWrapper from '@root/app/_components/ui/Inputs/InputsWrapper';
 import FormSection from '@root/app/_components/ui/form/Section';
-import { useMealTableContext } from '@root/app/specific/components/Meals/context';
-import useMealInputs from '@root/app/specific/components/Meals/ExpandedRow/useInputs';
-import { type mealEditValidator } from '@root/app/validators/specific/meal';
+import { useMealCategoryTableContext } from '@root/app/specific/components/Meals/Category/context';
+import useMealCategoryInputs from '@root/app/specific/components/Meals/Category/ExpandedRow/useInputs';
+import { type mealCategoryEditValidator } from '@root/app/validators/specific/mealCategory';
 
-const MealInputs = () => {
+const MealCategoryInputs = () => {
 
     const {
         dictionary,
         rowClick: { form, isFetching, update }
-    } = useMealTableContext();
+    } = useMealCategoryTableContext();
 
-    const inputs = useMealInputs();
+    const inputs = useMealCategoryInputs();
 
-    const Inputs = getInputsBulk<keyof z.infer<typeof mealEditValidator>>({
+    const Inputs = getInputsBulk<keyof z.infer<typeof mealCategoryEditValidator>>({
         inputs,
         dictionary,
         formControl: form.control,
@@ -54,4 +54,4 @@ const MealInputs = () => {
     );
 };
 
-export default MealInputs;
+export default MealCategoryInputs;

@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type Meal } from '@prisma/client';
 import { type UpdateMessageType } from '@root/app/hooks/useMessage';
 import translate from '@root/app/lib/lang/translate';
 import { api } from '@root/app/trpc/react';
 import { mealEditValidator } from '@root/app/validators/specific/meal';
+import { type MealCustomTable } from '@root/types/specific';
 import { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { type z } from 'zod';
@@ -13,6 +13,15 @@ const FormSchema = mealEditValidator;
 const defaultValues = {
     id: '',
     name: '',
+    mealCategory: {
+        id: '',
+        name: '',
+    },
+    mealGroup: {
+        id: '',
+        name: '',
+    },
+    separateLabel: false,
 };
 
 const useMealRow = ({
@@ -22,7 +31,7 @@ const useMealRow = ({
     resetMessage,
     dictionary
 }: {
-    setRows: Dispatch<SetStateAction<Meal[]>>
+    setRows: Dispatch<SetStateAction<MealCustomTable[]>>
     refetchAll: () => Promise<void>
     updateMessage: UpdateMessageType,
     resetMessage: () => void
@@ -37,7 +46,7 @@ const useMealRow = ({
             { enabled: Boolean(expandedRowId) }
         );
 
-    const [mealData, setMealData] = useState<Meal | null>(null);
+    const [mealData, setMealData] = useState<typeof fullMeal | null>(null);
 
     useEffect(() => {
         if (fullMeal) {
@@ -56,7 +65,22 @@ const useMealRow = ({
             const meal = {
                 id: mealData?.id ?? '',
                 name: mealData?.name ?? '',
-            };
+                separateLabel: mealData?.separateLabel ?? false,
+                mealCategory: mealData?.mealCategory ? {
+                    id: mealData.mealCategory.id ?? '',
+                    name: mealData.mealCategory?.name ?? ''
+                } : {
+                    id: '',
+                    name: ''
+                },
+                mealGroup: mealData?.mealGroup ? {
+                    id: mealData.mealGroup.id ?? '',
+                    name: mealData.mealGroup?.name ?? ''
+                } : {
+                    id: '',
+                    name: ''
+                },
+            }
             form.reset(meal);
             setDefaultForm(meal);
         } else if (!expandedRowId) {

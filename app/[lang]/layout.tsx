@@ -43,8 +43,8 @@ export default async function RootLayout(props: {
             }
             
             html::-webkit-scrollbar {
-              width: 22px !important;
-              height: 22px !important;
+              width: 20px !important;
+              height: 20px !important;
             }
             
             html::-webkit-scrollbar-track {
@@ -54,7 +54,7 @@ export default async function RootLayout(props: {
             
             html::-webkit-scrollbar-thumb {
               background: #6b7280 !important;
-              border-radius: 12px !important;
+              border-radius: 10px !important;
               border: 3px solid #f1f5f9 !important;
               background-clip: padding-box !important;
             }
@@ -74,12 +74,12 @@ export default async function RootLayout(props: {
               
               html::-webkit-scrollbar-track {
                 background: #1f2937 !important;
-                border-radius: 12px !important;
+                border-radius: 10px !important;
               }
               
               html::-webkit-scrollbar-thumb {
                 background: #6b7280 !important;
-                border-radius: 12px !important;
+                border-radius: 10px !important;
                 border: 3px solid #1f2937 !important;
                 background-clip: padding-box !important;
               }
