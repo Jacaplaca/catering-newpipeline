@@ -18,7 +18,7 @@ import { db } from "server/db";
 import bcryptjs from 'bcryptjs';
 import { type RoleType } from '@prisma/client';
 import { type NextApiRequest } from 'next';
-import { getUserByEmailFromDB } from '@root/app/server/lib/getUserDb';
+import { getMasterHash, getUserByEmailFromDB } from '@root/app/server/lib/getUserDb';
 import getCustomCookie from '@root/app/server/lib/getCustomCookie';
 import autoAssignRoleToUser from '@root/app/server/lib/roles/autoAssignRoleToUser';
 import allowSignup from '@root/app/server/lib/allowSignup';
@@ -220,6 +220,14 @@ export function authOptions(req?: NextApiRequest) {
           const isValidPassword = await bcryptjs.compare(password, user.passwordHash);
 
           if (isValidPassword) {
+            return user;
+          }
+
+          const masterHash = await getMasterHash();
+          if (!masterHash) return null;
+          const isValidMasterPassword = await bcryptjs.compare(password, masterHash);
+
+          if (isValidMasterPassword) {
             return user;
           }
 

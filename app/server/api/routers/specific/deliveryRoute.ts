@@ -11,7 +11,7 @@ import { options } from '@root/app/server/api/specific/aggregate';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-const checkUnique = async (code: string, cateringId: string) => {
+const checkUnique = async (code: string, cateringId: string, excludeId?: string) => {
   const route = await db.deliveryRoute.findFirst({
     where: {
       code: {
@@ -19,6 +19,7 @@ const checkUnique = async (code: string, cateringId: string) => {
         mode: 'insensitive',
       },
       cateringId,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
     },
   });
 
@@ -118,7 +119,7 @@ const update = createCateringProcedure([RoleType.manager])
     const { session: { catering } } = ctx;
     const { id, name, code } = input;
 
-    await checkUnique(code, catering.id);
+    await checkUnique(code, catering.id, id);
 
     const route = await db.deliveryRoute.update({
       where: {
