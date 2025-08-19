@@ -1,3 +1,12 @@
+## [2.6.1](https://github.com/Jacaplaca/catering/compare/v2.6.0...v2.6.1) (2025-08-19)
+
+
+### Bug Fixes
+
+* delivery route change name and master pass ([318ff64](https://github.com/Jacaplaca/catering/commit/318ff64693a51dedf642d58f0b025da142df5681))
+
+
+
 # [2.6.0](https://github.com/Jacaplaca/catering/compare/v2.5.0...v2.6.0) (2025-08-15)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * remove unnecessary consumerIds parameter in addFoodToConsumers function ([acf6aa8](https://github.com/Jacaplaca/catering/commit/acf6aa884e88b4319d8a7b1b381a6b1edc56971a))
-
-
-
-## [2.4.1](https://github.com/Jacaplaca/catering/compare/v2.4.0...v2.4.1) (2025-08-06)
-
-
-### Bug Fixes
-
-* filter by allergens in customer table in food menu assignments big scroll eslint and more ([d19206b](https://github.com/Jacaplaca/catering/commit/d19206bfc18f2b38090a55c18c57389653254fa6))
 
 
 
