@@ -593,7 +593,7 @@ const getInfinite = createCateringProcedure([RoleType.manager, RoleType.dieticia
     const { cursor, limit, searchValue } = input;
     const skip = cursor ?? 0;
 
-    const basePipeline: Prisma.InputJsonValue[] = [{ $match: { cateringId: catering.id } }];
+    const basePipeline: Prisma.InputJsonValue[] = [{ $match: { cateringId: catering.id, clientId: null } }];
 
     if (searchValue) {
       const escapedSearchValue = searchValue.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');

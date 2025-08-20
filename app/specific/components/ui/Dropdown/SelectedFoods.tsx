@@ -33,6 +33,7 @@ interface SelectedFoodsProps {
     highlightedItems?: string[];
     fullWidth?: boolean;
     updateFoodsOrder?: (items: { id: string, order: number }[]) => void;
+    isFoodsLoading?: boolean;
 }
 
 const SortableSelectedItem: FunctionComponent<{
@@ -107,6 +108,7 @@ const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
     highlightedItems = [],
     fullWidth = false,
     updateFoodsOrder,
+    isFoodsLoading = false,
 }) => {
     // Optimistic state for immediate UI updates
     const [optimisticItems, setOptimisticItems] = useState<SelectedFoodItem[] | null>(null);
@@ -171,6 +173,15 @@ const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
 
     if (!displayItems || displayItems.length === 0) {
         return null;
+    }
+
+    if (isFoodsLoading) {
+        return <div className="flex flex-wrap gap-2">
+            <div className="w-full text-sm text-neutral-600 dark:text-neutral-300 font-medium flex items-center gap-2 mb-1">
+                <i className={`${iconClassName} text-xl animate-spin fas fa-spinner text-neutral-600 dark:text-neutral-300`} />
+                {label}
+            </div>
+        </div>
     }
 
     return (

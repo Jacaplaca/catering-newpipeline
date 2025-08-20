@@ -23,6 +23,7 @@ type FoodDropdownProps = {
     excludeAllergens?: string[];
     limitItems?: number;
     updateFoodsOrder?: (items: { id: string, order: number }[]) => void;
+    isFoodsLoading?: boolean;
 }
 
 const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
@@ -38,6 +39,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
     excludeAllergens,
     limitItems,
     updateFoodsOrder,
+    isFoodsLoading = false,
 }) => {
 
     const [foodIdsFromHoveredAllergenId, setFoodIdsFromHoveredAllergenId] = useState<string[]>([]);
@@ -129,9 +131,10 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
                     iconClassName='fa-solid fa-salad'
                     fullWidth={limitItems === 1}
                     updateFoodsOrder={updateFoodsOrder}
+                    isFoodsLoading={isFoodsLoading}
                 />
             )}
-            {allergens && allergens.length > 0 && (
+            {allergens && allergens.length > 0 && !isFoodsLoading && (
                 <SelectedDisplay
                     selectedItems={allergens}
                     highlightedItems={foodIdsFromHoveredAllergenId}

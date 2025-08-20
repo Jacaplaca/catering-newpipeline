@@ -18,8 +18,11 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
         const { session: { catering } } = ctx;
         const { dayId, mealId } = input;
 
-        const { consumerFoodByRoute, mealGroupName } = await getGroupedFoodData({ dayId, mealId, cateringId: catering.id, groupBy: 'byConsumer' });
+        // Control variables
+        const showRegularFood = false;
+        const showChangedOnly = true;
 
+        const { consumerFoodByRoute, mealGroupName } = await getGroupedFoodData({ dayId, mealId, cateringId: catering.id, groupBy: 'byConsumer' });
         const { year, month, day } = dayIdParser(dayId);
 
         const currentDate = new Date(year, month, day);
@@ -53,11 +56,27 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 baseFood: string;
             }
 
+            // Helper function to check if consumer has changed foods (alternative, exclusions, or comments)
+            const hasChangedFoods = (consumerData: { meals: Record<string, MealInConsumerDataItem> }): boolean => {
+                return Object.values(consumerData.meals).some((mealData: MealInConsumerDataItem) =>
+                    mealData.consumerFoods.some((cf) =>
+                        !!cf.alternativeFood ||
+                        (cf.exclusions && cf.exclusions.length > 0) ||
+                        !!(cf.comment?.trim())
+                    )
+                );
+            };
+
             // Extract labels data
             const labelsData: LabelInfo[] = Object.values(consumerFoodByRoute).flatMap(routeData =>
                 Object.values(routeData.clients).flatMap(clientData =>
                     Object.values(clientData.consumers).flatMap(consumerData => {
                         const { consumer, meals } = consumerData;
+
+                        // Filter based on showChangedOnly setting
+                        if (showChangedOnly && !hasChangedFoods(consumerData)) {
+                            return [];
+                        }
 
                         const separateLabelMeals: MealInConsumerDataItem[] = [];
                         const combinedLabelMeals: MealInConsumerDataItem[] = [];
@@ -75,34 +94,85 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
 
                         for (const mealData of separateLabelMeals) {
                             const sortedFoods = mealData.consumerFoods.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-                            const foodDescription = sortedFoods
-                                .map(cf => cf.alternativeFood?.name ?? cf.food.name)
-                                .join(', ');
+                            const foodDescriptions = sortedFoods.map(cf => {
+                                let description = '';
 
-                            labelsForConsumer.push({
-                                deliveryRouteName: routeData.deliveryRouteName ?? '',
-                                clientCode: clientData.clientCode ?? '',
-                                consumerCode: consumer.code ?? '',
-                                mealName: mealData.meal.name,
-                                baseFood: foodDescription,
-                            });
+                                // Show food name based on showRegularFood setting
+                                if (showRegularFood) {
+                                    description = cf.alternativeFood?.name ?? cf.food.name;
+                                } else if (cf.alternativeFood) {
+                                    description = cf.alternativeFood.name;
+                                }
+
+                                // Add exclusions in parentheses
+                                if (cf.exclusions && cf.exclusions.length > 0) {
+                                    const exclusionNames = cf.exclusions.map(ex => ex.name).join(', ');
+                                    description += ` (${exclusionNames})`;
+                                }
+
+                                // Add comment in square brackets
+                                if (cf.comment?.trim()) {
+                                    description += ` [${cf.comment}]`;
+                                }
+
+                                return description;
+                            }).filter(desc => desc.trim() !== ''); // Remove empty descriptions
+
+                            const foodDescription = foodDescriptions.join(', ');
+
+                            // Only add label if it has content or showChangedOnly is false
+                            if (!showChangedOnly || foodDescription.trim() !== '') {
+                                labelsForConsumer.push({
+                                    deliveryRouteName: routeData.deliveryRouteName ?? '',
+                                    clientCode: clientData.clientCode ?? '',
+                                    consumerCode: consumer.code ?? '',
+                                    mealName: mealData.meal.name,
+                                    baseFood: foodDescription,
+                                });
+                            }
                         }
 
                         if (combinedLabelMeals.length > 0) {
-                            const foodNames = combinedLabelMeals
+                            const foodDescriptions = combinedLabelMeals
                                 .flatMap(md => {
                                     const sortedFoods = md.consumerFoods.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-                                    return sortedFoods.map(cf => cf.alternativeFood?.name ?? cf.food.name);
+                                    return sortedFoods.map(cf => {
+                                        let description = '';
+
+                                        // Show food name based on showRegularFood setting
+                                        if (showRegularFood) {
+                                            description = cf.alternativeFood?.name ?? cf.food.name;
+                                        } else if (cf.alternativeFood) {
+                                            description = cf.alternativeFood.name;
+                                        }
+
+                                        // Add exclusions in parentheses
+                                        if (cf.exclusions && cf.exclusions.length > 0) {
+                                            const exclusionNames = cf.exclusions.map(ex => ex.name).join(', ');
+                                            description += ` (${exclusionNames})`;
+                                        }
+
+                                        // Add comment in square brackets
+                                        if (cf.comment?.trim()) {
+                                            description += ` [${cf.comment}]`;
+                                        }
+
+                                        return description;
+                                    });
                                 })
+                                .filter(desc => desc.trim() !== '') // Remove empty descriptions
                                 .join(', ');
 
-                            labelsForConsumer.push({
-                                deliveryRouteName: routeData.deliveryRouteName ?? '',
-                                clientCode: clientData.clientCode ?? '',
-                                consumerCode: consumer.code ?? '',
-                                mealName: "Posiłki połączone",
-                                baseFood: foodNames,
-                            });
+                            // Only add label if it has content or showChangedOnly is false
+                            if (!showChangedOnly || foodDescriptions.trim() !== '') {
+                                labelsForConsumer.push({
+                                    deliveryRouteName: routeData.deliveryRouteName ?? '',
+                                    clientCode: clientData.clientCode ?? '',
+                                    consumerCode: consumer.code ?? '',
+                                    mealName: "Posiłki połączone",
+                                    baseFood: foodDescriptions,
+                                });
+                            }
                         }
 
                         return labelsForConsumer;
