@@ -1,3 +1,12 @@
+## [2.6.3](https://github.com/Jacaplaca/catering/compare/v2.6.2...v2.6.3) (2025-08-27)
+
+
+### Bug Fixes
+
+* improve layout of top info line in labelsPdf2 by separating client code and consumer code ([2bf2e6a](https://github.com/Jacaplaca/catering/commit/2bf2e6ae252d67403a637790314437e8a8ad8d01))
+
+
+
 ## [2.6.2](https://github.com/Jacaplaca/catering/compare/v2.6.1...v2.6.2) (2025-08-20)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * food order drag and many optimizations ([92a3856](https://github.com/Jacaplaca/catering/commit/92a385633b3dafd52d01addeb53ca40eb5af0e1f))
-
-
-
-## [2.4.3](https://github.com/Jacaplaca/catering/compare/v2.4.2...v2.4.3) (2025-08-08)
-
-
-### Bug Fixes
-
-* show if changed in order table ([47669cc](https://github.com/Jacaplaca/catering/commit/47669cc6f29c8a0d59a65b01ed19e0f810872128))
 
 
 
