@@ -237,7 +237,13 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 const padding = 3;
 
                 const routeNamePart = label.deliveryRouteName !== 'Bez trasy' ? `(${label.deliveryRouteName})` : '';
-                const topInfoLine = [routeNamePart, label.clientCode, label.consumerCode].filter(Boolean).join(' ');
+
+                // Clean consumer code - remove client code prefix if present
+                let cleanConsumerCode = label.consumerCode;
+                if (label.clientCode && cleanConsumerCode.startsWith(label.clientCode + ' ')) {
+                    cleanConsumerCode = cleanConsumerCode.substring((label.clientCode + ' ').length);
+                }
+
                 const foodLine = label.baseFood;
 
                 const topInfoFontSize = 6;
@@ -245,15 +251,31 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
 
                 let currentY = y + padding;
 
-                // Render top info line
+                // Render top info line with custom layout
                 doc.font('Roboto-Bold').fontSize(topInfoFontSize);
                 const topInfoLineHeight = doc.heightOfString('A', { width: cellWidth - 2 * padding });
-                doc.text(topInfoLine, x + padding, currentY, {
-                    align: 'center',
+
+                // Left part: client code + route name
+                const leftPart = [label.clientCode, routeNamePart].filter(Boolean).join(' ');
+
+                // Render left part (left aligned)
+                doc.text(leftPart, x + padding, currentY, {
+                    align: 'left',
                     width: cellWidth - 2 * padding,
                     height: topInfoLineHeight,
                     ellipsis: true
                 });
+
+                // Render right part (consumer code, right aligned)
+                if (cleanConsumerCode) {
+                    doc.text(cleanConsumerCode, x + padding, currentY, {
+                        align: 'right',
+                        width: cellWidth - 2 * padding,
+                        height: topInfoLineHeight,
+                        ellipsis: true
+                    });
+                }
+
                 currentY += topInfoLineHeight + 2;
 
 
