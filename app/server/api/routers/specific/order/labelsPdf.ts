@@ -30,10 +30,8 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             lunch: translate(dictionary, 'orders:lunch'),
             dinner: translate(dictionary, 'orders:dinner'),
         } as Record<MealType, string>
-        // Prepare header text with mealType and human readable day
+        // Prepare date for filename (headerText removed as it's not used anymore)
         const currentDate = new Date(year, month, day);
-        const formattedDate = format(currentDate, "eeee, dd MMMM yyyy", { locale: pl });
-        const headerText = `${translate(dictionary, translations[mealType])} - ${formattedDate}`;
         const fileNameDate = format(currentDate, "yyyy-MM-dd ", { locale: pl });
 
         // Query to get dayData with client info
@@ -158,24 +156,38 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 })
             );
 
-            // Reworked grid drawing based on printed label sheet specifications
+            // New label specifications: 52.5x29.7mm, 4x10 layout (40 labels per sheet)
             const mmToPt = (mm: number): number => mm * 2.83465; // conversion factor from mm to points
 
-            const leftMargin = mmToPt(11);    // 11mm from the left edge
-            const rightMargin = mmToPt(11);   // 11mm from the right edge
-            const topMargin = mmToPt(13);     // 13mm from the top edge
-            const bottomMargin = mmToPt(13);  // 13mm from the bottom edge
-            const gapX = mmToPt(2.5);         // 2.5mm horizontal gap between columns
+            // A4 dimensions: 210x297mm
+            // Label dimensions: 52.5x29.7mm
+            // Calculate margins to center the 4x10 grid on A4
+            const labelWidth = mmToPt(52.5);
+            const labelHeight = mmToPt(29.7);
+            const a4Width = mmToPt(210);
+            const a4Height = mmToPt(297);
 
-            const columnsPerPage = 5;
-            const rowsPerPage = 16;
+            const columnsPerPage = 4;
+            const rowsPerPage = 10;
 
-            // Calculate cell dimensions
-            const cellWidth = (doc.page.width - leftMargin - rightMargin - (columnsPerPage - 1) * gapX) / columnsPerPage;
-            const cellHeight = (doc.page.height - topMargin - bottomMargin) / rowsPerPage;
+            // Calculate horizontal spacing and margins
+            const totalLabelsWidth = columnsPerPage * labelWidth;
+            const totalHorizontalSpace = a4Width - totalLabelsWidth;
+            const gapX = totalHorizontalSpace / (columnsPerPage + 1); // Equal gaps between and around labels
+            const leftMargin = gapX;
+
+            // Calculate vertical spacing and margins  
+            const totalLabelsHeight = rowsPerPage * labelHeight;
+            const totalVerticalSpace = a4Height - totalLabelsHeight;
+            const gapY = totalVerticalSpace / (rowsPerPage + 1); // Equal gaps between and around labels
+            const topMargin = gapY;
+
+            // Use exact label dimensions instead of calculated cell size
+            const cellWidth = labelWidth;
+            const cellHeight = labelHeight;
 
             labelsData.forEach((label, idx) => {
-                // Add new page if the current one is full (grid 5x16)
+                // Add new page if the current one is full (grid 4x10)
                 if (idx % (columnsPerPage * rowsPerPage) === 0 && idx !== 0) {
                     doc.addPage();
                 }
@@ -183,7 +195,7 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 const row = Math.floor(indexOnPage / columnsPerPage);
                 const col = indexOnPage % columnsPerPage;
                 const x = leftMargin + col * (cellWidth + gapX);
-                const y = topMargin + row * cellHeight;
+                const y = topMargin + row * (cellHeight + gapY);
 
                 // Draw label border with rounded corners, reduced line width and dashed line style
                 const roundingRadius = 5; // Corner radius in points
@@ -275,6 +287,9 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 });
             });
 
+            // Header and footer commented out to avoid collision with labels
+            // TODO: Adjust header/footer positioning when needed
+            /*
             // Add header and footer to every page
             const range = doc.bufferedPageRange();
             for (let i = range.start; i < range.start + range.count; i++) {
@@ -306,6 +321,7 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 doc.page.margins = originalMargins;
                 doc.y = currentY;
             }
+            */
 
             // Finalize PDF document
             doc.end();

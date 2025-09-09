@@ -203,17 +203,34 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
 
             const mmToPt = (mm: number): number => mm * 2.83465;
 
-            const leftMargin = mmToPt(11);
-            const rightMargin = mmToPt(11);
-            const topMargin = mmToPt(13);
-            const bottomMargin = mmToPt(13);
-            const gapX = mmToPt(2.5);
+            // New label specifications: 52.5x29.7mm, 4x10 layout (40 labels per sheet)
+            // A4 dimensions: 210x297mm
+            // Label dimensions: 52.5x29.7mm
+            // Calculate margins to center the 4x10 grid on A4
+            const labelWidth = mmToPt(52.5);
+            const labelHeight = mmToPt(29.7);
+            const a4Width = mmToPt(210);
+            const a4Height = mmToPt(297);
 
-            const columnsPerPage = 5;
-            const rowsPerPage = 16;
+            const columnsPerPage = 4;
+            const rowsPerPage = 10;
 
-            const cellWidth = (doc.page.width - leftMargin - rightMargin - (columnsPerPage - 1) * gapX) / columnsPerPage;
-            const cellHeight = (doc.page.height - topMargin - bottomMargin) / rowsPerPage;
+            // Calculate horizontal spacing and margins
+            const totalLabelsWidth = columnsPerPage * labelWidth;
+            const totalHorizontalSpace = a4Width - totalLabelsWidth;
+            const gapX = totalHorizontalSpace / (columnsPerPage + 1); // Equal gaps between and around labels
+            const leftMargin = gapX;
+            const rightMargin = gapX;
+
+            // Calculate vertical spacing and margins  
+            const totalLabelsHeight = rowsPerPage * labelHeight;
+            const totalVerticalSpace = a4Height - totalLabelsHeight;
+            const gapY = totalVerticalSpace / (rowsPerPage + 1); // Equal gaps between and around labels
+            const topMargin = gapY;
+
+            // Use exact label dimensions instead of calculated cell size
+            const cellWidth = labelWidth;
+            const cellHeight = labelHeight;
 
             labelsData.forEach((label, idx) => {
                 if (idx % (columnsPerPage * rowsPerPage) === 0 && idx !== 0) {
@@ -223,7 +240,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 const row = Math.floor(indexOnPage / columnsPerPage);
                 const col = indexOnPage % columnsPerPage;
                 const x = leftMargin + col * (cellWidth + gapX);
-                const y = topMargin + row * cellHeight;
+                const y = topMargin + row * (cellHeight + gapY);
 
                 const roundingRadius = 5;
                 doc.save();
@@ -291,6 +308,9 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
 
             });
 
+            // Header and footer commented out to avoid collision with labels
+            // TODO: Adjust header/footer positioning when needed
+            /*
             const range = doc.bufferedPageRange();
             for (let i = range.start; i <= range.start + range.count - 1; i++) {
                 doc.switchToPage(i);
@@ -317,6 +337,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 doc.page.margins = originalMargins;
                 doc.y = currentY;
             }
+            */
 
             doc.end();
             const fileName = `etykiety_${safeFileName(mealGroupName)}_${fileNameDate}.pdf`
