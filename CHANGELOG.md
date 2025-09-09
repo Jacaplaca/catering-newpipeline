@@ -1,3 +1,12 @@
+## [2.6.4](https://github.com/Jacaplaca/catering/compare/v2.6.3...v2.6.4) (2025-09-09)
+
+
+### Bug Fixes
+
+* update label dimensions and layout for labelsPdf and labelsPdf2 to 52.5x29.7mm, 4x10 grid; remove unused header text and adjust margins ([58d5c10](https://github.com/Jacaplaca/catering/commit/58d5c10b0164054b77fb8456fcb84d4d0068ca4c))
+
+
+
 ## [2.6.3](https://github.com/Jacaplaca/catering/compare/v2.6.2...v2.6.3) (2025-08-27)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * new pdfs ([9444360](https://github.com/Jacaplaca/catering/commit/944436025e291f40a59ae2212253333baa7f677f))
-
-
-
-# [2.5.0](https://github.com/Jacaplaca/catering/compare/v2.4.3...v2.5.0) (2025-08-09)
-
-
-### Features
-
-* food order drag and many optimizations ([92a3856](https://github.com/Jacaplaca/catering/commit/92a385633b3dafd52d01addeb53ca40eb5af0e1f))
 
 
 
