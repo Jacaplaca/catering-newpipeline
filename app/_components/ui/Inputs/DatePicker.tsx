@@ -7,7 +7,7 @@ import DatePickerCustomHeader from '@root/app/_components/ui/Inputs/DatePickerCu
 type DatePickerProps = {
     locale: LocaleApp;
     selected: string;
-    minDate: Date;
+    minDate?: Date;
     CustomInput?: JSX.Element;
     onSelect: (date: Date | null) => void;
     dateFormat?: string;

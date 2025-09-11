@@ -39,14 +39,16 @@ const DatePickerWithBlocked: FC<{
         timeZone: string;
         nonWorkingDays: string[];
     },
-    orderedDates?: string[],
     updateDay: (day: { year: number, month: number, day: number }) => void,
     maxDate?: Date,
     dateFormat?: string,
     ignoreDeadlines?: boolean,
     onMonthChange?: (date: Date) => void,
+    minDate?: Date,
     markedDays?: Date[],
-}> = ({ lang, day, cateringSettings, orderedDates, updateDay, maxDate, dateFormat = "yyyy-MM-dd", ignoreDeadlines = false, onMonthChange, markedDays }) => {
+    blockedDays?: string[],
+    blockPreviousDays?: boolean,
+}> = ({ lang, day, cateringSettings, updateDay, maxDate, dateFormat = "yyyy-MM-dd", ignoreDeadlines = false, onMonthChange, markedDays, minDate, blockedDays, blockPreviousDays }) => {
 
     if (!day || !cateringSettings?.timeZone) return null;
 
@@ -61,9 +63,9 @@ const DatePickerWithBlocked: FC<{
             updateDay({ year, month, day: dayNum });
         }
     };
-    const minDate = getCurrentTime();
+    // const minDate = getCurrentTime();
     // maxDate.setDate(maxDate.getDate() + 14);
-    const blockedDays = getBlockedDays({ orderedDates, nonWorkingDaysCustom: cateringSettings?.nonWorkingDays ?? [] });
+    // const blockedDays = getBlockedDays({ orderedDates, nonWorkingDaysCustom: cateringSettings?.nonWorkingDays ?? [] });
 
 
     const filterDate = (date: Date) => {
@@ -76,8 +78,8 @@ const DatePickerWithBlocked: FC<{
         const unblocked = (
             day !== 0 && // not Sunday
             day !== 6 && // not Saturday
-            !blockedDays.includes(dateString) &&
-            date >= today // date is not earlier than today
+            !blockedDays?.includes(dateString) &&
+            (blockPreviousDays ? date >= today : true) // date is not earlier than today
         );
 
         if (unblocked) {

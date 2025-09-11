@@ -20,6 +20,9 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
         const { session: { catering } } = ctx;
         const { dayId, mealType, lang } = input;
 
+        // Control variables
+        const labelPaddingMm = 5; // Internal padding for label content in mm
+
         // Parse date parts from dayId
         const { year, month, day } = dayIdParser(dayId);
 
@@ -207,7 +210,7 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 doc.undash(); // Reset dashing pattern after drawing the rectangle
                 doc.restore();
 
-                const padding = 3;
+                const padding = mmToPt(labelPaddingMm);
                 // label.clientCode = 'AGU3SDFSDF';
                 // label.consumerName = 'Melisa Wolska-Wojciechowskaasdfsadfasdfasdfsdf asdfasdfasdf';
                 // label.dietCode = 'WEGDFFSDF';

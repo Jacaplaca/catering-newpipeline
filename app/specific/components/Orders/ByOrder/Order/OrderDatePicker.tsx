@@ -1,8 +1,9 @@
 import { type FC } from "react";
 import { useOrderTableContext } from '@root/app/specific/components/Orders/ByOrder/context';
 import Deadline from '@root/app/specific/components/Orders/ByOrder/Order/Deadline';
-import { getNextWorkingDay } from '@root/app/specific/lib/dayInfo';
+import { getBlockedDays, getNextWorkingDay } from '@root/app/specific/lib/dayInfo';
 import DatePickerWithBlocked from '@root/app/specific/components/ui/DatePickerWithBlocked';
+import getCurrentTime from '@root/app/lib/date/getCurrentTime';
 
 const OrderDatePicker: FC = () => {
 
@@ -23,9 +24,11 @@ const OrderDatePicker: FC = () => {
                 lang={lang}
                 day={day}
                 cateringSettings={cateringSettings}
-                orderedDates={orderedDates}
                 updateDay={updateDay}
                 maxDate={cateringSettings ? getNextWorkingDay(new Date(), cateringSettings) : undefined}
+                minDate={getCurrentTime()}
+                blockedDays={getBlockedDays({ orderedDates, nonWorkingDaysCustom: cateringSettings?.nonWorkingDays ?? [] })}
+                blockPreviousDays={true}
             />
             <Deadline />
         </div>

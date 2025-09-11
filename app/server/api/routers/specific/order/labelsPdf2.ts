@@ -21,6 +21,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
         // Control variables
         const showRegularFood = false;
         const showChangedOnly = true;
+        const labelPaddingMm = 5; // Internal padding for label content in mm
 
         const { consumerFoodByRoute, mealGroupName } = await getGroupedFoodData({ dayId, mealId, cateringId: catering.id, groupBy: 'byConsumer' });
         const { year, month, day } = dayIdParser(dayId);
@@ -107,12 +108,12 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                                 // Add exclusions in parentheses
                                 if (cf.exclusions && cf.exclusions.length > 0) {
                                     const exclusionNames = cf.exclusions.map(ex => ex.name).join(', ');
-                                    description += ` (${exclusionNames})`;
+                                    description += (description ? ' ' : '') + `(${exclusionNames})`;
                                 }
 
                                 // Add comment in square brackets
                                 if (cf.comment?.trim()) {
-                                    description += ` [${cf.comment}]`;
+                                    description += (description ? ' ' : '') + `[${cf.comment}]`;
                                 }
 
                                 return description;
@@ -149,12 +150,12 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                                         // Add exclusions in parentheses
                                         if (cf.exclusions && cf.exclusions.length > 0) {
                                             const exclusionNames = cf.exclusions.map(ex => ex.name).join(', ');
-                                            description += ` (${exclusionNames})`;
+                                            description += (description ? ' ' : '') + `(${exclusionNames})`;
                                         }
 
                                         // Add comment in square brackets
                                         if (cf.comment?.trim()) {
-                                            description += ` [${cf.comment}]`;
+                                            description += (description ? ' ' : '') + `[${cf.comment}]`;
                                         }
 
                                         return description;
@@ -251,9 +252,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 doc.undash();
                 doc.restore();
 
-                const padding = 3;
-
-                const routeNamePart = label.deliveryRouteName !== 'Bez trasy' ? `(${label.deliveryRouteName})` : '';
+                const padding = mmToPt(labelPaddingMm);
 
                 // Clean consumer code - remove client code prefix if present
                 let cleanConsumerCode = label.consumerCode;
@@ -272,8 +271,8 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 doc.font('Roboto-Bold').fontSize(topInfoFontSize);
                 const topInfoLineHeight = doc.heightOfString('A', { width: cellWidth - 2 * padding });
 
-                // Left part: client code + route name
-                const leftPart = [label.clientCode, routeNamePart].filter(Boolean).join(' ');
+                // Left part: client code - consumer code
+                const leftPart = [label.clientCode, cleanConsumerCode].filter(Boolean).join(' - ');
 
                 // Render left part (left aligned)
                 doc.text(leftPart, x + padding, currentY, {
@@ -283,9 +282,9 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                     ellipsis: true
                 });
 
-                // Render right part (consumer code, right aligned)
-                if (cleanConsumerCode) {
-                    doc.text(cleanConsumerCode, x + padding, currentY, {
+                // Render right part (route name, right aligned)
+                if (label.deliveryRouteName && label.deliveryRouteName !== 'Bez trasy') {
+                    doc.text(label.deliveryRouteName, x + padding, currentY, {
                         align: 'right',
                         width: cellWidth - 2 * padding,
                         height: topInfoLineHeight,
