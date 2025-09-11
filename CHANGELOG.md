@@ -1,3 +1,12 @@
+## [2.6.5](https://github.com/Jacaplaca/catering/compare/v2.6.4...v2.6.5) (2025-09-11)
+
+
+### Bug Fixes
+
+* date picker and labels margin ([98d40ad](https://github.com/Jacaplaca/catering/commit/98d40ad1aa71afd9314698640a2591993fd2e0c3))
+
+
+
 ## [2.6.4](https://github.com/Jacaplaca/catering/compare/v2.6.3...v2.6.4) (2025-09-09)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * delivery route change name and master pass ([318ff64](https://github.com/Jacaplaca/catering/commit/318ff64693a51dedf642d58f0b025da142df5681))
-
-
-
-# [2.6.0](https://github.com/Jacaplaca/catering/compare/v2.5.0...v2.6.0) (2025-08-15)
-
-
-### Features
-
-* new pdfs ([9444360](https://github.com/Jacaplaca/catering/commit/944436025e291f40a59ae2212253333baa7f677f))
 
 
 
