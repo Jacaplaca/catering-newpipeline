@@ -16,6 +16,14 @@ export const regularMenuCreateValidator = z.object({
     }))
 });
 
+export const regularMenuAddNewClientsValidator = z.object({
+    day: z.object({
+        year: z.number(),
+        month: z.number(), // 0-11
+        day: z.number(),
+    })
+});
+
 export const regularMenuEditValidator = z.object({
     id: z.string(),
     day: z.object({

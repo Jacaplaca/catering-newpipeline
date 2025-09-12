@@ -1,7 +1,7 @@
 import { db } from '@root/app/server/db';
-import { type Prisma, type RegularMenu, RoleType } from '@prisma/client';
+import { type Prisma, RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
-import { regularMenuCreateValidator, regularMenuEditValidator, regularMenuGetOneValidator, regularMenuRemoveValidator, regularMenuListValidator, regularMenuConfigureDaysValidator, getClientsWithCommonAllergensValidator, createAssignmentsValidator, updateFoodsOrderInput, getOneClientWithCommonAllergensValidator } from '@root/app/validators/specific/regularMenu';
+import { regularMenuCreateValidator, regularMenuEditValidator, regularMenuGetOneValidator, regularMenuRemoveValidator, regularMenuListValidator, regularMenuConfigureDaysValidator, getClientsWithCommonAllergensValidator, createAssignmentsValidator, updateFoodsOrderInput, getOneClientWithCommonAllergensValidator, regularMenuAddNewClientsValidator } from '@root/app/validators/specific/regularMenu';
 import { TRPCError } from '@trpc/server';
 import getManyClients from '@root/app/server/api/routers/specific/libs/getManyClients';
 import checkCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/checkCommonAllergens';
@@ -9,244 +9,9 @@ import checkIndividualMenu from '@root/app/server/api/routers/specific/libs/chec
 import { options } from '@root/app/server/api/specific/aggregate';
 import getClientsDbQuery from '@root/app/server/api/routers/specific/libs/getClientsDbQuery';
 import { type ClientCustomTable } from '@root/types/specific';
-
-const getClientsWithMenus = async (tx: Prisma.TransactionClient, cateringId: string) => {
-  return await tx.regularMenu.findMany({
-    where: {
-      cateringId,
-      clientId: { not: null },
-    },
-    select: {
-      clientId: true,
-    },
-  }) as unknown as { clientId: string }[];
-}
-
-const getConsumers = async (tx: Prisma.TransactionClient, { cateringId, clientId, update, consumerIds }: { cateringId: string, clientId?: string | null, update?: boolean, consumerIds?: string[] }) => {
-
-  const matchCondition: {
-    cateringId: string;
-    $or: { deactivated: boolean | null }[];
-    clientId?: string | { $nin: string[] };
-    _id?: { $in: string[] };
-  } = {
-    cateringId,
-    $or: [{ deactivated: false }, { deactivated: null }],
-  }
-
-  if (clientId) {
-    matchCondition.clientId = clientId;
-  }
-
-  if (!clientId && update) {
-    const clientsWithMenus = await getClientsWithMenus(tx, cateringId);
-    matchCondition.clientId = { $nin: clientsWithMenus.map(c => c.clientId) };
-  }
-
-  if (consumerIds) {
-    matchCondition._id = { $in: consumerIds };
-  }
-
-  return await tx.consumer.aggregateRaw({
-    pipeline: [
-      {
-        $match: matchCondition,
-      },
-      {
-        $project: {
-          id: { $toString: '$_id' },
-          clientId: 1,
-          _id: 0,
-        },
-      },
-    ],
-  }) as unknown as { id: string, clientId: string }[];
-};
-
-const getOriginalMenu = async (tx: Prisma.TransactionClient, cateringId: string, day: { year: number, month: number, day: number }) => {
-  return await tx.regularMenu.findFirst({
-    where: {
-      cateringId,
-      day: {
-        year: day.year,
-        month: day.month,
-        day: day.day,
-      },
-      clientId: undefined,
-    },
-  });
-};
-
-const assignConsumerFoods = async (
-  tx: Prisma.TransactionClient,
-  { menu, foods, consumers, cateringId }: { menu: RegularMenu, foods: { id: string; mealId: string }[], consumers: { id: string, clientId: string }[], cateringId: string }
-) => {
-
-  const consumerFoodsToCreate: Prisma.ConsumerFoodCreateManyInput[] = [];
-
-  for (const food of foods) {
-    for (const consumer of consumers) {
-      consumerFoodsToCreate.push({
-        cateringId,
-        regularMenuId: menu.id,
-        consumerId: consumer.id,
-        foodId: food.id,
-        mealId: food.mealId,
-        clientId: consumer.clientId,
-      });
-    }
-  }
-
-  if (consumerFoodsToCreate.length > 0) {
-    await tx.consumerFood.createMany({
-      data: consumerFoodsToCreate,
-    });
-  }
-
-}
-
-const removeConsumerFoods = async (
-  tx: Prisma.TransactionClient,
-  regularMenuId: string,
-  consumers: { id: string }[],
-) => {
-  await tx.consumerFood.deleteMany({
-    where: {
-      regularMenuId,
-      consumerId: { in: consumers.map(c => c.id) },
-    },
-  });
-}
-
-
-
-const addFoodToConsumers = async (
-  tx: Prisma.TransactionClient,
-  { cateringId, menu, foods, update, consumerIds }: { cateringId: string, menu: RegularMenu, foods: { id: string; mealId: string }[], update?: boolean, consumerIds?: string[] }
-) => {
-  const consumers = await getConsumers(tx, { cateringId, clientId: menu.clientId, update, consumerIds });
-
-  if (consumers.length === 0) return;
-
-  if (menu.clientId) {
-    const { day } = menu;
-    const originalMenu = await getOriginalMenu(tx, cateringId, day);
-    if (originalMenu) {
-      // Get existing consumer foods from original menu for this client's consumers
-      const existingConsumerFoods = await tx.consumerFood.findMany({
-        where: {
-          regularMenuId: originalMenu.id,
-          consumerId: { in: consumers.map(c => c.id) },
-        },
-        include: {
-          exclusions: {
-            include: {
-              exclusion: true,
-            },
-          },
-        },
-      });
-
-      // Remove consumer foods from original menu
-      await removeConsumerFoods(tx, originalMenu.id, consumers);
-
-      // Create map of compatible assignments to transfer
-      const transferableAssignments = new Map<string, {
-        consumerId: string;
-        foodId: string;
-        alternativeFoodId: string | null;
-        mealId: string;
-        comment: string | null;
-        exclusions: { exclusionId: string }[];
-      }>();
-
-      // Check which existing assignments can be transferred to new menu
-      for (const existingFood of existingConsumerFoods) {
-        const key = `${existingFood.consumerId}:${existingFood.mealId}`;
-        const isCompatible = foods.some(newFood =>
-          newFood.mealId === existingFood.mealId &&
-          newFood.id === existingFood.foodId
-        );
-
-        if (isCompatible) {
-          transferableAssignments.set(key, {
-            consumerId: existingFood.consumerId,
-            foodId: existingFood.foodId,
-            alternativeFoodId: existingFood.alternativeFoodId,
-            mealId: existingFood.mealId,
-            comment: existingFood.comment,
-            exclusions: existingFood.exclusions.map(e => ({ exclusionId: e.exclusionId })),
-          });
-        }
-      }
-
-      // Create consumer foods for new menu, preserving transferable assignments
-      const consumerFoodsToCreate: Prisma.ConsumerFoodCreateManyInput[] = [];
-      const consumerFoodExclusionsToCreate: { consumerFoodId: string; exclusionId: string }[] = [];
-
-      for (const food of foods) {
-        for (const consumer of consumers) {
-          const key = `${consumer.id}:${food.mealId}`;
-          const transferableData = transferableAssignments.get(key);
-
-          if (transferableData && transferableData.foodId === food.id) {
-            // Use existing assignment data
-            const consumerFood = await tx.consumerFood.create({
-              data: {
-                cateringId,
-                regularMenuId: menu.id,
-                consumerId: consumer.id,
-                foodId: transferableData.foodId,
-                alternativeFoodId: transferableData.alternativeFoodId,
-                mealId: transferableData.mealId,
-                clientId: consumer.clientId,
-                comment: transferableData.comment,
-              },
-            });
-
-            // Re-create exclusions for transferred assignment
-            for (const exclusion of transferableData.exclusions) {
-              consumerFoodExclusionsToCreate.push({
-                consumerFoodId: consumerFood.id,
-                exclusionId: exclusion.exclusionId,
-              });
-            }
-          } else {
-            // Create new assignment
-            consumerFoodsToCreate.push({
-              cateringId,
-              regularMenuId: menu.id,
-              consumerId: consumer.id,
-              foodId: food.id,
-              mealId: food.mealId,
-              clientId: consumer.clientId,
-            });
-          }
-        }
-      }
-
-      // Create remaining new consumer foods (those without transferable data)
-      if (consumerFoodsToCreate.length > 0) {
-        await tx.consumerFood.createMany({
-          data: consumerFoodsToCreate,
-        });
-      }
-
-      // Create exclusions for transferred assignments
-      if (consumerFoodExclusionsToCreate.length > 0) {
-        await tx.consumerFoodExclusion.createMany({
-          data: consumerFoodExclusionsToCreate,
-        });
-      }
-    } else {
-      // No original menu exists, create new assignments normally
-      await assignConsumerFoods(tx, { menu, foods, consumers, cateringId });
-    }
-  } else {
-    // This is a general menu (not client-specific), create assignments normally
-    await assignConsumerFoods(tx, { menu, foods, consumers, cateringId });
-  }
-};
+import getConsumers from '@root/app/server/api/routers/specific/libs/consumerFoods/getConsumers';
+import getOriginalMenu from '@root/app/server/api/routers/specific/libs/consumerFoods/getOriginalMenu';
+import { addFoodToConsumers, assignConsumerFoods } from '@root/app/server/api/routers/specific/libs/consumerFoods/addFoodToConsumers';
 
 const addMealFoodsToMenu = async (
   tx: Prisma.TransactionClient,
@@ -266,6 +31,84 @@ const addMealFoodsToMenu = async (
     });
   }
 };
+
+// const getClientsWithMenu = async (regularMenuIds: string[]) => {
+//   const uniqueClientIds = await db.consumerFood.findMany({
+//     where: {
+//       regularMenuId: { in: regularMenuIds },
+//     },
+//     select: {
+//       clientId: true,
+//     },
+//     distinct: ['clientId'],
+//   });
+
+//   // Return array of client IDs
+//   return uniqueClientIds.map(item => item.clientId);
+// }
+
+// const getRegularMenuIds = async (day: { year: number, month: number, day: number }, cateringId: string) => {
+//   const regularMenus = await db.regularMenu.findMany({
+//     where: { cateringId, day },
+//     select: { id: true },
+//   });
+//   return regularMenus.map(menu => menu.id);
+// };
+
+// const getCateringClients = async (cateringId: string) => {
+//   const clients = await db.client.findMany({
+//     where: { cateringId, deactivated: false },
+//     select: {
+//       id: true,
+//     },
+//   });
+//   return clients.map(client => client.id);
+// };
+
+// const getClientsWithoutMenu = async ({ cateringId, regularMenuIds }: { cateringId: string, regularMenuIds: string[] }) => {
+//   const clientsWithMenu = await getClientsWithMenu(regularMenuIds);
+//   const clients = await getCateringClients(cateringId);
+//   return clients.filter(client => !clientsWithMenu.includes(client));
+// };
+
+// const addNewClientsToMenu = createCateringProcedure([RoleType.manager, RoleType.dietician])
+//   .input(regularMenuAddNewClientsValidator)
+//   .mutation(async ({ input, ctx }) => {
+//     const { session: { catering } } = ctx;
+//     const { day } = input;
+//     const cateringId = catering.id;
+
+//     const regularMenuIds = await getRegularMenuIds(day, cateringId);
+
+//     if (!regularMenuIds.length) {
+//       throw new TRPCError({
+//         code: 'NOT_FOUND',
+//         message: 'Menu not found',
+//       });
+//     }
+//     const clientsWithoutMenu = await getClientsWithoutMenu({ cateringId, regularMenuIds });
+//     return clientsWithoutMenu;
+//   });
+
+// const checkIfAllClientsHaveMenu = createCateringProcedure([RoleType.manager, RoleType.dietician])
+//   .input(regularMenuAddNewClientsValidator)
+//   .query(async ({ input, ctx }) => {
+//     const { session: { catering } } = ctx;
+//     const { day } = input;
+//     const cateringId = catering.id;
+
+//     const regularMenuIds = await getRegularMenuIds(day, cateringId);
+
+//     if (!regularMenuIds.length) {
+//       throw new TRPCError({
+//         code: 'NOT_FOUND',
+//         message: 'Menu not found',
+//       });
+//     }
+
+//     return await getClientsWithoutMenu({ cateringId, regularMenuIds });
+
+//   });
 
 const create = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(regularMenuCreateValidator)
@@ -836,7 +679,6 @@ const updateFoodsOrder = createCateringProcedure([RoleType.manager, RoleType.die
     });
   });
 
-
 const regularRouter = {
   // getMany,
   create,
@@ -849,6 +691,8 @@ const regularRouter = {
   createAssignments,
   updateFoodsOrder,
   getOneClientWithCommonAllergens,
+  // addNewClientsToMenu,
+  // checkIfAllClientsHaveMenu,
   // count,
 }
 
