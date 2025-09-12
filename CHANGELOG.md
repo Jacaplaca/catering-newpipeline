@@ -1,3 +1,12 @@
+## [2.6.6](https://github.com/Jacaplaca/catering/compare/v2.6.5...v2.6.6) (2025-09-12)
+
+
+### Bug Fixes
+
+* new consumers added to menu ([81dba97](https://github.com/Jacaplaca/catering/commit/81dba97db74be9403966f09a26511f2f62005e61))
+
+
+
 ## [2.6.5](https://github.com/Jacaplaca/catering/compare/v2.6.4...v2.6.5) (2025-09-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * add loading to food components and filter options in labelsPdf2 ([5bc86aa](https://github.com/Jacaplaca/catering/commit/5bc86aab45b001e84509c94241d2d836ef93181f))
-
-
-
-## [2.6.1](https://github.com/Jacaplaca/catering/compare/v2.6.0...v2.6.1) (2025-08-19)
-
-
-### Bug Fixes
-
-* delivery route change name and master pass ([318ff64](https://github.com/Jacaplaca/catering/commit/318ff64693a51dedf642d58f0b025da142df5681))
 
 
 
