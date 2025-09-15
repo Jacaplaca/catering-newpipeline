@@ -22,7 +22,7 @@ const DayTools = ({ dayId }: { dayId: string }) => {
     return <div>
         <div className="flex gap-2">
             <RoutesPdf dayId={dayId} />
-            <DayKitchenPdf dayId={dayId} />
+            {/* <DayKitchenPdf dayId={dayId} /> */}
         </div>
     </div>
 
