@@ -1,3 +1,12 @@
+## [2.6.7](https://github.com/Jacaplaca/catering/compare/v2.6.6...v2.6.7) (2025-09-15)
+
+
+### Bug Fixes
+
+* labels meal data new fonts new report fo kitchen fixed detailed view for order remove consumerFoods with consumer deactivation ([3b6e607](https://github.com/Jacaplaca/catering/commit/3b6e607f3d65bf6a2d6e823bb1822c9e468ff797))
+
+
+
 ## [2.6.6](https://github.com/Jacaplaca/catering/compare/v2.6.5...v2.6.6) (2025-09-12)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * improve layout of top info line in labelsPdf2 by separating client code and consumer code ([2bf2e6a](https://github.com/Jacaplaca/catering/commit/2bf2e6ae252d67403a637790314437e8a8ad8d01))
-
-
-
-## [2.6.2](https://github.com/Jacaplaca/catering/compare/v2.6.1...v2.6.2) (2025-08-20)
-
-
-### Bug Fixes
-
-* add loading to food components and filter options in labelsPdf2 ([5bc86aa](https://github.com/Jacaplaca/catering/commit/5bc86aab45b001e84509c94241d2d836ef93181f))
 
 
 
