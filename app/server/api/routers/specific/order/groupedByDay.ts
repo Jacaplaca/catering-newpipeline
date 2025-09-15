@@ -9,6 +9,7 @@ import groupStandardOrdersByDay from '@root/app/server/api/routers/specific/libs
 import getDayOrders, { type DayOrder } from '@root/app/server/api/routers/specific/libs/getDayOrders';
 import getGroupedFoodData from '@root/app/server/api/routers/specific/libs/pdf/getGroupedFoodData';
 import { type RoutesWithConsumersByIdMap } from '@root/app/server/api/routers/specific/libs/getGroupedConsumerFoodDataObject';
+import getDayFoodData from '@root/app/server/api/routers/specific/libs/getDayFoodData';
 
 const getSummary = (dayData: DayOrder[]) => {
     return dayData.reduce((acc, {
@@ -81,16 +82,7 @@ const day2 = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTy
         const summary = getSummary(dayData);
         const diet = getDiet(dayData);
 
-
-        const mealGroups = await db.mealGroup.findMany();
-        const meal2data: Record<string, RoutesWithConsumersByIdMap> = {};
-        for (const mealGroup of mealGroups) {
-            const { consumerFoodByRoute } = await getGroupedFoodData({ dayId, mealGroupIdProp: mealGroup.id, cateringId: catering.id, groupBy: 'byConsumer' });
-            meal2data[mealGroup.name ?? mealGroup.id] = consumerFoodByRoute;
-        }
-
-        // const { consumerFoodByRoute } = await getGroupedFoodData({ dayId, cateringId: catering.id, groupBy: 'byConsumer' });
-
+        const meal2data = await getDayFoodData({ dayId, cateringId: catering.id });
 
         const dayDataCleaned = dayData.map(({
             breakfastDiet: _breakfastDiet,

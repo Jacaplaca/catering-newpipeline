@@ -2,6 +2,7 @@ import useRows from '@root/app/hooks/table/useRows';
 import useTableSort from '@root/app/hooks/table/useTableSort';
 import useMessage from '@root/app/hooks/useMessage';
 import useSearch from '@root/app/hooks/useSearch';
+import useDayKitchenPdf from '@root/app/specific/components/Orders/ByDayMeals/DayMealsCell/useDayKitchenPdf';
 import useLabelsPdf from '@root/app/specific/components/Orders/ByDayMeals/DayMealsCell/useLabelsPdf';
 import useMealPdf from '@root/app/specific/components/Orders/ByDayMeals/DayMealsCell/useMealPdf';
 import useRoutesPdf from '@root/app/specific/components/Orders/ByDayMeals/DayMealsCell/useRoutesPdf';
@@ -35,6 +36,7 @@ const useOrderByDayMealsTable = ({
     const mealPdf = useMealPdf(lang, updateMessage);
     const labelsPdf = useLabelsPdf(lang, updateMessage);
     const routesPdf = useRoutesPdf(lang, updateMessage);
+    const dayKitchenPdf = useDayKitchenPdf(lang, updateMessage);
     const { groupedMeals } = useFetchMeals();
     // const { mealGroups } = useFetchMealGroups(); 
 
@@ -106,7 +108,8 @@ const useOrderByDayMealsTable = ({
         message: { messageObj, resetMessage, updateMessage },
         mealPdf,
         labelsPdf,
-        routesPdf
+        routesPdf,
+        dayKitchenPdf,
     };
 }
 export default useOrderByDayMealsTable;

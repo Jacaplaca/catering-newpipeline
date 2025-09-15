@@ -78,7 +78,7 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             }
 
             const mmToPt = (mm: number) => mm * 2.83465;
-            const clientColumnWidthFixed = mmToPt(70); // 7cm for client code + name
+            const clientColumnWidthFixed = mmToPt(35); // 3.5cm for client code
             const packagingColumnWidth = mmToPt(25); // Approx 2.5cm for packaging
 
             for (let i = 0; i < routeNames.length; i++) {
@@ -202,10 +202,7 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                         doc.font('Roboto').fontSize(cellFontSize);
                     }
 
-                    const clientNameShortened = clientData.clientName.length > 30
-                        ? `${clientData.clientName.substring(0, 27)}...`
-                        : clientData.clientName;
-                    const clientDisplayText = `${clientData.clientCode} ${clientNameShortened}`;
+                    const clientDisplayText = clientData.clientCode;
 
                     xPos = pageContentLeft;
                     doc.text(clientDisplayText, xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.client - cellHorizontalPadding, lineBreak: false, ellipsis: true });

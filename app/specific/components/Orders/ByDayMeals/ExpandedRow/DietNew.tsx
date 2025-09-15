@@ -112,20 +112,23 @@ const DietNew = () => {
                     clients[clientCode].meals[mealName] = { consumers: [] };
                 }
 
-                const existingConsumerIds = new Set(clients[clientCode].meals[mealName]?.consumers.map(c => c.consumer.id));
+                const existingConsumerIds = new Set(clients[clientCode].meals[mealName]?.consumers.map(c => c.consumer._id));
 
                 for (const consumerData of Object.values(client.consumers)) {
-                    if (!existingConsumerIds.has(consumerData.consumer.id)) {
+                    if (!existingConsumerIds.has(consumerData.consumer._id)) {
 
-                        const relevantMealsForConsumer = Object.values(consumerData.meals).filter(mealDetails => mealDetails.meal.name === mealName);
+                        // const relevantMealsForConsumer = Object.values(consumerData.meals).filter(mealDetails => mealDetails.meal.name === mealName);
+                        const relevantMealsForConsumer = Object.values(consumerData.meals);
+                        console.log("relevantMealsForConsumer", relevantMealsForConsumer);
 
                         if (relevantMealsForConsumer.length > 0) {
+                            const meals = Object.fromEntries(relevantMealsForConsumer.map(m => [m.meal._id, m]));
                             const newConsumerData = {
                                 ...consumerData,
-                                meals: Object.fromEntries(relevantMealsForConsumer.map(m => [m.meal.id, m]))
+                                meals
                             }
                             clients[clientCode].meals[mealName]?.consumers.push(newConsumerData);
-                            existingConsumerIds.add(consumerData.consumer.id);
+                            existingConsumerIds.add(consumerData.consumer._id);
                         }
                     }
                 }
@@ -164,6 +167,7 @@ const DietNew = () => {
                                     <div className='font-bold text-base py-2'>{clientInfo.clientCode}</div>
                                     {allMealNames.map(mealName => {
                                         const mealData = meals[mealName];
+                                        console.log(mealData?.consumers);
                                         return (
                                             <div className='py-2' key={mealName}>
                                                 {mealData && mealData.consumers.length > 0 ? (

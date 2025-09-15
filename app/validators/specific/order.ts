@@ -92,6 +92,12 @@ export const getOrdersPdf2Valid = z.object({
     lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
 });
 
+export const getDayKitchenPdfValid = z.object({
+    dayId: z.string(),
+    mealId: z.string().optional(),
+    lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
+});
+
 export const getRoutesPdfValid = z.object({
     dayId: z.string(),
     lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),

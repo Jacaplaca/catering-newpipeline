@@ -261,87 +261,85 @@ const deleteOne = createCateringProcedure([RoleType.dietician, RoleType.manager]
         const cateringId = catering.id;
 
         // Function that fetches order ids with 'draft' status which include consumers from the given list.
-        async function getDraftOrdersWithConsumers(consumerIds: string[], cateringId: string): Promise<string[]> {
-            console.log(consumerIds, cateringId);
-            const orders = await db.order.findMany({
-                where: {
-                    cateringId,
-                    status: OrderStatus.draft,
-                    OR: [
-                        { breakfastDiet: { some: { consumerId: { in: consumerIds } } } },
-                        { lunchDiet: { some: { consumerId: { in: consumerIds } } } },
-                        { dinnerDiet: { some: { consumerId: { in: consumerIds } } } },
-                        { lunchDietBeforeDeadline: { some: { consumerId: { in: consumerIds } } } },
-                        { dinnerDietBeforeDeadline: { some: { consumerId: { in: consumerIds } } } },
-                    ]
-                },
-                select: { id: true }
-            });
-            console.log(orders);
-            return orders.map(order => order.id);
-        }
+        // async function getDraftOrdersWithConsumers(consumerIds: string[], cateringId: string): Promise<string[]> {
+        //     const orders = await db.order.findMany({
+        //         where: {
+        //             cateringId,
+        //             status: OrderStatus.draft,
+        //             OR: [
+        //                 { breakfastDiet: { some: { consumerId: { in: consumerIds } } } },
+        //                 { lunchDiet: { some: { consumerId: { in: consumerIds } } } },
+        //                 { dinnerDiet: { some: { consumerId: { in: consumerIds } } } },
+        //                 { lunchDietBeforeDeadline: { some: { consumerId: { in: consumerIds } } } },
+        //                 { dinnerDietBeforeDeadline: { some: { consumerId: { in: consumerIds } } } },
+        //             ]
+        //         },
+        //         select: { id: true }
+        //     });
+        //     return orders.map(order => order.id);
+        // }
 
         const deactivateMap = await beenInOrder(ids);
         const forDeactivate = Object.keys(deactivateMap).filter(id => deactivateMap[id]);
         const forDelete = Object.keys(deactivateMap).filter(id => !deactivateMap[id]);
 
         // Retrieve IDs of draft orders that include the consumers to be deactivated.
-        const draftOrderIds = forDeactivate.length > 0 ? await getDraftOrdersWithConsumers(forDeactivate, cateringId) : [];
+        // const draftOrderIds = forDeactivate.length > 0 ? await getDraftOrdersWithConsumers(forDeactivate, cateringId) : [];
 
         // Remove the consumers from the draft orders (delete join table records)
-        await Promise.all([
-            db.orderConsumerBreakfast.deleteMany({
-                where: {
-                    orderId: { in: draftOrderIds },
-                    consumerId: { in: forDeactivate }
-                }
-            }),
-            db.orderConsumerLunch.deleteMany({
-                where: {
-                    orderId: { in: draftOrderIds },
-                    consumerId: { in: forDeactivate }
-                }
-            }),
-            db.orderConsumerDinner.deleteMany({
-                where: {
-                    orderId: { in: draftOrderIds },
-                    consumerId: { in: forDeactivate }
-                }
-            }),
-            db.orderConsumerLunchBeforeDeadline.deleteMany({
-                where: {
-                    orderId: { in: draftOrderIds },
-                    consumerId: { in: forDeactivate }
-                }
-            }),
-            db.orderConsumerDinnerBeforeDeadline.deleteMany({
-                where: {
-                    orderId: { in: draftOrderIds },
-                    consumerId: { in: forDeactivate }
-                }
-            }),
-        ]);
+        // await Promise.all([
+        //     db.orderConsumerBreakfast.deleteMany({
+        //         where: {
+        //             orderId: { in: draftOrderIds },
+        //             consumerId: { in: forDeactivate }
+        //         }
+        //     }),
+        //     db.orderConsumerLunch.deleteMany({
+        //         where: {
+        //             orderId: { in: draftOrderIds },
+        //             consumerId: { in: forDeactivate }
+        //         }
+        //     }),
+        //     db.orderConsumerDinner.deleteMany({
+        //         where: {
+        //             orderId: { in: draftOrderIds },
+        //             consumerId: { in: forDeactivate }
+        //         }
+        //     }),
+        //     db.orderConsumerLunchBeforeDeadline.deleteMany({
+        //         where: {
+        //             orderId: { in: draftOrderIds },
+        //             consumerId: { in: forDeactivate }
+        //         }
+        //     }),
+        //     db.orderConsumerDinnerBeforeDeadline.deleteMany({
+        //         where: {
+        //             orderId: { in: draftOrderIds },
+        //             consumerId: { in: forDeactivate }
+        //         }
+        //     }),
+        // ]);
 
         // Update order counts after removing consumers from draft orders.
         // For each order we count remaining join records and update the corresponding fields.
-        for (const orderId of draftOrderIds) {
-            const newBreakfastDietCount = await db.orderConsumerBreakfast.count({ where: { orderId } });
-            const newLunchDietCount = await db.orderConsumerLunch.count({ where: { orderId } });
-            const newDinnerDietCount = await db.orderConsumerDinner.count({ where: { orderId } });
-            const newLunchDietCountBeforeDeadline = await db.orderConsumerLunchBeforeDeadline.count({ where: { orderId } });
-            const newDinnerDietCountBeforeDeadline = await db.orderConsumerDinnerBeforeDeadline.count({ where: { orderId } });
+        // for (const orderId of draftOrderIds) {
+        //     const newBreakfastDietCount = await db.orderConsumerBreakfast.count({ where: { orderId } });
+        //     const newLunchDietCount = await db.orderConsumerLunch.count({ where: { orderId } });
+        //     const newDinnerDietCount = await db.orderConsumerDinner.count({ where: { orderId } });
+        //     const newLunchDietCountBeforeDeadline = await db.orderConsumerLunchBeforeDeadline.count({ where: { orderId } });
+        //     const newDinnerDietCountBeforeDeadline = await db.orderConsumerDinnerBeforeDeadline.count({ where: { orderId } });
 
-            await db.order.update({
-                where: { id: orderId },
-                data: {
-                    breakfastDietCount: newBreakfastDietCount,
-                    lunchDietCount: newLunchDietCount,
-                    dinnerDietCount: newDinnerDietCount,
-                    lunchDietCountBeforeDeadline: newLunchDietCountBeforeDeadline,
-                    dinnerDietCountBeforeDeadline: newDinnerDietCountBeforeDeadline,
-                },
-            });
-        }
+        //     await db.order.update({
+        //         where: { id: orderId },
+        //         data: {
+        //             breakfastDietCount: newBreakfastDietCount,
+        //             lunchDietCount: newLunchDietCount,
+        //             dinnerDietCount: newDinnerDietCount,
+        //             lunchDietCountBeforeDeadline: newLunchDietCountBeforeDeadline,
+        //             dinnerDietCountBeforeDeadline: newDinnerDietCountBeforeDeadline,
+        //         },
+        //     });
+        // }
 
         await db.consumer.updateMany({
             where: { id: { in: forDeactivate }, cateringId },
@@ -352,7 +350,11 @@ const deleteOne = createCateringProcedure([RoleType.dietician, RoleType.manager]
             where: { id: { in: forDelete }, cateringId }
         });
 
-        return { deactivateMap, draftOrderIds };
+        await db.consumerFood.deleteMany({
+            where: { consumerId: { in: [...forDeactivate, ...forDelete] }, cateringId }
+        });
+
+        return { deactivateMap };
     });
 
 const consumerRouter = {

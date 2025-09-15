@@ -94,6 +94,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                         const labelsForConsumer: LabelInfo[] = [];
 
                         for (const mealData of separateLabelMeals) {
+                            const mealName = mealData.meal.name;
                             const sortedFoods = mealData.consumerFoods.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                             const foodDescriptions = sortedFoods.map(cf => {
                                 let description = '';
@@ -134,6 +135,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                         }
 
                         if (combinedLabelMeals.length > 0) {
+                            const mealName = new Set(combinedLabelMeals.map(md => md.meal.name));
                             const foodDescriptions = combinedLabelMeals
                                 .flatMap(md => {
                                     const sortedFoods = md.consumerFoods.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -170,7 +172,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                                     deliveryRouteName: routeData.deliveryRouteName ?? '',
                                     clientCode: clientData.clientCode ?? '',
                                     consumerCode: consumer.code ?? '',
-                                    mealName: "Posiłki połączone",
+                                    mealName: Array.from(mealName).join(', '),
                                     baseFood: foodDescriptions,
                                 });
                             }
@@ -293,6 +295,14 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 }
 
                 currentY += topInfoLineHeight + 2;
+
+
+                // Render meal name
+                doc.font('Roboto-Bold').fontSize(foodFontSize);
+                doc.text(label.mealName, x + padding, currentY, {
+                    width: cellWidth - 2 * padding,
+                });
+                currentY += doc.heightOfString(label.mealName, { width: cellWidth - 2 * padding });
 
 
                 // Render food line
