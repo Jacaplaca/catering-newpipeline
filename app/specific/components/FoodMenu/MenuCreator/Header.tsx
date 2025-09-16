@@ -4,6 +4,7 @@ import translate from '@root/app/lib/lang/translate';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import FoodMenuDate from '@root/app/specific/components/FoodMenu/Date';
 import RegularMenuDropdown from '@root/app/specific/components/ui/Dropdown/RegularMenu';
+import { env } from '@root/app/env';
 
 const MenuCreatorHeader = () => {
     const { dictionary, standardMenuForm, menuQueries, templateDayObject, isFormNotEmpty, showMenuForConsumers, handleShowMenuForConsumers } = useFoodMenuContext();
@@ -14,6 +15,13 @@ const MenuCreatorHeader = () => {
     const canEditIndividually = isFormNotEmpty && !isFormDirty;
 
     return (<div>
+        {
+            env.NEXT_PUBLIC_MENU_FRONT && (
+                <div>
+                    {menuQueries?.existingMenu?.id}
+                </div>
+            )
+        }
         {/* <div className='flex flex-col gap-2'>
                 <div>{`isFormDirty: ${JSON.stringify(isFormDirty)}`}</div>
                 <div>{`existingMenu: ${JSON.stringify(existingMenu)}`}</div>

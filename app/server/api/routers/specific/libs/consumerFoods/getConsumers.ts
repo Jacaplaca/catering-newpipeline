@@ -1,10 +1,17 @@
 import { type Prisma } from '@prisma/client';
 
-const getClientsWithMenus = async (tx: Prisma.TransactionClient, cateringId: string) => {
+const getClientsWithMenus = async (tx: Prisma.TransactionClient, cateringId: string, day?: { year: number, month: number, day: number }) => {
     return await tx.regularMenu.findMany({
         where: {
             cateringId,
             clientId: { not: null },
+            ...(day && {
+                day: {
+                    year: day.year,
+                    month: day.month,
+                    day: day.day,
+                },
+            }),
         },
         select: {
             clientId: true,
@@ -13,7 +20,7 @@ const getClientsWithMenus = async (tx: Prisma.TransactionClient, cateringId: str
 }
 
 
-const getConsumers = async (tx: Prisma.TransactionClient, { cateringId, clientId, update, consumerIds }: { cateringId: string, clientId?: string | null, update?: boolean, consumerIds?: string[] }) => {
+const getConsumers = async (tx: Prisma.TransactionClient, { cateringId, clientId, update, consumerIds, day }: { cateringId: string, clientId?: string | null, update?: boolean, consumerIds?: string[], day?: { year: number, month: number, day: number } }) => {
 
     const matchCondition: {
         cateringId: string;
@@ -30,7 +37,7 @@ const getConsumers = async (tx: Prisma.TransactionClient, { cateringId, clientId
     }
 
     if (!clientId && update) {
-        const clientsWithMenus = await getClientsWithMenus(tx, cateringId);
+        const clientsWithMenus = await getClientsWithMenus(tx, cateringId, day);
         matchCondition.clientId = { $nin: clientsWithMenus.map(c => c.clientId) };
     }
 

@@ -3,6 +3,7 @@ import SkeletonCell from '@root/app/_components/Table/SkeletonCell';
 import translate from '@root/app/lib/lang/translate';
 import Property from '@root/app/specific/components/FoodMenu/ConsumerDiets/Poperties';
 import { type ClientWithCommonAllergens } from '@root/types/specific';
+import { env } from '@root/app/env';
 
 const useConsumerDietsDataGrid = ({
     rows,
@@ -35,7 +36,9 @@ const useConsumerDietsDataGrid = ({
         }
     })
 
-    const table = rows.map(({ id, info, deactivated, hasCommonAllergens, hasIndividualMenu }, i) => {
+    const table = rows.map((row, i) => {
+        const { id, info, deactivated, hasCommonAllergens, hasIndividualMenu } = row;
+        const name = env.NEXT_PUBLIC_MENU_FRONT ? `${info?.name} ${id}` : info?.name;
         return {
             key: id ?? `placeholderData-${i}`,
             className: deactivated ? 'opacity-80 bg-clip-content h-[40px] bg-[repeating-linear-gradient(45deg,transparent,transparent_8px,rgba(0,0,0,0.4)_8px,rgba(0,0,0,0.7)_16px)]' : '',
@@ -50,7 +53,7 @@ const useConsumerDietsDataGrid = ({
                 {
                     component: <HighlightText
                         className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                        text={info?.name ?? ""}
+                        text={name ?? ""}
                         fragment={searchValue} />,
                     key: 'info.name'
                 },

@@ -47,7 +47,7 @@ const addFoodToConsumers = async (
     tx: Prisma.TransactionClient,
     { cateringId, menu, foods, update, consumerIds }: { cateringId: string, menu: RegularMenu, foods: { id: string; mealId: string }[], update?: boolean, consumerIds?: string[] }
 ) => {
-    const consumers = await getConsumers(tx, { cateringId, clientId: menu.clientId, update, consumerIds });
+    const consumers = await getConsumers(tx, { cateringId, clientId: menu.clientId, update, consumerIds, day: menu.day });
 
     if (consumers.length === 0) return;
 
