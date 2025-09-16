@@ -1,3 +1,12 @@
+## [2.6.8](https://github.com/Jacaplaca/catering/compare/v2.6.7...v2.6.8) (2025-09-16)
+
+
+### Bug Fixes
+
+* wrong identify non individual client menus ([69dfbfa](https://github.com/Jacaplaca/catering/commit/69dfbfa9c2b30e217ffc4499d04ceef415b4aef1))
+
+
+
 ## [2.6.7](https://github.com/Jacaplaca/catering/compare/v2.6.6...v2.6.7) (2025-09-15)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * update label dimensions and layout for labelsPdf and labelsPdf2 to 52.5x29.7mm, 4x10 grid; remove unused header text and adjust margins ([58d5c10](https://github.com/Jacaplaca/catering/commit/58d5c10b0164054b77fb8456fcb84d4d0068ca4c))
-
-
-
-## [2.6.3](https://github.com/Jacaplaca/catering/compare/v2.6.2...v2.6.3) (2025-08-27)
-
-
-### Bug Fixes
-
-* improve layout of top info line in labelsPdf2 by separating client code and consumer code ([2bf2e6a](https://github.com/Jacaplaca/catering/commit/2bf2e6ae252d67403a637790314437e8a8ad8d01))
 
 
 
