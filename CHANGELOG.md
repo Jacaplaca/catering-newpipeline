@@ -1,3 +1,12 @@
+## [2.7.1](https://github.com/Jacaplaca/catering/compare/v2.7.0...v2.7.1) (2025-09-18)
+
+
+### Bug Fixes
+
+* added week menu for client ([8ebeb9b](https://github.com/Jacaplaca/catering/commit/8ebeb9bbd59d9793a3e4e5bac667bb364b5abb9f))
+
+
+
 # [2.7.0](https://github.com/Jacaplaca/catering/compare/v2.6.8...v2.7.0) (2025-09-18)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * new consumers added to menu ([81dba97](https://github.com/Jacaplaca/catering/commit/81dba97db74be9403966f09a26511f2f62005e61))
-
-
-
-## [2.6.5](https://github.com/Jacaplaca/catering/compare/v2.6.4...v2.6.5) (2025-09-11)
-
-
-### Bug Fixes
-
-* date picker and labels margin ([98d40ad](https://github.com/Jacaplaca/catering/commit/98d40ad1aa71afd9314698640a2591993fd2e0c3))
 
 
 
