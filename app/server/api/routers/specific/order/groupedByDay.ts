@@ -7,9 +7,8 @@ import { RoleType } from '@prisma/client';
 import processMeals from '@root/app/server/api/routers/specific/libs/processMeals';
 import groupStandardOrdersByDay from '@root/app/server/api/routers/specific/libs/groupStandardOrdersByDay';
 import getDayOrders, { type DayOrder } from '@root/app/server/api/routers/specific/libs/getDayOrders';
-import getGroupedFoodData from '@root/app/server/api/routers/specific/libs/pdf/getGroupedFoodData';
-import { type RoutesWithConsumersByIdMap } from '@root/app/server/api/routers/specific/libs/getGroupedConsumerFoodDataObject';
 import getDayFoodData from '@root/app/server/api/routers/specific/libs/getDayFoodData';
+import dayId2dayIdWithPad from '@root/app/lib/date/dayId2dayIdWithPad';
 
 const getSummary = (dayData: DayOrder[]) => {
     return dayData.reduce((acc, {
@@ -76,13 +75,14 @@ const day2 = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTy
     .query(async ({ input, ctx }) => {
         const { session: { catering } } = ctx;
         const { dayId } = input;
+        const dayIdWithPad = dayId2dayIdWithPad(dayId);
 
         const dayData = await getDayOrders(dayId, catering.id);
         const sortedStandard = groupStandardOrdersByDay(dayData);
         const summary = getSummary(dayData);
         const diet = getDiet(dayData);
 
-        const meal2data = await getDayFoodData({ dayId, cateringId: catering.id });
+        const meal2data = await getDayFoodData({ dayIds: [dayIdWithPad], cateringId: catering.id });
 
         const dayDataCleaned = dayData.map(({
             breakfastDiet: _breakfastDiet,
@@ -91,7 +91,7 @@ const day2 = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleTy
             ...rest
         }) => rest);
 
-        return { dayData: dayDataCleaned, summary, standard: sortedStandard, diet, meal2data };
+        return { dayData: dayDataCleaned, summary, standard: sortedStandard, diet, meal2data: meal2data[dayIdWithPad] };
     });
 
 const table = createCateringProcedure([RoleType.manager, RoleType.kitchen, RoleType.dietician])

@@ -5,6 +5,7 @@ import Property from '@root/app/specific/components/FoodMenu/ConsumerDiets/Poper
 import { type ClientWithCommonAllergens } from '@root/types/specific';
 import { env } from '@root/app/env';
 import DayMenuPdf from '@root/app/specific/components/FoodMenu/ConsumerDiets/DayMenuPdf';
+import PdfsCell from '@root/app/specific/components/FoodMenu/ConsumerDiets/PdfsCell';
 
 const useConsumerDietsDataGrid = ({
     rows,
@@ -59,7 +60,7 @@ const useConsumerDietsDataGrid = ({
                     key: 'info.name'
                 },
                 {
-                    component: <DayMenuPdf clientId={id} />,
+                    component: <PdfsCell clientId={id} />,
                     key: 'clientDayMenuPdf'
                 },
                 {

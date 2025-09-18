@@ -405,9 +405,13 @@
         "add_meals_for_new_consumer_tooltip": "Dziecko zostało dodane do jadłospisu, czy chcesz dodać dania do tego dziecka?",
         "showing_consumers_with_allergens": "Pokazują się tylko dzieci z alergenami:",
         "no_consumers_with_allergens": "Brak dzieci z alergenami:",
-        "pdf-title": "Jadłospis",
-        "pdf-title-for-client": "Jadłospis dla {}",
-        "no-changes": "Bez zmian"
+        "pdf-title": "Jadłospis z dnia {}",
+        "pdf-title-for-client": "Jadłospis z dnia {} dla {}",
+        "pdf-title-for-week": "Jadłospis tygodnia {} dla {}",
+        "no-changes": "Bez zmian",
+        "day-all-clients-menu-pdf": "Jadłospis dzienny dla wszystkich klientów",
+        "week-one-client-menu-pdf": "Jadłospis na obecny tydzień",
+        "day-one-client-menu-pdf": "Jadłospis dzienny"
     },
     "exclusion": {
         "duplicate_name_error": "Istnieje już wykluczenie z taką nazwą",

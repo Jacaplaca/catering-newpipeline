@@ -1,3 +1,5 @@
+import { env } from '@root/app/env';
+import { i18n } from '@root/i18n-config';
 import { z } from "zod";
 
 export const consumerFoodValidator = z.object({
@@ -56,4 +58,12 @@ export const consumerFoodGetByClientIdValidator = z.object({
 export const getSimilarCommentsValidator = z.object({
     consumerFoodId: z.string(),
     query: z.string(),
+});
+
+export const getDayMenuPdfValid = z.object({
+    dayId: z.string(),
+    clientId: z.string().optional(),
+    mealId: z.string().optional(),
+    lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
+    week: z.boolean().optional().default(false),
 });

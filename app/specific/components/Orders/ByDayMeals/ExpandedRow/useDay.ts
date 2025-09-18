@@ -63,7 +63,7 @@ const useDay = () => {
     useEffect(() => {
         if (dayData) {
             const { summary, diet, meal2data } = dayData;
-            setMeal2data(meal2data);
+            meal2data && setMeal2data(meal2data);
             const processSummary = () => {
                 const { breakfastStandard, lunchStandard, dinnerStandard } = summary;
                 setSummaryStandard({

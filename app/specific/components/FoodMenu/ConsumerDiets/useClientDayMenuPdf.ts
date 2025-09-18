@@ -7,17 +7,19 @@ const useClientDayMenuPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) 
     const [clientId, setClientId] = useState<string | undefined>(undefined);
     const [dayId, setDayId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [week, setWeek] = useState<boolean | undefined>(undefined);
 
     const { data: pdfData, error: pdfError } = api.specific.order.dayKitchenPdf.useQuery(
-        { clientId: clientId ?? '', dayId: dayId ?? '', lang },
+        { clientId: clientId ?? '', dayId: dayId ?? '', lang, week },
         { enabled: Boolean(dayId) }
     );
 
-    const handleDownload = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, { dayId, clientId }: { dayId: string | null, clientId?: string }) => {
+    const handleDownload = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, { dayId, clientId, week }: { dayId: string | null, clientId?: string, week?: boolean }) => {
         e.stopPropagation();
         setIsLoading(true);
         setClientId(clientId);
         setDayId(dayId);
+        setWeek(week);
     };
 
     useEffect(() => {
@@ -26,6 +28,7 @@ const useClientDayMenuPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) 
             setIsLoading(false);
             setClientId(undefined);
             setDayId(null);
+            setWeek(undefined);
         }
     }, [pdfData]);
 
@@ -35,6 +38,7 @@ const useClientDayMenuPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) 
             setIsLoading(false);
             setClientId(undefined);
             setDayId(null);
+            setWeek(undefined);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pdfError]);
@@ -44,6 +48,7 @@ const useClientDayMenuPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) 
         handleDownload,
         clientIdForPdf: clientId,
         dayIdForPdf: dayId,
+        weekForPdf: week,
     };
 };
 
