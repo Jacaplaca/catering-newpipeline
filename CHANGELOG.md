@@ -1,3 +1,12 @@
+# [2.7.0](https://github.com/Jacaplaca/catering/compare/v2.6.8...v2.7.0) (2025-09-18)
+
+
+### Features
+
+* menu-creator pdf for all and individual clients ([1348312](https://github.com/Jacaplaca/catering/commit/13483122ddcc4417dabafb8e30478583b39678fa))
+
+
+
 ## [2.6.8](https://github.com/Jacaplaca/catering/compare/v2.6.7...v2.6.8) (2025-09-16)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * date picker and labels margin ([98d40ad](https://github.com/Jacaplaca/catering/commit/98d40ad1aa71afd9314698640a2591993fd2e0c3))
-
-
-
-## [2.6.4](https://github.com/Jacaplaca/catering/compare/v2.6.3...v2.6.4) (2025-09-09)
-
-
-### Bug Fixes
-
-* update label dimensions and layout for labelsPdf and labelsPdf2 to 52.5x29.7mm, 4x10 grid; remove unused header text and adjust margins ([58d5c10](https://github.com/Jacaplaca/catering/commit/58d5c10b0164054b77fb8456fcb84d4d0068ca4c))
 
 
 
