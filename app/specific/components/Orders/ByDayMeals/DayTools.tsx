@@ -1,4 +1,3 @@
-import DayKitchenPdf from '@root/app/specific/components/Orders/ByDayMeals/DayMealsCell/DayKitchenPdf';
 import RoutesPdf from '@root/app/specific/components/Orders/ByDayMeals/DayMealsCell/RoutesPdf';
 
 const DayTools = ({ dayId }: { dayId: string }) => {
@@ -22,7 +21,6 @@ const DayTools = ({ dayId }: { dayId: string }) => {
     return <div>
         <div className="flex gap-2">
             <RoutesPdf dayId={dayId} />
-            {/* <DayKitchenPdf dayId={dayId} /> */}
         </div>
     </div>
 

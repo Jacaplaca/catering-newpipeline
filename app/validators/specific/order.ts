@@ -94,6 +94,7 @@ export const getOrdersPdf2Valid = z.object({
 
 export const getDayKitchenPdfValid = z.object({
     dayId: z.string(),
+    clientId: z.string().optional(),
     mealId: z.string().optional(),
     lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
 });

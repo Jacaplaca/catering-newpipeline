@@ -19,6 +19,11 @@ const useConsumerDietsColumns = ({
             sort: () => sort('info.name')
         },
         {
+            key: "clientDayMenuPdf",
+            title: '',
+            // sort: () => sort('hasCommonAllergens')
+        },
+        {
             key: "properties",
             title: '',
             // sort: () => sort('hasCommonAllergens')

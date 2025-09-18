@@ -9,7 +9,7 @@
         "dietician": "Dietetyk",
         "client": "Klient",
         "kitchen": "Kuchnia"
-    },
+},
     "dashboard": {
         "item-accounts-label": "Użytkownicy",
         "item-accounts-title": "Zarządzaj użytkownikami",
@@ -404,7 +404,10 @@
         "add_meals_for_new_consumer": "Dodaj brakujące dania",
         "add_meals_for_new_consumer_tooltip": "Dziecko zostało dodane do jadłospisu, czy chcesz dodać dania do tego dziecka?",
         "showing_consumers_with_allergens": "Pokazują się tylko dzieci z alergenami:",
-        "no_consumers_with_allergens": "Brak dzieci z alergenami:"
+        "no_consumers_with_allergens": "Brak dzieci z alergenami:",
+        "pdf-title": "Jadłospis",
+        "pdf-title-for-client": "Jadłospis dla {}",
+        "no-changes": "Bez zmian"
     },
     "exclusion": {
         "duplicate_name_error": "Istnieje już wykluczenie z taką nazwą",

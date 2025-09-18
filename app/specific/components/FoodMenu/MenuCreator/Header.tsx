@@ -5,6 +5,7 @@ import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/conte
 import FoodMenuDate from '@root/app/specific/components/FoodMenu/Date';
 import RegularMenuDropdown from '@root/app/specific/components/ui/Dropdown/RegularMenu';
 import { env } from '@root/app/env';
+import DayMenuPdf from '@root/app/specific/components/FoodMenu/ConsumerDiets/DayMenuPdf';
 
 const MenuCreatorHeader = () => {
     const { dictionary, standardMenuForm, menuQueries, templateDayObject, isFormNotEmpty, showMenuForConsumers, handleShowMenuForConsumers } = useFoodMenuContext();
@@ -39,7 +40,7 @@ const MenuCreatorHeader = () => {
             <i className={` ${(isLoading || templateDayMenuFetching) ? 'fas fa-spinner animate-spin' : 'fas fa-book-open'}`} />
         </div>
         <div className='flex flex-col md:flex-row md:justify-between items-center gap-4 md:gap-2 mt-4 mb-4'>
-            {showMenuForConsumers ? <div className="md:flex-1"></div> : <div className="w-full md:w-auto"><FoodMenuDate /></div>}
+            {showMenuForConsumers ? <DayMenuPdf iconClass='text-[2rem]' /> : <div className="w-full md:w-auto"><FoodMenuDate /></div>}
             {showMenuForConsumers ? null : <div className='w-full md:w-auto md:max-w-[300px]'>
                 <RegularMenuDropdown
                     dictionary={dictionary}

@@ -124,6 +124,7 @@ function getGroupedConsumerFoodDataObject(args: {
     dayObj: { year: number; month: number; day: number; };
     consumerIds?: string[];
     groupBy: 'byConsumer';
+    clientId?: string;
 }): Promise<RoutesWithConsumersByIdMap>;
 function getGroupedConsumerFoodDataObject(args: {
     cateringId: string;
@@ -131,13 +132,15 @@ function getGroupedConsumerFoodDataObject(args: {
     dayObj: { year: number; month: number; day: number; };
     consumerIds?: string[];
     groupBy?: 'byMeal';
+    clientId?: string;
 }): Promise<RoutesByIdMap>;
 async function getGroupedConsumerFoodDataObject({
     cateringId,
     mealIds,
     dayObj,
     consumerIds,
-    groupBy = 'byMeal'
+    groupBy = 'byMeal',
+    clientId
 }: {
     cateringId: string;
     mealIds: string[];
@@ -148,6 +151,7 @@ async function getGroupedConsumerFoodDataObject({
     };
     consumerIds?: string[];
     groupBy?: 'byMeal' | 'byConsumer';
+    clientId?: string;
 }): Promise<RoutesByIdMap | RoutesWithConsumersByIdMap> {
     const { year, month, day } = dayObj;
 
@@ -156,7 +160,8 @@ async function getGroupedConsumerFoodDataObject({
             $match: {
                 cateringId: cateringId,
                 mealId: { $in: mealIds },
-                ...(consumerIds && { consumerId: { $in: consumerIds } })
+                ...(consumerIds && { consumerId: { $in: consumerIds } }),
+                ...(clientId && { clientId: clientId })
             }
         },
         {

@@ -4,6 +4,7 @@ import translate from '@root/app/lib/lang/translate';
 import Property from '@root/app/specific/components/FoodMenu/ConsumerDiets/Poperties';
 import { type ClientWithCommonAllergens } from '@root/types/specific';
 import { env } from '@root/app/env';
+import DayMenuPdf from '@root/app/specific/components/FoodMenu/ConsumerDiets/DayMenuPdf';
 
 const useConsumerDietsDataGrid = ({
     rows,
@@ -56,6 +57,10 @@ const useConsumerDietsDataGrid = ({
                         text={name ?? ""}
                         fragment={searchValue} />,
                     key: 'info.name'
+                },
+                {
+                    component: <DayMenuPdf clientId={id} />,
+                    key: 'clientDayMenuPdf'
                 },
                 {
                     component: <div className='flex gap-2 items-center justify-start'>

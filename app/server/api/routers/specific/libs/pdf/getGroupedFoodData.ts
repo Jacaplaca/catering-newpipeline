@@ -18,9 +18,9 @@ type GroupedFoodDataByConsumer = {
     mealGroupId: string;
 };
 
-function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy: 'byConsumer'; }): Promise<GroupedFoodDataByConsumer>;
-function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy?: 'byMeal'; }): Promise<GroupedFoodDataByMeal>;
-async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, groupBy = 'byMeal' }: { dayId: string, mealId?: string, mealGroupIdProp?: string, cateringId: string, groupBy?: 'byMeal' | 'byConsumer' }): Promise<GroupedFoodDataByMeal | GroupedFoodDataByConsumer> {
+function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy: 'byConsumer', ignoreOrders?: boolean; clientId?: string }): Promise<GroupedFoodDataByConsumer>;
+function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy?: 'byMeal'; ignoreOrders?: boolean; clientId?: string }): Promise<GroupedFoodDataByMeal>;
+async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, groupBy = 'byMeal', ignoreOrders = false, clientId }: { dayId: string, mealId?: string, mealGroupIdProp?: string, cateringId: string, groupBy?: 'byMeal' | 'byConsumer', ignoreOrders?: boolean, clientId?: string }): Promise<GroupedFoodDataByMeal | GroupedFoodDataByConsumer> {
 
     const { year, month, day } = dayIdParser(dayId);
     const meal = mealId ? await db.meal.findUnique({
@@ -84,32 +84,35 @@ async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, 
 
     type AggregationResult = { _id: string };
     let results: AggregationResult[] | undefined;
+    let consumerIds: string[] = [];
+    if (!ignoreOrders) {
 
-    switch (dietCollectionName) {
-        case 'OrderConsumerBreakfast':
-            results = await db.orderConsumerBreakfast.aggregateRaw(pipeline) as unknown as AggregationResult[];
-            break;
+        switch (dietCollectionName) {
+            case 'OrderConsumerBreakfast':
+                results = await db.orderConsumerBreakfast.aggregateRaw(pipeline) as unknown as AggregationResult[];
+                break;
 
-        case 'OrderConsumerLunch':
-            results = await db.orderConsumerLunch.aggregateRaw(pipeline) as unknown as AggregationResult[];
-            break;
+            case 'OrderConsumerLunch':
+                results = await db.orderConsumerLunch.aggregateRaw(pipeline) as unknown as AggregationResult[];
+                break;
 
-        case 'OrderConsumerDinner':
-            results = await db.orderConsumerDinner.aggregateRaw(pipeline) as unknown as AggregationResult[];
-            break;
+            case 'OrderConsumerDinner':
+                results = await db.orderConsumerDinner.aggregateRaw(pipeline) as unknown as AggregationResult[];
+                break;
 
-        default:
-            throw new Error(`Unsupported diet collection: ${dietCollectionName}`);
+            default:
+                throw new Error(`Unsupported diet collection: ${dietCollectionName}`);
+        }
+        consumerIds = results ? results.map(doc => String(doc._id)) : [];
     }
-    const consumerIds = results ? results.map(doc => String(doc._id)) : [];
-
     if (groupBy === 'byConsumer') {
         const consumerFoodByRoute = await getGroupedConsumerFoodDataObject({
             cateringId,
             mealIds,
             dayObj: { year, month, day },
-            consumerIds,
-            groupBy
+            consumerIds: ignoreOrders ? undefined : consumerIds,
+            groupBy,
+            clientId
         });
         return { consumerFoodByRoute, mealGroupName, orderIds, mealGroupId };
     } else {
@@ -117,8 +120,9 @@ async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, 
             cateringId,
             mealIds,
             dayObj: { year, month, day },
-            consumerIds,
-            groupBy
+            consumerIds: ignoreOrders ? undefined : consumerIds,
+            groupBy,
+            clientId
         });
         return { consumerFoodByRoute, mealGroupName, orderIds, mealGroupId };
     }

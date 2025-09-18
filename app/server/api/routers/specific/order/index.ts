@@ -13,7 +13,7 @@ import labelsPdf2 from '@root/app/server/api/routers/specific/order/labelsPdf2';
 import monthByClient from '@root/app/server/api/routers/specific/order/month';
 import routesPdf from '@root/app/server/api/routers/specific/order/routesPdf';
 import monthSummary from '@root/app/server/api/routers/specific/order/monthSummary';
-import dayKitchenPdf from '@root/app/server/api/routers/specific/order/dayKitchenPdf';
+import dayMenuPdf from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf';
 const orderRouter = {
     ...save,
     orderedDates,
@@ -30,7 +30,7 @@ const orderRouter = {
     monthByClient,
     monthSummary,
     routesPdf,
-    dayKitchenPdf,
+    dayKitchenPdf: dayMenuPdf,
 }
 
 
