@@ -5,7 +5,7 @@ import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodG
 import { type ClientFoodAssignment } from '@root/types/specific';
 import { TRPCError } from '@trpc/server';
 import getCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/getCommonAllergens';
-import { addFoodToConsumers } from '@root/app/server/api/routers/specific/libs/consumerFoods/addFoodToConsumers';
+import fixConsumerFoods from '@root/app/server/api/routers/specific/libs/fixConsumerFoods';
 
 const getRawAssignments = async ({
   menuId,
@@ -160,6 +160,8 @@ const getOne = createCateringProcedure([RoleType.manager])
 
 
 
+
+
 const getByClientId = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(consumerFoodGetByClientIdValidator)
   .query(async ({ input, ctx }) => {
@@ -183,53 +185,14 @@ const getByClientId = createCateringProcedure([RoleType.manager, RoleType.dietic
 
     const menuMealFoods = await db.menuMealFood.findMany({
       where: {
-        regularMenuId: menuId,
+        regularMenuId: menu.id,
       },
     });
 
-    const consumersWithMenu = await db.consumerFood.findMany({
-      where: {
-        regularMenuId: menuId,
-        clientId,
-        cateringId: catering.id,
-      },
-    });
-    const consumersWithMenuIds = [...new Set(consumersWithMenu.map(assignment => assignment.consumerId))];
 
-    // Check for missing meal assignments for current client
-    const uniqueMealIds = [...new Set(menuMealFoods.map(m => m.mealId))];
-    const existingMealIds = [...new Set(consumersWithMenu.map(cf => cf.mealId))];
-    const missingMealIds = uniqueMealIds.filter(mealId => !existingMealIds.includes(mealId));
-    if (missingMealIds.length > 0) {
-      const foods = menuMealFoods.filter(m => missingMealIds.includes(m.mealId)).map(m => ({
-        id: m.foodId,
-        mealId: m.mealId,
-      }));
-      await db.$transaction(async (tx) => {
-        await addFoodToConsumers(tx, { cateringId: catering.id, menu, foods, consumerIds: consumersWithMenuIds });
-      });
-    }
+    await fixConsumerFoods(menu, menuMealFoods, clientId, catering.id, menu.id);
 
-    const consumers = await db.consumer.findMany({
-      where: {
-        clientId,
-        cateringId: catering.id,
-        deactivated: { not: true },
-      },
-    });
-    const currentConsumerIds = consumers.map(consumer => consumer.id);
-    const newConsumerIds = currentConsumerIds.filter(id => !consumersWithMenuIds.includes(id));
-    if (newConsumerIds.length > 0) {
-      const foods = menuMealFoods.map(m => ({
-        id: m.foodId,
-        mealId: m.mealId,
-      }));
-      await db.$transaction(async (tx) => {
-        await addFoodToConsumers(tx, { cateringId: catering.id, menu, foods, consumerIds: newConsumerIds });
-      });
-    }
-
-    const rawAssignments = await getRawAssignments({ menuId, cateringId: catering.id, clientId });
+    const rawAssignments = await getRawAssignments({ menuId: menu.id, cateringId: catering.id, clientId });
     return {
       rawAssignments: rawAssignments as unknown as ClientFoodAssignment[],
       menuMealFoods,

@@ -52,6 +52,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
             interface LabelInfo {
                 deliveryRouteName: string;
                 clientCode: string;
+                clientLabelOrder: number | null;
                 consumerCode: string;
                 mealName: string;
                 baseFood: string;
@@ -69,9 +70,11 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
             };
 
             // Extract labels data
-            const labelsData: LabelInfo[] = Object.values(consumerFoodByRoute).flatMap(routeData =>
-                Object.values(routeData.clients).flatMap(clientData =>
-                    Object.values(clientData.consumers).flatMap(consumerData => {
+            const labelsData: LabelInfo[] = Object.values(consumerFoodByRoute).flatMap(routeData => {
+                const clients = Object.values(routeData.clients)
+                // .sort((a, b) => (a.client.labelOrder ?? 0) - (b.client.labelOrder ?? 0));
+                return clients.flatMap(clientData => {
+                    return Object.values(clientData.consumers).flatMap(consumerData => {
                         const { consumer, meals } = consumerData;
 
                         // Filter based on showChangedOnly setting
@@ -94,7 +97,6 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                         const labelsForConsumer: LabelInfo[] = [];
 
                         for (const mealData of separateLabelMeals) {
-                            const mealName = mealData.meal.name;
                             const sortedFoods = mealData.consumerFoods.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                             const foodDescriptions = sortedFoods.map(cf => {
                                 let description = '';
@@ -127,6 +129,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                                 labelsForConsumer.push({
                                     deliveryRouteName: routeData.deliveryRouteName ?? '',
                                     clientCode: clientData.clientCode ?? '',
+                                    clientLabelOrder: clientData.client.labelOrder ?? null,
                                     consumerCode: consumer.code ?? '',
                                     mealName: mealData.meal.name,
                                     baseFood: foodDescription,
@@ -171,6 +174,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                                 labelsForConsumer.push({
                                     deliveryRouteName: routeData.deliveryRouteName ?? '',
                                     clientCode: clientData.clientCode ?? '',
+                                    clientLabelOrder: clientData.client.labelOrder,
                                     consumerCode: consumer.code ?? '',
                                     mealName: Array.from(mealName).join(', '),
                                     baseFood: foodDescriptions,
@@ -181,7 +185,10 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                         return labelsForConsumer;
 
                     })
+                }
                 )
+            }
+
             );
 
             labelsData.sort((a, b) => {
@@ -190,8 +197,12 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
                 if (routeA < routeB) return -1;
                 if (routeA > routeB) return 1;
 
-                const clientA = a.clientCode ?? '';
-                const clientB = b.clientCode ?? '';
+                // const clientA = a.clientCode ?? '';
+                // const clientB = b.clientCode ?? '';
+                // if (clientA < clientB) return -1;
+                // if (clientA > clientB) return 1;
+                const clientA = a.clientLabelOrder ?? 0;
+                const clientB = b.clientLabelOrder ?? 0;
                 if (clientA < clientB) return -1;
                 if (clientA > clientB) return 1;
 
