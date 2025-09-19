@@ -1,3 +1,12 @@
+## [2.7.2](https://github.com/Jacaplaca/catering/compare/v2.7.1...v2.7.2) (2025-09-19)
+
+
+### Bug Fixes
+
+* label client order fix missing consumer foods ([3e02e36](https://github.com/Jacaplaca/catering/commit/3e02e367ae983fb79485ca58ac043c2b08e77d35))
+
+
+
 ## [2.7.1](https://github.com/Jacaplaca/catering/compare/v2.7.0...v2.7.1) (2025-09-18)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * labels meal data new fonts new report fo kitchen fixed detailed view for order remove consumerFoods with consumer deactivation ([3b6e607](https://github.com/Jacaplaca/catering/commit/3b6e607f3d65bf6a2d6e823bb1822c9e468ff797))
-
-
-
-## [2.6.6](https://github.com/Jacaplaca/catering/compare/v2.6.5...v2.6.6) (2025-09-12)
-
-
-### Bug Fixes
-
-* new consumers added to menu ([81dba97](https://github.com/Jacaplaca/catering/commit/81dba97db74be9403966f09a26511f2f62005e61))
 
 
 
