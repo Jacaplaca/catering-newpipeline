@@ -157,103 +157,102 @@ const dayMenuPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
 
                             Object.entries(consumers).forEach(([_consumerId, consumerData]) => {
                                 const { consumer, meals } = consumerData;
+                                // console.log('consumer', consumer);
 
-                                const clientAcc = acc[clientCode];
-                                if (!clientAcc) {
+                                if (!acc[clientCode]) {
                                     acc[clientCode] = { mealsByMealName: {}, deliveryRouteInfo: deliveryRouteName, consumers: {} };
                                 }
+                                const clientAcc = acc[clientCode];
 
                                 Object.entries(meals).forEach(([_mealId, mealData]) => {
                                     const { meal, consumerFoods } = mealData;
                                     const mealName = meal.name;
 
-                                    if (clientAcc) {
-                                        if (!clientAcc.mealsByMealName[mealName]) {
-                                            const sortedFoodItems = consumerFoods.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-                                            const baseFoodName = sortedFoodItems.map(item => item.food.name).join(', ');
-                                            clientAcc.mealsByMealName[mealName] = {
-                                                baseFoodName,
-                                                consumersInfo: [],
-                                            };
-                                        }
+                                    if (!clientAcc.mealsByMealName[mealName]) {
+                                        const sortedFoodItems = consumerFoods.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+                                        const baseFoodName = sortedFoodItems.map(item => item.food.name).join(', ');
+                                        clientAcc.mealsByMealName[mealName] = {
+                                            baseFoodName,
+                                            consumersInfo: [],
+                                        };
+                                    }
 
-                                        let dietInfo = '';
-                                        if (consumer.diet) {
-                                            const { code } = consumer.diet;
-                                            const parts = [code].filter(Boolean);
-                                            if (parts.length > 0) {
-                                                dietInfo = ` --${parts.join(', ')}--`;
+                                    let dietInfo = '';
+                                    if (consumer.diet) {
+                                        const { code } = consumer.diet;
+                                        const parts = [code].filter(Boolean);
+                                        if (parts.length > 0) {
+                                            dietInfo = ` --${parts.join(', ')}--`;
+                                        }
+                                    }
+
+                                    const dietDescriptionParts: { text: string, font: string }[] = [];
+                                    const consumerFoodsChanges = consumerFoods
+                                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                                        .map(cf => {
+                                            const parts: { text: string, font: string }[] = [];
+                                            const hasAlternative = !!cf.alternativeFood;
+                                            const hasExclusions = cf.exclusions && cf.exclusions.length > 0;
+                                            const hasComment = !!cf.comment;
+
+                                            if (!hasAlternative && !hasExclusions && !hasComment) {
+                                                return null;
                                             }
-                                        }
 
-                                        const dietDescriptionParts: { text: string, font: string }[] = [];
-                                        const consumerFoodsChanges = consumerFoods
-                                            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                                            .map(cf => {
-                                                const parts: { text: string, font: string }[] = [];
-                                                const hasAlternative = !!cf.alternativeFood;
-                                                const hasExclusions = cf.exclusions && cf.exclusions.length > 0;
-                                                const hasComment = !!cf.comment;
+                                            parts.push({ text: `${cf.food.name}: `, font: 'Roboto' });
 
-                                                if (!hasAlternative && !hasExclusions && !hasComment) {
-                                                    return null;
-                                                }
+                                            const changeParts: { text: string, font: string }[] = [];
 
-                                                parts.push({ text: `${cf.food.name}: `, font: 'Roboto' });
+                                            if (cf.alternativeFood?.name) {
+                                                changeParts.push({ text: `${cf.alternativeFood.name}`, font: 'Roboto-Bold' });
+                                            }
 
-                                                const changeParts: { text: string, font: string }[] = [];
+                                            if (hasExclusions) {
+                                                const exclusionsString = `(${cf.exclusions.map(ex => ex.name).join(', ')})`;
+                                                changeParts.push({ text: exclusionsString, font: 'Roboto-BoldItalic' });
+                                            }
 
-                                                if (cf.alternativeFood?.name) {
-                                                    changeParts.push({ text: `${cf.alternativeFood.name}`, font: 'Roboto-Bold' });
-                                                }
+                                            if (cf.comment) {
+                                                changeParts.push({ text: `${cf.comment}`, font: 'Roboto-Bold' });
+                                            }
 
-                                                if (hasExclusions) {
-                                                    const exclusionsString = `(${cf.exclusions.map(ex => ex.name).join(', ')})`;
-                                                    changeParts.push({ text: exclusionsString, font: 'Roboto-BoldItalic' });
-                                                }
-
-                                                if (cf.comment) {
-                                                    changeParts.push({ text: `${cf.comment}`, font: 'Roboto-Bold' });
-                                                }
-
-                                                for (let i = 0; i < changeParts.length; i++) {
-                                                    const part = changeParts[i];
-                                                    if (part) {
-                                                        parts.push(part);
-                                                        if (i < changeParts.length - 1) {
-                                                            parts.push({ text: ' ', font: 'Roboto' });
-                                                        }
+                                            for (let i = 0; i < changeParts.length; i++) {
+                                                const part = changeParts[i];
+                                                if (part) {
+                                                    parts.push(part);
+                                                    if (i < changeParts.length - 1) {
+                                                        parts.push({ text: ' ', font: 'Roboto' });
                                                     }
                                                 }
-
-                                                return parts;
-                                            })
-                                            .filter(Boolean) as { text: string, font: string }[][];
-
-                                        consumerFoodsChanges.forEach((change, index) => {
-                                            if (index < consumerFoodsChanges.length - 1) {
-                                                const lastPart = change[change.length - 1];
-                                                if (lastPart) {
-                                                    lastPart.text += '; ';
-                                                }
-                                            }
-                                            dietDescriptionParts.push(...change);
-                                        });
-
-
-                                        const mealDetails = clientAcc.mealsByMealName[mealName];
-                                        if (mealDetails) {
-                                            let consumerCode = consumer.code ?? 'UNKNOWN';
-                                            if (shouldCleanConsumerName && clientCode) {
-                                                consumerCode = cleanConsumerName(consumer.code, clientCode);
                                             }
 
-                                            mealDetails.consumersInfo.push({
-                                                consumerCode,
-                                                dietInfo,
-                                                dietDescriptionParts,
-                                            });
+                                            return parts;
+                                        })
+                                        .filter(Boolean) as { text: string, font: string }[][];
+
+                                    consumerFoodsChanges.forEach((change, index) => {
+                                        if (index < consumerFoodsChanges.length - 1) {
+                                            const lastPart = change[change.length - 1];
+                                            if (lastPart) {
+                                                lastPart.text += '; ';
+                                            }
                                         }
+                                        dietDescriptionParts.push(...change);
+                                    });
+
+
+                                    const mealDetails = clientAcc.mealsByMealName[mealName];
+                                    if (mealDetails) {
+                                        let consumerCode = consumer.code ?? 'UNKNOWN';
+                                        if (shouldCleanConsumerName && clientCode) {
+                                            consumerCode = cleanConsumerName(consumer.code, clientCode);
+                                        }
+
+                                        mealDetails.consumersInfo.push({
+                                            consumerCode,
+                                            dietInfo,
+                                            dietDescriptionParts,
+                                        });
                                     }
                                 });
                             });

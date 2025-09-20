@@ -12,25 +12,7 @@ import { type ClientCustomTable } from '@root/types/specific';
 import getConsumers from '@root/app/server/api/routers/specific/libs/consumerFoods/getConsumers';
 import getOriginalMenu from '@root/app/server/api/routers/specific/libs/consumerFoods/getOriginalMenu';
 import { addFoodToConsumers, assignConsumerFoods } from '@root/app/server/api/routers/specific/libs/consumerFoods/addFoodToConsumers';
-
-const addMealFoodsToMenu = async (
-  tx: Prisma.TransactionClient,
-  regularMenuId: string,
-  foods: { id: string; mealId: string, order?: number | null }[]
-) => {
-  const menuMealFoodsData = foods.map(food => ({
-    regularMenuId,
-    mealId: food.mealId,
-    foodId: food.id,
-    order: food.order,
-  }));
-
-  if (menuMealFoodsData.length > 0) {
-    await tx.menuMealFood.createMany({
-      data: menuMealFoodsData,
-    });
-  }
-};
+import addMealFoodsToMenu from '@root/app/server/api/routers/specific/libs/menu/addMealFoodsToMenu';
 
 // const getClientsWithMenu = async (regularMenuIds: string[]) => {
 //   const uniqueClientIds = await db.consumerFood.findMany({

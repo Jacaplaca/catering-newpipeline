@@ -39,20 +39,22 @@ const useFoodMenu = ({
     const { isMenuEditableForClient, setNotEditable4Client, setEditable4Client } = useToggleEditable4Client();
     const { isStandardMenuCreatorShown, toggleStandardMenuCreator } = useToggleMenuStandard({ clientId, day: day.day, isMenuEditableForClient });
 
+    const onSuccess = () => {
+        setNotEditable4Client();
+        void menuQueries.currentClient.refetch();
+        void utils.specific.consumerFood.getByClientId.invalidate({
+            clientId,
+            day: day.day ?? { year: 0, month: 0, day: 0 },
+        });
+        void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
+    }
+
     const menuQueries = useMenuQueries(day.day, templateDayObject, clientId);
     // const { updateFoodsOrderMutation } = useFoodOrder();
     const removeByClient = useRemoveMenu({
         clientId,
         day: day.day ?? { year: 0, month: 0, day: 0 },
-        onSuccess: () => {
-            setNotEditable4Client();
-            void menuQueries.currentClient.refetch();
-            void utils.specific.consumerFood.getByClientId.invalidate({
-                clientId,
-                day: day.day ?? { year: 0, month: 0, day: 0 },
-            });
-            void utils.specific.regularMenu.getClientsWithCommonAllergens.invalidate();
-        },
+        onSuccess,
     });
 
     // const removeByClientMutation = api.specific.regularMenu.removeByClient.useMutation({

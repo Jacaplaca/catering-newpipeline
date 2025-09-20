@@ -3,6 +3,7 @@ import { useConsumerDietsTableContext } from '@root/app/specific/components/Food
 import AllergenList from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/AllergenList';
 import ConsumerDishCell from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/ConsumerDishCell';
 import Consumer, { type MealTableConsumerType } from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/TableMealClients/Consumer';
+import TableMealHeader from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/TableMealClients/TableMealHeader';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
 import { type ClientFoodAssignment } from '@root/types/specific';
 
@@ -14,45 +15,15 @@ type DishInfo = {
     ingredients: string | null;
 };
 
-type MealWithDishes = {
+export type MealWithDishes = {
     mealName: string;
     mealId: string;
     dishes: DishInfo[];
+    mealGroupId: string | null;
 };
 
 // Header component for meal types (first level)
-const TableMealHeader = ({ dishesByMeal, dictionary, minColumnWidth }: {
-    dishesByMeal: MealWithDishes[];
-    dictionary: Record<string, string>;
-    minColumnWidth: number;
-}) => (
-    <div className="flex bg-neutral-100 dark:bg-neutral-700 border-b border-neutral-200 dark:border-neutral-600">
-        <div className="w-[250px] flex-shrink-0 p-2 border-r border-neutral-200 dark:border-neutral-600">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                {translate(dictionary, 'menu-creator:consumer')}
-            </h3>
-        </div>
-        <div className="flex flex-1">
-            {dishesByMeal.map(({ mealName, dishes }) => {
-                const columnCount = Math.max(1, dishes.length);
-                return (
-                    <div
-                        key={mealName}
-                        className="border-r border-neutral-200 dark:border-neutral-600 last:border-r-0 text-center"
-                        style={{
-                            flex: columnCount,
-                            minWidth: `${minColumnWidth * columnCount}px`
-                        }}
-                    >
-                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 p-2">
-                            {mealName}
-                        </h3>
-                    </div>
-                );
-            })}
-        </div>
-    </div>
-);
+
 
 // Header component for individual dishes (second level)
 const TableDishHeader = ({ dishesByMeal, minColumnWidth }: {
@@ -155,7 +126,8 @@ const EmptyConsumersState = ({ dictionary, allergens }: { dictionary: Record<str
 // Main component
 const TableMealClients = () => {
     const { dictionary, filter: { allergens } } = useConsumerDietsTableContext();
-    const { rowClick: { clientConsumers, clientFoods: { data, isFetching: clientFoodsFetching } } } = useFoodMenuContext();
+    const { rowClick } = useFoodMenuContext();
+    const { clientConsumers, clientFoods: { data, isFetching: clientFoodsFetching } } = rowClick;
     const { rawAssignments, menuMealFoods } = data ?? { rawAssignments: [], menuMealFoods: [] };
 
     // console.log(rawAssignments);
@@ -184,7 +156,8 @@ const TableMealClients = () => {
             return {
                 mealName: meal.name,
                 mealId: meal.id,
-                dishes: Array.from(uniqueFoodMap.values())
+                dishes: Array.from(uniqueFoodMap.values()),
+                mealGroupId: meal.mealGroupId
             };
         });
     };
@@ -237,7 +210,6 @@ const TableMealClients = () => {
             <div>
                 <TableMealHeader
                     dishesByMeal={dishesByMeal}
-                    dictionary={dictionary}
                     minColumnWidth={minColumnWidth}
                 />
                 <TableDishHeader

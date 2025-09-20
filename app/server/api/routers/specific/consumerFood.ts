@@ -1,11 +1,12 @@
 import { RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { db } from '@root/app/server/db';
-import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodGetOneValidator, consumerFoodValidator, getSimilarCommentsValidator, resetOneValidator } from '@root/app/validators/specific/consumerFood';
+import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodGetOneValidator, consumerFoodValidator, getSimilarCommentsValidator, resetOneValidator, resetMealValidator } from '@root/app/validators/specific/consumerFood';
 import { type ClientFoodAssignment } from '@root/types/specific';
 import { TRPCError } from '@trpc/server';
 import getCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/getCommonAllergens';
 import fixConsumerFoods from '@root/app/server/api/routers/specific/libs/fixConsumerFoods';
+import resetMealGroupInIndividualMenu from '@root/app/server/api/routers/specific/libs/consumerFoods/resetMealGroupInIndiviualMenu';
 
 const getRawAssignments = async ({
   menuId,
@@ -523,6 +524,17 @@ const getSimilarComments = createCateringProcedure([RoleType.manager, RoleType.d
     return sortedComments;
   });
 
+const resetMeal = createCateringProcedure([RoleType.manager, RoleType.dietician])
+  .input(resetMealValidator)
+  .mutation(async ({ input, ctx }) => {
+    const { session: { catering } } = ctx;
+    const { mealId, clientId, parentRegularMenuId } = input;
+
+    await resetMealGroupInIndividualMenu({ mealId, clientId, cateringId: catering.id, parentRegularMenuId });
+
+    return null;
+  });
+
 const consumerFoodRouter = {
   update,
   getOne,
@@ -530,6 +542,7 @@ const consumerFoodRouter = {
   autoReplace,
   resetOne,
   getSimilarComments,
+  resetMeal,
 };
 
 export default consumerFoodRouter;
