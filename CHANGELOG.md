@@ -1,3 +1,12 @@
+## [2.8.1](https://github.com/Jacaplaca/catering/compare/v2.8.0...v2.8.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* daypdf diet minus no change exclusions only for allergens clean catering copy catering ([56c500e](https://github.com/Jacaplaca/catering/commit/56c500e25f299b1d0269b9913a8dc3ae79339ef6))
+
+
+
 # [2.8.0](https://github.com/Jacaplaca/catering/compare/v2.7.2...v2.8.0) (2025-09-20)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * menu-creator pdf for all and individual clients ([1348312](https://github.com/Jacaplaca/catering/commit/13483122ddcc4417dabafb8e30478583b39678fa))
-
-
-
-## [2.6.8](https://github.com/Jacaplaca/catering/compare/v2.6.7...v2.6.8) (2025-09-16)
-
-
-### Bug Fixes
-
-* wrong identify non individual client menus ([69dfbfa](https://github.com/Jacaplaca/catering/commit/69dfbfa9c2b30e217ffc4499d04ceef415b4aef1))
 
 
 
