@@ -697,12 +697,14 @@ model ConsumerAllergen {
 
 model FoodCategory {
     id        String   @id @default(cuid()) @map("_id")
-    name      String   @unique
+    name      String
     foods     Food[]
     cateringId String
     catering Catering @relation(fields: [cateringId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    @@unique([name, cateringId])
 }
 
 model Food {
@@ -747,7 +749,7 @@ model RegularMenu {
     consumerFoods ConsumerFood[]
     menuMealFoods MenuMealFood[]
 
-    @@unique([day.year, day.month, day.day, clientId])
+    @@unique([day.year, day.month, day.day, clientId, cateringId])
 }
 
 model MenuMealFood {

@@ -24,6 +24,7 @@ type FoodDropdownProps = {
     limitItems?: number;
     updateFoodsOrder?: (items: { id: string, order: number }[]) => void;
     isFoodsLoading?: boolean;
+    isSortable?: boolean;
 }
 
 const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
@@ -40,6 +41,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
     limitItems,
     updateFoodsOrder,
     isFoodsLoading = false,
+    isSortable = false,
 }) => {
 
     const [foodIdsFromHoveredAllergenId, setFoodIdsFromHoveredAllergenId] = useState<string[]>([]);
@@ -132,6 +134,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
                     fullWidth={limitItems === 1}
                     updateFoodsOrder={updateFoodsOrder}
                     isFoodsLoading={isFoodsLoading}
+                    isSortable={isSortable}
                 />
             )}
             {allergens && allergens.length > 0 && !isFoodsLoading && (

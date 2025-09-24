@@ -30,7 +30,7 @@ const orderRouter = {
     monthByClient,
     monthSummary,
     routesPdf,
-    dayKitchenPdf: dayMenuPdf,
+    dayMenuPdf,
 }
 
 

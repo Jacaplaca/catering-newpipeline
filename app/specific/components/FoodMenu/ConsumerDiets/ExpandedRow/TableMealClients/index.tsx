@@ -1,3 +1,4 @@
+import { env } from '@root/app/env';
 import translate from '@root/app/lib/lang/translate';
 import { useConsumerDietsTableContext } from '@root/app/specific/components/FoodMenu/ConsumerDiets/context';
 import AllergenList from '@root/app/specific/components/FoodMenu/ConsumerDiets/ExpandedRow/AllergenList';
@@ -51,6 +52,11 @@ const TableDishHeader = ({ dishesByMeal, minColumnWidth }: {
                                 {dish.name}
                             </span>
                             <AllergenList allergens={dish.allergens} variant="dish" />
+                            {env.NEXT_PUBLIC_MENU_FRONT && (
+                                <div className="mt-3 pt-1 w-full flex justify-end">
+                                    {dish.id}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))

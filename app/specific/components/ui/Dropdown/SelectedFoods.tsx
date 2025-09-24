@@ -34,6 +34,7 @@ interface SelectedFoodsProps {
     fullWidth?: boolean;
     updateFoodsOrder?: (items: { id: string, order: number }[]) => void;
     isFoodsLoading?: boolean;
+    isSortable?: boolean;
 }
 
 const SortableSelectedItem: FunctionComponent<{
@@ -42,8 +43,12 @@ const SortableSelectedItem: FunctionComponent<{
     onRemove: (itemId: string) => void;
     onMouseEnter?: (itemId: string | null) => void;
     fullWidth: boolean;
-}> = ({ item, isHighlighted, onRemove, onMouseEnter, fullWidth }) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+    isSortable: boolean;
+}> = ({ item, isHighlighted, onRemove, onMouseEnter, fullWidth, isSortable }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: item.id,
+        disabled: !isSortable
+    });
 
     const backgroundClass = isHighlighted
         ? 'bg-secondary/20 dark:bg-darkmode-secondary-accent/20'
@@ -54,15 +59,16 @@ const SortableSelectedItem: FunctionComponent<{
         transition,
     } as React.CSSProperties;
 
+    const cursorClass = isSortable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default';
+
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`cursor-grab active:cursor-grabbing hover:bg-neutral-200/80 dark:hover:bg-neutral-700 transition-colors duration-200 group rounded-lg ${fullWidth ? 'max-w-full' : 'w-[300px]'} p-3 flex flex-col justify-between ${backgroundClass} ${isDragging ? 'opacity-80 ring-2 ring-secondary/40' : ''}`}
+            className={`${cursorClass} hover:bg-neutral-200/80 dark:hover:bg-neutral-700 transition-colors duration-200 group rounded-lg ${fullWidth ? 'max-w-full' : 'w-[300px]'} p-3 flex flex-col justify-between ${backgroundClass} ${isDragging ? 'opacity-80 ring-2 ring-secondary/40' : ''}`}
             onMouseEnter={() => onMouseEnter?.(item.id)}
             onMouseLeave={() => onMouseEnter?.(null)}
-            {...attributes}
-            {...listeners}
+            {...(isSortable ? { ...attributes, ...listeners } : {})}
         >
             <div className="flex items-start gap-2">
                 <div className="flex flex-col flex-grow">
@@ -109,6 +115,7 @@ const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
     fullWidth = false,
     updateFoodsOrder,
     isFoodsLoading = false,
+    isSortable = false,
 }) => {
     // Optimistic state for immediate UI updates
     const [optimisticItems, setOptimisticItems] = useState<SelectedFoodItem[] | null>(null);
@@ -147,6 +154,8 @@ const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
     const itemIds = useMemo(() => displayItems.map((it) => it.id), [displayItems]);
 
     const handleDragEnd = (event: DragEndEvent) => {
+        if (!isSortable) return;
+
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
@@ -204,6 +213,7 @@ const SelectedFoods: FunctionComponent<SelectedFoodsProps> = ({
                             onRemove={onRemove}
                             onMouseEnter={onMouseEnter}
                             fullWidth={!!fullWidth}
+                            isSortable={!!isSortable}
                         />
                     ))}
                 </SortableContext>

@@ -66,7 +66,7 @@ const count = createCateringProcedure([RoleType.manager, RoleType.dietician])
     const { session: { catering } } = ctx;
     const { foodCategory, allergens, searchValue } = input;
 
-    const count = await db.order.aggregateRaw({
+    const count = await db.food.aggregateRaw({
       pipeline: [
         ...getFoodDbQuery({ catering, foodCategory, allergens, searchValue }),
         { $count: 'count' },

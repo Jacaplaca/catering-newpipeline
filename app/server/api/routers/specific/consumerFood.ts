@@ -99,7 +99,11 @@ const getMenuId = async ({
     where: {
       day,
       cateringId,
-      clientId: { isSet: false }
+      // clientId: { isSet: false }
+      OR: [
+        { clientId: { isSet: false } },
+        { clientId: null }
+      ]
     },
   });
 
@@ -170,6 +174,13 @@ const getByClientId = createCateringProcedure([RoleType.manager, RoleType.dietic
     const { clientId, day } = input;
 
     const menuId = await getMenuId({ clientId, day, cateringId: catering.id });
+
+    if (!menuId) {
+      return {
+        rawAssignments: [],
+        menuMealFoods: [],
+      };
+    }
 
     const menu = await db.regularMenu.findUnique({
       where: {

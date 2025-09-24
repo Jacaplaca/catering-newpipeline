@@ -38,9 +38,6 @@ interface FoodReplacementEditorProps {
 }
 
 const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: FoodReplacementEditorProps) => {
-
-
-
     const { dictionary } = useConsumerDietsTableContext();
     const { id, meal, consumer } = assignment;
 
@@ -72,9 +69,11 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
     }
 
     // [...(form.watch('food')?.allergens.map(a => a.id) ?? []), ...(form.watch('alternativeFood')?.allergens.map(a => a.id) ?? [])]
-    const allergensForExclusions = form.watch('alternativeFood')
-        ? form.watch('alternativeFood')?.allergens.map(a => a.id)
-        : form.watch('food')?.allergens.map(a => a.id)
+    const currentAllergens = form.watch('alternativeFood')?.id
+        ? form.watch('alternativeFood')?.allergens
+        : form.watch('food')?.allergens
+
+    const currentAllergensIds = currentAllergens?.map(a => a.id) ?? []
 
     return (
         <MainModal
@@ -99,7 +98,7 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
                     />
                     <SelectedDisplay
                         label={translate(dictionary, 'menu-creator:food_allergens')}
-                        selectedItems={form.watch('food')?.allergens ?? []}
+                        selectedItems={currentAllergens ?? []}
                         highlightedItems={commonAllergenIds}
                         crossedItems={[...(allExcludedAllergen.map(a => a.id) ?? []), ...(form.watch('ignoredAllergens') ?? [])]}
                         onRemove={e => ignoreAllergen(e)}
@@ -112,22 +111,6 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
                 <Form {...form} >
                     <FormSection>
                         <InputsWrapper >
-                            {/* <AuthInput
-                                message={translate(dictionary, form.formState.errors.food?.message)}
-                                label={translate(dictionary, 'menu-creator:food_label')}
-                                horizontal
-                            >
-                                <FoodDropdown
-                                    dictionary={dictionary}
-                                    selectedItems={form.watch('food') ? [form.watch('food')] : []}
-                                    onItemsChange={updateFood}
-                                    placeholder={translate(dictionary, 'menu-creator:food_placeholder')}
-                                    excludeAllergens={consumer.allergens.map(a => a.id)}
-                                    inputClassName='w-full'
-                                    limitItems={1}
-                                    showSelectionIcon
-                                />
-                            </AuthInput> */}
                             <AuthInput
                                 message={translate(dictionary, form.formState.errors.food?.message)}
                                 label={translate(dictionary, 'menu-creator:food_label')}
@@ -154,7 +137,7 @@ const FoodReplacementEditor = ({ assignment, isOpen, onClose, consumerFood }: Fo
                                     selectedItems={form.watch('exclusions') ?? []}
                                     onItemsChange={updateExclusions}
                                     placeholder={translate(dictionary, 'menu-creator:exclusions_placeholder')}
-                                    withAllergens={allergensForExclusions}
+                                    withAllergens={currentAllergensIds}
                                     inputClassName='w-full'
                                     // limitItems={1}
                                     showSelectionIcon

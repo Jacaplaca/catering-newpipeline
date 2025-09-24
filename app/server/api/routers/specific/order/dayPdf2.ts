@@ -19,31 +19,7 @@ import dayIdParser from '@root/app/server/api/routers/specific/libs/dayIdParser'
 import returnPdfForFront from '@root/app/server/api/routers/specific/libs/pdf/returnPdfForFront';
 import { mealGroup2orderField } from '@root/app/assets/maps/catering';
 import getGroupedFoodData from '@root/app/server/api/routers/specific/libs/pdf/getGroupedFoodData';
-
-// // --- POCZĄTEK ZMIAN: Funkcja pomocnicza do lorem ipsum ---
-// /**
-//  * Generates a random "lorem ipsum"-like string.
-//  * @param minLength Minimum length of the generated string.
-//  * @param maxLength Maximum length of the generated string.
-//  * @returns A random string.
-//  */
-// const generateRandomLorem = (minLength: number, maxLength: number): string => {
-//     const loremWords = ["lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit", "curabitur", "vel", "hendrerit", "libero", "eleifend", "blandit", "nunc", "ornare", "odio", "ut", "orci", "gravida", "imperdiet", "nullam", "purus", "lacinia", "a", "pretium", "quis", "congue", "praesent", "sagittis", "laoreet", "auctor", "mauris", "non", "velit", "eros", "dictum", "proin", "accumsan", "sapien", "nec", "massa", "volutpat", "venenatis", "sed", "eu", "molestie."];
-//     const length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
-//     let result = '';
-//     while (result.length < length) {
-//         const word = loremWords[Math.floor(Math.random() * loremWords.length)];
-//         result += (result.length > 0 ? ' ' : '') + word;
-//     }
-//     // Capitalize first letter and add a period if needed
-//     result = result.charAt(0).toUpperCase() + result.slice(1);
-//     if (!result.endsWith('.')) {
-//         result = result.slice(0, length).trimEnd() + '.'; // Trim to approx length and add period
-//     }
-//     return result.slice(0, maxLength); // Ensure max length
-// };
-// // --- KONIEC ZMIAN: Funkcja pomocnicza do lorem ipsum ---
-
+import cleanConsumerName from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/cleanConsumerName';
 
 const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getOrdersPdf2Valid)
@@ -200,9 +176,11 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                             }
                         }
 
-                        const dietDescription = consumerFoods
+                        const dietDescriptionParts: { text: string, font: string }[] = [];
+                        const consumerFoodsChanges = consumerFoods
                             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
                             .map(cf => {
+                                const parts: { text: string, font: string }[] = [];
                                 const hasAlternative = !!cf.alternativeFood;
                                 const hasExclusions = cf.exclusions && cf.exclusions.length > 0;
                                 const hasComment = !!cf.comment;
@@ -211,21 +189,55 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                                     return null;
                                 }
 
-                                const alternativeFoodString = cf.alternativeFood?.name;
-                                const exclusionsString = hasExclusions ? `(${cf.exclusions.map(ex => ex.name).join(', ')})` : '';
+                                parts.push({ text: `${cf.food.name}: `, font: 'Roboto' });
 
-                                const changeParts = [alternativeFoodString, exclusionsString, cf.comment].filter(Boolean);
+                                const changeParts: { text: string, font: string }[] = [];
 
-                                return `${cf.food.name}: ${changeParts.join(' ')}`;
+                                if (cf.alternativeFood?.name) {
+                                    changeParts.push({ text: `${cf.alternativeFood.name}`, font: 'Roboto-Bold' });
+                                }
+
+                                if (hasExclusions) {
+                                    const exclusionsString = `(${cf.exclusions.map(ex => ex.name).join(', ')})`;
+                                    changeParts.push({ text: exclusionsString, font: 'Roboto-BoldItalic' });
+                                }
+
+                                if (cf.comment) {
+                                    changeParts.push({ text: `${cf.comment}`, font: 'Roboto-Bold' });
+                                }
+
+                                for (let i = 0; i < changeParts.length; i++) {
+                                    const part = changeParts[i];
+                                    if (part) {
+                                        parts.push(part);
+                                        if (i < changeParts.length - 1) {
+                                            parts.push({ text: ' ', font: 'Roboto' });
+                                        }
+                                    }
+                                }
+
+                                return parts;
                             })
-                            .filter(Boolean)
-                            .join('; ');
+                            .filter(Boolean) as { text: string, font: string }[][];
 
+                        consumerFoodsChanges.forEach((change, index) => {
+                            if (index < consumerFoodsChanges.length - 1) {
+                                const lastPart = change[change.length - 1];
+                                if (lastPart) {
+                                    lastPart.text += '; ';
+                                }
+                            }
+                            dietDescriptionParts.push(...change);
+                        });
+
+                        let consumerCode = consumer.code ?? 'UNKNOWN';
+                        // Use cleanConsumerName to clean up consumer code based on client code
+                        consumerCode = cleanConsumerName(consumer.code, clientCode);
 
                         acc[clientCode]?.mealsByMealName[mealName]?.consumers.push({
-                            consumerCode: consumer.code ?? 'UNKNOWN',
+                            consumerCode,
                             dietInfo,
-                            dietDescription,
+                            dietDescriptionParts,
                         });
                     });
                 });
@@ -238,7 +250,7 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                 consumers: {
                     consumerCode: string;
                     dietInfo: string;
-                    dietDescription: string;
+                    dietDescriptionParts: { text: string, font: string }[];
                 }[];
             }>,
             deliveryRouteInfo: string
@@ -261,7 +273,18 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
             return acc;
         }, {} as Record<string, typeof standard>);
 
-        const dictionary = await getDict({ lang, keys: ['shared', 'orders'] })
+        // Calculate total consumers without changes across all clients
+        const totalConsumersWithoutChanges = Object.values(dietDataByClient).reduce((total, clientData) => {
+            const clientMaxConsumersWithoutChanges = Math.max(...Object.values(clientData.mealsByMealName).map(mealDetails =>
+                mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
+            ));
+            return total + (clientMaxConsumersWithoutChanges > 0 ? clientMaxConsumersWithoutChanges : 0);
+        }, 0);
+
+        const summaryNewTotal = summaryStandard + totalConsumersWithoutChanges;
+        const hasTotalNoChanges = totalConsumersWithoutChanges > 0;
+
+        const dictionary = await getDict({ lang, keys: ['shared', 'orders', 'menu-creator'] })
         const { year, month, day } = dayIdParser(dayId);
         const deliveryDayDate = new Date(year, month, day);
 
@@ -288,6 +311,7 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
 
             doc.registerFont('Roboto', fonts.regular);
             doc.registerFont('Roboto-Bold', fonts.bold);
+            doc.registerFont('Roboto-BoldItalic', fonts.boldItalic);
 
             doc.font('Roboto-Bold')
                 .fontSize(20)
@@ -297,10 +321,41 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
             doc.fontSize(16)
                 .text(`${mealGroupName} - ${headDate}`, { align: 'center' });
 
-            doc.moveDown(2)
-                .fontSize(14)
+            doc.moveDown(2);
+
+            // Build the complete summary text first
+            const summaryLabel = `${translate(dictionary, 'orders:standard')}: `;
+            let summaryText = summaryLabel + summaryStandard.toString();
+            if (hasTotalNoChanges) {
+                summaryText += ` (+${totalConsumersWithoutChanges}) ${summaryNewTotal}`;
+            }
+
+            // Calculate center position for the entire line
+            doc.fontSize(14); // Set font size first for width calculation
+            const summaryWidth = doc.widthOfString(summaryText);
+            const centerX = (doc.page.width - summaryWidth) / 2;
+
+            // Render with proper formatting
+            doc.fontSize(14)
                 .font('Roboto-Bold')
-                .text(`${translate(dictionary, 'orders:standard')}: ${summaryStandard}`, { align: 'center' });
+                .text(summaryLabel, centerX, doc.y, { continued: true });
+
+            // Old standard count (bold only if no changes)
+            doc.font(hasTotalNoChanges ? 'Roboto' : 'Roboto-Bold')
+                .fontSize(14)
+                .text(summaryStandard.toString(), { continued: hasTotalNoChanges });
+
+            if (hasTotalNoChanges) {
+                // (+no_changes) - not bold
+                doc.font('Roboto')
+                    .fontSize(14)
+                    .text(` (+${totalConsumersWithoutChanges}) `, { continued: true });
+
+                // New total - bold
+                doc.font('Roboto-Bold')
+                    .fontSize(14)
+                    .text(summaryNewTotal.toString(), { continued: false });
+            }
 
             const startY = doc.y + 20;
             const pageWidth = doc.page.width - 100; // margin left 50 + margin right 50
@@ -315,8 +370,24 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
 
             // Render grouped standard orders
             Object.entries(standardGroupedByRoute).forEach(([routeName, routeItems]) => {
-                // Calculate total meals for this route
-                const routeTotalMeals = routeItems.reduce((sum, item) => sum + item.meals, 0);
+                // Calculate total meals for this route (old meals)
+                const routeTotalOldMeals = routeItems.reduce((sum, item) => sum + item.meals, 0);
+
+                // Calculate total consumers without changes for this route in standard section
+                const routeStandardConsumersWithoutChanges = routeItems.reduce((routeSum, item) => {
+                    const clientDietData = dietDataByClient[item.clientCode];
+                    let clientConsumersWithoutChanges = 0;
+                    if (clientDietData) {
+                        clientConsumersWithoutChanges = Math.max(...Object.values(clientDietData.mealsByMealName).map(mealDetails =>
+                            mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
+                        ));
+                    }
+                    return routeSum + (clientConsumersWithoutChanges > 0 ? clientConsumersWithoutChanges : 0);
+                }, 0);
+
+                // Calculate new total (old + no changes)
+                const routeTotalNewMeals = routeTotalOldMeals + routeStandardConsumersWithoutChanges;
+                const hasRouteNoChanges = routeStandardConsumersWithoutChanges > 0;
 
                 // Estimate minimum space needed for route header + first item
                 const routeHeaderHeight = 25;
@@ -329,11 +400,48 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                     yPosition = doc.page.margins.top;
                 }
 
-                // Route header with total meals in parentheses
+                // Route header with formatted meals display
                 doc.font('Roboto-Bold')
                     .fontSize(14)
                     .fillColor('black')
-                    .text(`Trasa: ${routeName} (${routeTotalMeals})`, 50, yPosition);
+                    .text(`Trasa: ${routeName} `, 50, yPosition, {
+                        lineBreak: false,
+                        continued: true
+                    });
+
+                // Old meals count (bold only if no changes)
+                doc.font(hasRouteNoChanges ? 'Roboto' : 'Roboto-Bold')
+                    .fontSize(14)
+                    .text(routeTotalOldMeals.toString(), {
+                        lineBreak: false,
+                        continued: hasRouteNoChanges
+                    });
+
+                if (hasRouteNoChanges) {
+                    // (+no_changes) - not bold
+                    doc.font('Roboto')
+                        .fontSize(14)
+                        .text(` (+${routeStandardConsumersWithoutChanges}) `, {
+                            lineBreak: false,
+                            continued: true
+                        });
+
+                    // New total - bold
+                    doc.font('Roboto-Bold')
+                        .fontSize(14)
+                        .text(routeTotalNewMeals.toString(), {
+                            lineBreak: false,
+                            continued: true
+                        });
+                }
+
+                // Close parenthesis
+                // doc.font('Roboto-Bold')
+                //     .fontSize(14)
+                //     .text('', {
+                //         lineBreak: false,
+                //         continued: false
+                //     });
 
                 yPosition += 25; // Space after route header
 
@@ -357,9 +465,26 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                     }
 
                     const clientX = 50;
-                    const mealsText = item.meals.toString();
-                    const clientCodeText = item.clientCode; // Remove route info from client text since it's now in header
+                    const oldMeals = item.meals;
+                    const oldMealsText = oldMeals.toString();
 
+                    // Get diet data for this client to calculate consumers without changes
+                    const clientDietData = dietDataByClient[item.clientCode];
+                    let clientConsumersWithoutChanges = 0;
+                    if (clientDietData) {
+                        clientConsumersWithoutChanges = Math.max(...Object.values(clientDietData.mealsByMealName).map(mealDetails =>
+                            mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
+                        ));
+                    }
+
+                    const hasNoChanges = clientConsumersWithoutChanges > 0;
+                    const noChangesText = hasNoChanges ? ` (+${clientConsumersWithoutChanges})` : '';
+                    const newTotal = oldMeals + clientConsumersWithoutChanges;
+                    const newTotalText = newTotal.toString();
+
+                    const clientCodeText = item.clientCode;
+
+                    // Render client name
                     doc.font('Roboto')
                         .fontSize(12)
                         .fillColor('black')
@@ -369,14 +494,39 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                         });
 
                     const clientWidth = doc.widthOfString(clientCodeText);
-                    const mealsX = clientX + clientWidth + 5;
+                    let currentX = clientX + clientWidth + 5;
 
-                    doc.font('Roboto-Bold')
+                    // Render old meals count (bold only if no changes)
+                    doc.font(hasNoChanges ? 'Roboto' : 'Roboto-Bold')
                         .fontSize(12)
-                        .text(mealsText, mealsX, yPosition, {
+                        .text(oldMealsText, currentX, yPosition, {
                             lineBreak: false,
-                            continued: false
+                            continued: hasNoChanges
                         });
+
+                    if (hasNoChanges) {
+                        const oldMealsWidth = doc.widthOfString(oldMealsText);
+                        currentX += oldMealsWidth;
+
+                        // Render (+no_changes)
+                        doc.font('Roboto')
+                            .fontSize(12)
+                            .text(noChangesText, currentX, yPosition, {
+                                lineBreak: false,
+                                continued: true
+                            });
+
+                        const noChangesWidth = doc.widthOfString(noChangesText);
+                        currentX += noChangesWidth + 5;
+
+                        // Render new total (always bold)
+                        doc.font('Roboto-Bold')
+                            .fontSize(12)
+                            .text(newTotalText, currentX, yPosition, {
+                                lineBreak: false,
+                                continued: false
+                            });
+                    }
 
                     yPosition += lineHeight;
 
@@ -435,7 +585,7 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                         consumers: {
                             consumerCode: string;
                             dietInfo: string;
-                            dietDescription: string;
+                            dietDescriptionParts: { text: string, font: string }[];
                         }[];
                     }>,
                     deliveryRouteInfo: string
@@ -450,12 +600,21 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                 }
                 isFirstDietRoute = false;
 
+                // Calculate total consumers without changes for this route
+                const routeTotalConsumersWithoutChanges = routeClients.reduce((routeSum, { mealsByMealName }) => {
+                    const clientMaxConsumersWithoutChanges = Math.max(...Object.values(mealsByMealName).map(mealDetails =>
+                        mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
+                    ));
+                    return routeSum + (clientMaxConsumersWithoutChanges > 0 ? clientMaxConsumersWithoutChanges : 0);
+                }, 0);
+                const routeSuffix = routeTotalConsumersWithoutChanges > 0 ? ` (-${routeTotalConsumersWithoutChanges})` : '';
+
                 // Route header for diets
                 doc.moveDown()
                     .fontSize(14)
                     .font('Roboto-Bold')
                     .fillColor('black')
-                    .text(`Trasa: ${routeName}`, 50);
+                    .text(`Trasa: ${routeName}${routeSuffix}`, 50);
 
                 // Render clients for this route
                 routeClients.forEach(({ clientCode, mealsByMealName }) => {
@@ -467,10 +626,16 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                         doc.y = doc.page.margins.top;
                     }
 
+                    // Calculate maximum number of consumers without changes across all meals for this client
+                    const maxConsumersWithoutChanges = Math.max(...Object.values(mealsByMealName).map(mealDetails =>
+                        mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
+                    ));
+                    const clientSuffix = maxConsumersWithoutChanges > 0 ? ` (-${maxConsumersWithoutChanges})` : '';
+
                     doc.moveDown()
                         .fontSize(12)
                         .font('Roboto-Bold')
-                        .text(clientCode, 70)
+                        .text(`${clientCode}${clientSuffix}`, 70)
                         .font('Roboto');
 
                     Object.entries(mealsByMealName).forEach(([mealName, mealDetails]) => {
@@ -479,20 +644,54 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                             doc.y = doc.page.margins.top;
                         }
 
+                        // Count consumers without changes
+                        const consumersWithoutChangesCount = mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length;
+                        const countSuffix = consumersWithoutChangesCount > 0 ? ` -${consumersWithoutChangesCount}` : '';
+
                         doc.moveDown(0.5);
-                        doc.fontSize(11).font('Roboto-Bold').text(`${mealName} (${mealDetails.baseFoodName})`, 80);
+                        doc.fontSize(11).font('Roboto-Bold').text(`${mealName} (${mealDetails.baseFoodName})${countSuffix}`, 80);
                         doc.font('Roboto');
 
-                        mealDetails.consumers.forEach(diet => {
+                        const consumersWithChanges = mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length > 0);
+                        const consumersWithoutChanges = mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0);
+
+                        if (consumersWithChanges.length > 0) {
+                            consumersWithChanges.forEach(diet => {
+                                if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - 30) {
+                                    doc.addPage();
+                                    doc.y = doc.page.margins.top;
+                                }
+
+                                const consumerCodeText = diet.consumerCode;
+                                const dietInfoText = `${diet.dietInfo}: `;
+
+                                doc.font('Roboto-Bold').fontSize(10).text(consumerCodeText, 90, doc.y, { continued: true });
+                                doc.font('Roboto').fontSize(10).text(dietInfoText, { continued: true });
+
+                                diet.dietDescriptionParts.forEach((part, index) => {
+                                    const isLastPart = index === diet.dietDescriptionParts.length - 1;
+                                    doc.font(part.font).fontSize(10).text(part.text, {
+                                        continued: !isLastPart,
+                                    });
+                                });
+                                doc.moveDown(0.25);
+                            });
+                        }
+
+                        if (consumersWithoutChanges.length > 0) {
                             if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - 30) {
                                 doc.addPage();
                                 doc.y = doc.page.margins.top;
                             }
-                            const description = diet.dietDescription ? ` ${diet.dietDescription}` : '';
-                            doc.fontSize(10).text(`${diet.consumerCode}${diet.dietInfo}:${description}`, 90, doc.y, {
+
+                            const noChangesText = consumersWithoutChanges.map(diet => `${diet.consumerCode}${diet.dietInfo}`).join(', ');
+                            const label = `${translate(dictionary, 'menu-creator:no-changes')}: `;
+
+                            doc.fontSize(10).font('Roboto-Bold').text(label, 90, doc.y, { continued: true });
+                            doc.font('Roboto').text(noChangesText, {
                                 width: doc.page.width - 120
                             });
-                        });
+                        }
                     });
                 });
 

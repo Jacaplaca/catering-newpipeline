@@ -142,7 +142,13 @@ const getExclusionDbQuery = ({
 
     if (withAllergens && withAllergens.length > 0) {
         pipelineOrg.push({
-            $match: { 'allergens.id': { $in: withAllergens } }
+            $match: {
+                allergens: {
+                    $elemMatch: {
+                        id: { $in: withAllergens }
+                    }
+                }
+            }
         });
     }
 

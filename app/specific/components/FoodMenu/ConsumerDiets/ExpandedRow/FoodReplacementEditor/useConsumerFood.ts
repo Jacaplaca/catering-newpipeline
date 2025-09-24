@@ -108,32 +108,17 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
             ? watchedAlternativeFoodAllergens
             : watchedFoodAllergens;
 
-        return (relevantAllergens ?? []).filter(
+        const commonAllergens = (relevantAllergens ?? []).filter(
             (allergen, index, self) =>
                 consumerAllergenIds.has(allergen.id) &&              // wspólne konsument-posiłek
                 !allExcludedAllergenIds.has(allergen.id) &&            // pomniejszone o exclusions
                 !watchedIgnoredAllergens?.includes(allergen.id) &&      // pomniejszone o ignoredAllergens
                 self.findIndex(a => a.id === allergen.id) === index, // unikalność
         );
+        return commonAllergens;
     }, [watchedFoodAllergens, watchedAlternativeFoodAllergens, watchedAlternativeFoodId, allExcludedAllergenIds, consumer.allergens, watchedIgnoredAllergens]);
-    // --------------------------------------------------------------------
 
-    // useEffect(() => {
-    //     if (existingReplacement) {
-    //         form.reset(existingReplacement);
-    //         setIsEditing(true);
-    //     } else {
-    //         // Reset to default values for creation
-    //         form.reset({
-    //             day,
-    //             consumerId,
-    //             harmfulFoodId: '',
-    //             safeFoods: [],
-    //             comment: '',
-    //         });
-    //         setIsEditing(false);
-    //     }
-    // }, [existingReplacement, day, consumerId, form]);
+
 
     const updateMutation = api.specific.consumerFood.update.useMutation({
         onSuccess: (updatedAssignment) => {
@@ -166,17 +151,6 @@ const useConsumerFood = (assignment: ClientFoodAssignment) => {
         //     // });
         // },
     });
-
-    // const updateMutation = api.specific.consumerFoodReplacement.update.useMutation({
-    //     onSuccess: async () => {
-    //         await utils.specific.consumerFoodReplacement.invalidate();
-    //         // await refetch();
-    //         console.log('Food replacement updated successfully');
-    //     },
-    //     onError: (error) => {
-    //         console.error('Error updating food replacement:', error);
-    //     },
-    // });
 
     const onSubmit = (values: ConsumerFoodReplacementFormValues) => {
         updateMutation.mutate(values);

@@ -23,6 +23,7 @@ const Meal: FC<{
             allergens={getAllergens(id)}
             updateFoodsOrder={updateFoodsOrder}
             isFoodsLoading={isLoading}
+            isSortable
         />
     </div>
 }

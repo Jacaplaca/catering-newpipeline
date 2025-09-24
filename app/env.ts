@@ -107,6 +107,7 @@ export const env = createEnv({
     MAIN_PAGE_REDIRECT: z.string()
       .optional()
       .transform(val => toBool(val)),
+    DEV_TOOLS_LOG: z.string().optional().transform(val => toBool(val)),
   },
 
   /**
@@ -180,6 +181,7 @@ export const env = createEnv({
     NEXT_PUBLIC_MAIN_PAGE_REDIRECT: process.env.NEXT_PUBLIC_MAIN_PAGE_REDIRECT,
     NEXT_PUBLIC_DOMAIN: process.env.NEXT_PUBLIC_DOMAIN,
     NEXT_PUBLIC_MENU_FRONT: process.env.NEXT_PUBLIC_MENU_FRONT,
+    DEV_TOOLS_LOG: process.env.DEV_TOOLS_LOG,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

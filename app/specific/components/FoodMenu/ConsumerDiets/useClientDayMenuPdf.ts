@@ -9,7 +9,7 @@ const useClientDayMenuPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) 
     const [isLoading, setIsLoading] = useState(false);
     const [week, setWeek] = useState<boolean | undefined>(undefined);
 
-    const { data: pdfData, error: pdfError } = api.specific.order.dayKitchenPdf.useQuery(
+    const { data: pdfData, error: pdfError } = api.specific.order.dayMenuPdf.useQuery(
         { clientId: clientId ?? '', dayId: dayId ?? '', lang, week },
         { enabled: Boolean(dayId) }
     );

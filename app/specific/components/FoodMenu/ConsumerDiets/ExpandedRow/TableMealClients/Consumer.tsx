@@ -4,6 +4,7 @@ import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/conte
 import { useConsumerDietsTableContext } from '@root/app/specific/components/FoodMenu/ConsumerDiets/context';
 import translate from '@root/app/lib/lang/translate';
 import Tooltip from '@root/app/_components/ui/Tooltip';
+import { env } from '@root/app/env';
 
 export type MealTableConsumerType = { id: string; name: string; allergens: { id: string; name: string }[], notes?: string | undefined, code: string, diet: { code: string | null, description: string | null } };
 
@@ -49,6 +50,11 @@ const Consumer: React.FC<{
                             {translate(dictionary, "menu-creator:add_meals_for_new_consumer")}
                         </MyButton>
                     </Tooltip>
+                </div>
+            )}
+            {env.NEXT_PUBLIC_MENU_FRONT && (
+                <div className="mt-3 pt-1 w-full flex justify-end">
+                    {consumer.id}
                 </div>
             )}
         </div>

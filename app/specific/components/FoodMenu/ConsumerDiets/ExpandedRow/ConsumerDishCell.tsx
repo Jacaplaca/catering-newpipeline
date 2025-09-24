@@ -100,12 +100,12 @@ const ConsumerDishCell = ({ assignment }: ConsumerDishCellProps) => {
                     </span>
                 </div>
             )}
-            <FoodReplacementEditor
+            {isConsumerDietEditorOpen && <FoodReplacementEditor
                 isOpen={isConsumerDietEditorOpen}
                 onClose={() => setConsumerDietEditorOpen(false)}
                 assignment={assignment}
                 consumerFood={consumerFood}
-            />
+            />}
         </div>
     );
 };
