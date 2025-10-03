@@ -21,6 +21,21 @@ import { mealGroup2orderField } from '@root/app/assets/maps/catering';
 import getGroupedFoodData from '@root/app/server/api/routers/specific/libs/pdf/getGroupedFoodData';
 import cleanConsumerName from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/cleanConsumerName';
 
+// PDF Configuration
+const pdfConfig = {
+    margins: {
+        default: 50,
+        header: 0,
+        footer: 0,
+        content: {
+            left: 50,
+            right: 50,
+            bottom: 20,
+        },
+        contentToFooter: 10, // Distance between content and footer
+    }
+};
+
 const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getOrdersPdf2Valid)
     .query(async ({ input, ctx }) => {
@@ -261,7 +276,7 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
             clientCode,
             meals,
             deliveryRouteInfo
-        })).filter(({ meals }) => meals);
+        })).filter(({ meals }) => meals).sort((a, b) => a.clientCode.localeCompare(b.clientCode));
 
         // Group standard orders by delivery route
         const standardGroupedByRoute = standard.reduce((acc, item) => {
@@ -273,12 +288,9 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
             return acc;
         }, {} as Record<string, typeof standard>);
 
-        // Calculate total consumers without changes across all clients
-        const totalConsumersWithoutChanges = Object.values(dietDataByClient).reduce((total, clientData) => {
-            const clientMaxConsumersWithoutChanges = Math.max(...Object.values(clientData.mealsByMealName).map(mealDetails =>
-                mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
-            ));
-            return total + (clientMaxConsumersWithoutChanges > 0 ? clientMaxConsumersWithoutChanges : 0);
+        // Calculate total consumers without changes from already computed data
+        const totalConsumersWithoutChanges = Object.values(consumerFoodByRoute).reduce((total, routeData) => {
+            return total + routeData.consumersWithoutChangesCount;
         }, 0);
 
         const summaryNewTotal = summaryStandard + totalConsumersWithoutChanges;
@@ -295,7 +307,7 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
         try {
             const doc = new PDFDocument({
                 size: 'A4',
-                margin: 50,
+                margin: pdfConfig.margins.default,
                 bufferPages: true,
                 font: ''
             });
@@ -358,198 +370,284 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
             }
 
             const startY = doc.y + 20;
-            const pageWidth = doc.page.width - 100; // margin left 50 + margin right 50
-            const noteFontSize = 9;
-            const lineHeight = 15; // Podstawowa wysokość linii dla klienta/ilości
-            const verticalGap = 5; // Odstęp między wpisami
+            const pageWidth = doc.page.width - (pdfConfig.margins.content.left + pdfConfig.margins.content.right);
             // --- Usunięto ratio, szerokość będzie obliczana dynamicznie ---
             // const clientCodeWidthRatio = 0.7;
             // const mealsWidthRatio = 0.3;
 
             let yPosition = startY;
 
-            // Render grouped standard orders
-            Object.entries(standardGroupedByRoute).forEach(([routeName, routeItems]) => {
-                // Calculate total meals for this route (old meals)
-                const routeTotalOldMeals = routeItems.reduce((sum, item) => sum + item.meals, 0);
+            // Helper function to determine number of columns based on client count
+            const getColumnCount = (clientCount: number): number => {
+                if (clientCount === 1) return 1;
+                if (clientCount === 2) return 2;
+                return 3; // For 3 or more clients
+            };
 
-                // Calculate total consumers without changes for this route in standard section
-                const routeStandardConsumersWithoutChanges = routeItems.reduce((routeSum, item) => {
-                    const clientDietData = dietDataByClient[item.clientCode];
-                    let clientConsumersWithoutChanges = 0;
-                    if (clientDietData) {
-                        clientConsumersWithoutChanges = Math.max(...Object.values(clientDietData.mealsByMealName).map(mealDetails =>
-                            mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
-                        ));
-                    }
-                    return routeSum + (clientConsumersWithoutChanges > 0 ? clientConsumersWithoutChanges : 0);
-                }, 0);
+            // Helper function to draw vertical lines for table
+            const drawVerticalLines = (yPos: number, height: number, columnWidths: number[], pageContentLeft: number) => {
+                let currentX = pageContentLeft;
+                doc.lineWidth(0.25).strokeColor('grey');
 
-                // Calculate new total (old + no changes)
-                const routeTotalNewMeals = routeTotalOldMeals + routeStandardConsumersWithoutChanges;
-                const hasRouteNoChanges = routeStandardConsumersWithoutChanges > 0;
-
-                // Estimate minimum space needed for route header + first item
-                const routeHeaderHeight = 25;
-                const minItemHeight = lineHeight + verticalGap; // Minimum for one item without notes
-                const minSpaceNeeded = routeHeaderHeight + minItemHeight;
-
-                // Check if we need a new page for the route header + at least one item
-                if (yPosition + minSpaceNeeded > doc.page.height - doc.page.margins.bottom - 30) {
-                    doc.addPage();
-                    yPosition = doc.page.margins.top;
+                for (let i = 0; i < columnWidths.length - 1; i++) {
+                    currentX += columnWidths[i]!;
+                    doc.moveTo(currentX, yPos).lineTo(currentX, yPos + height).stroke();
                 }
+                doc.strokeColor('black'); // Reset stroke color
+            };
 
-                // Route header with formatted meals display
-                doc.font('Roboto-Bold')
-                    .fontSize(14)
+            // Helper function to render a table cell with client data
+            const renderClientCell = (
+                clientData: { clientCode: string; meals: number; deliveryRouteInfo: string },
+                routeData: { clients?: Record<string, { clientCode: string; consumersWithoutChangesCount?: number }> } | undefined,
+                x: number,
+                y: number,
+                width: number,
+                height: number,
+                cellPadding: number,
+                cellFontSize: number,
+                actualTextPaddingY: number
+            ) => {
+                const item = clientData;
+                const noteText = notes[item.clientCode];
+
+                const oldMeals = item.meals;
+                const oldMealsText = oldMeals.toString();
+
+                // Get client data from consumerFoodByRoute
+                const clientDataExtended = Object.values(routeData?.clients ?? {}).find(
+                    (client) => client.clientCode === item.clientCode
+                );
+                const clientConsumersWithoutChanges = clientDataExtended?.consumersWithoutChangesCount ?? 0;
+
+                const hasNoChanges = clientConsumersWithoutChanges > 0;
+                const noChangesText = hasNoChanges ? ` (+${clientConsumersWithoutChanges})` : '';
+                const newTotal = oldMeals + clientConsumersWithoutChanges;
+                const newTotalText = newTotal.toString();
+
+                const clientCodeText = item.clientCode;
+
+                // Calculate available width for text
+                const textWidth = width - (2 * cellPadding);
+
+                // Render client code
+                doc.font('Roboto')
+                    .fontSize(cellFontSize)
                     .fillColor('black')
-                    .text(`Trasa: ${routeName} `, 50, yPosition, {
+                    .text(clientCodeText, x + cellPadding, y + actualTextPaddingY, {
+                        width: textWidth,
                         lineBreak: false,
+                        ellipsis: true,
                         continued: true
                     });
 
-                // Old meals count (bold only if no changes)
-                doc.font(hasRouteNoChanges ? 'Roboto' : 'Roboto-Bold')
-                    .fontSize(14)
-                    .text(routeTotalOldMeals.toString(), {
-                        lineBreak: false,
-                        continued: hasRouteNoChanges
-                    });
+                // Position for meals display
+                const clientCodeWidth = doc.widthOfString(clientCodeText);
+                const mealsX = x + cellPadding + clientCodeWidth + 3;
 
-                if (hasRouteNoChanges) {
-                    // (+no_changes) - not bold
-                    doc.font('Roboto')
-                        .fontSize(14)
-                        .text(` (+${routeStandardConsumersWithoutChanges}) `, {
-                            lineBreak: false,
-                            continued: true
-                        });
+                // Check if we have enough space for meals on the same line
+                const remainingWidth = x + width - cellPadding - mealsX;
+                const mealsText = hasNoChanges ? `${oldMealsText}${noChangesText} ${newTotalText}` : oldMealsText;
+                const mealsTextWidth = doc.widthOfString(mealsText);
 
-                    // New total - bold
-                    doc.font('Roboto-Bold')
-                        .fontSize(14)
-                        .text(routeTotalNewMeals.toString(), {
-                            lineBreak: false,
-                            continued: true
-                        });
-                }
-
-                // Close parenthesis
-                // doc.font('Roboto-Bold')
-                //     .fontSize(14)
-                //     .text('', {
-                //         lineBreak: false,
-                //         continued: false
-                //     });
-
-                yPosition += 25; // Space after route header
-
-                // Render items for this route
-                routeItems.forEach(item => {
-                    const noteText = notes[item.clientCode];
-                    let itemHeight = lineHeight;
-                    let noteHeight = 0;
-
-                    if (noteText) {
-                        noteHeight = doc.heightOfString(noteText, {
-                            width: pageWidth - 10,
-                        });
-                        itemHeight += noteHeight;
-                    }
-                    itemHeight += verticalGap;
-
-                    if (yPosition + itemHeight > doc.page.height - doc.page.margins.bottom - 30) {
-                        doc.addPage();
-                        yPosition = doc.page.margins.top;
-                    }
-
-                    const clientX = 50;
-                    const oldMeals = item.meals;
-                    const oldMealsText = oldMeals.toString();
-
-                    // Get diet data for this client to calculate consumers without changes
-                    const clientDietData = dietDataByClient[item.clientCode];
-                    let clientConsumersWithoutChanges = 0;
-                    if (clientDietData) {
-                        clientConsumersWithoutChanges = Math.max(...Object.values(clientDietData.mealsByMealName).map(mealDetails =>
-                            mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
-                        ));
-                    }
-
-                    const hasNoChanges = clientConsumersWithoutChanges > 0;
-                    const noChangesText = hasNoChanges ? ` (+${clientConsumersWithoutChanges})` : '';
-                    const newTotal = oldMeals + clientConsumersWithoutChanges;
-                    const newTotalText = newTotal.toString();
-
-                    const clientCodeText = item.clientCode;
-
-                    // Render client name
-                    doc.font('Roboto')
-                        .fontSize(12)
-                        .fillColor('black')
-                        .text(clientCodeText, clientX, yPosition, {
-                            lineBreak: false,
-                            continued: true
-                        });
-
-                    const clientWidth = doc.widthOfString(clientCodeText);
-                    let currentX = clientX + clientWidth + 5;
+                if (remainingWidth >= mealsTextWidth) {
+                    // Render on same line
+                    doc.text(' ', { continued: true }); // Small space
 
                     // Render old meals count (bold only if no changes)
                     doc.font(hasNoChanges ? 'Roboto' : 'Roboto-Bold')
-                        .fontSize(12)
-                        .text(oldMealsText, currentX, yPosition, {
-                            lineBreak: false,
+                        .fontSize(cellFontSize)
+                        .text(oldMealsText, { continued: hasNoChanges });
+
+                    if (hasNoChanges) {
+                        // Render (+no_changes)
+                        doc.font('Roboto')
+                            .fontSize(cellFontSize)
+                            .text(noChangesText, { continued: true });
+
+                        // Render new total (always bold)
+                        doc.font('Roboto-Bold')
+                            .fontSize(cellFontSize)
+                            .text(` ${newTotalText}`, { continued: false });
+                    }
+                } else {
+                    // Render on new line
+                    doc.text('', { continued: false }); // End current line
+
+                    // Render old meals count (bold only if no changes)
+                    doc.font(hasNoChanges ? 'Roboto' : 'Roboto-Bold')
+                        .fontSize(cellFontSize)
+                        .text(oldMealsText, x + cellPadding, y + actualTextPaddingY + (cellFontSize + 2), {
+                            width: textWidth,
                             continued: hasNoChanges
                         });
 
                     if (hasNoChanges) {
-                        const oldMealsWidth = doc.widthOfString(oldMealsText);
-                        currentX += oldMealsWidth;
-
                         // Render (+no_changes)
                         doc.font('Roboto')
-                            .fontSize(12)
-                            .text(noChangesText, currentX, yPosition, {
-                                lineBreak: false,
-                                continued: true
-                            });
-
-                        const noChangesWidth = doc.widthOfString(noChangesText);
-                        currentX += noChangesWidth + 5;
+                            .fontSize(cellFontSize)
+                            .text(noChangesText, { continued: true });
 
                         // Render new total (always bold)
                         doc.font('Roboto-Bold')
-                            .fontSize(12)
-                            .text(newTotalText, currentX, yPosition, {
-                                lineBreak: false,
-                                continued: false
-                            });
+                            .fontSize(cellFontSize)
+                            .text(` ${newTotalText}`, { continued: false });
+                    }
+                }
+
+                // Render note if present
+                if (noteText) {
+                    const noteY = y + height - (cellFontSize + 2);
+                    doc.font('Roboto')
+                        .fontSize(8)
+                        .fillColor('dimgray')
+                        .text(noteText, x + cellPadding, noteY, {
+                            width: textWidth,
+                            lineBreak: true,
+                            height: cellFontSize + 2
+                        });
+                    doc.fillColor('black'); // Reset color
+                }
+            };
+
+            // Render grouped standard orders - sort routes alphabetically
+            Object.entries(standardGroupedByRoute)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .forEach(([routeName, routeItems]) => {
+                    // Calculate total meals for this route (old meals)
+                    const routeTotalOldMeals = routeItems.reduce((sum, item) => sum + item.meals, 0);
+
+                    // Get route data from consumerFoodByRoute to get already calculated consumers without changes
+                    const routeData = Object.values(consumerFoodByRoute).find(route =>
+                        route.deliveryRouteName === routeName ||
+                        (routeName === 'Bez trasy' && route.deliveryRouteName === 'Bez trasy')
+                    );
+                    const routeStandardConsumersWithoutChanges = routeData?.consumersWithoutChangesCount ?? 0;
+
+                    // Calculate new total (old + no changes)
+                    const routeTotalNewMeals = routeTotalOldMeals + routeStandardConsumersWithoutChanges;
+                    const hasRouteNoChanges = routeStandardConsumersWithoutChanges > 0;
+
+                    // Estimate minimum space needed for route header + first table row
+                    const routeHeaderHeight = 25;
+                    const tableRowHeight = 40; // Estimated height for table row
+                    const minSpaceNeeded = routeHeaderHeight + tableRowHeight;
+
+                    // Check if we need a new page for the route header + at least one row
+                    if (yPosition + minSpaceNeeded > doc.page.height - doc.page.margins.bottom - pdfConfig.margins.contentToFooter) {
+                        doc.addPage();
+                        yPosition = doc.page.margins.top;
                     }
 
-                    yPosition += lineHeight;
+                    // Route header with formatted meals display - centered
+                    // Build the complete route text first
+                    const routeLabel = `${routeName} `;
+                    let routeText = routeLabel + routeTotalOldMeals.toString();
+                    if (hasRouteNoChanges) {
+                        routeText += ` (+${routeStandardConsumersWithoutChanges}) ${routeTotalNewMeals}`;
+                    }
 
-                    if (noteText) {
+                    // Calculate center position for the entire line
+                    doc.fontSize(14); // Set font size first for width calculation
+                    const routeWidth = doc.widthOfString(routeText);
+                    const centerX = (doc.page.width - routeWidth) / 2;
+
+                    // Render with proper formatting - centered
+                    doc.fontSize(14)
+                        .font('Roboto-Bold')
+                        .fillColor('black')
+                        .text(routeLabel, centerX, yPosition, { continued: true });
+
+                    // Old meals count (bold only if no changes)
+                    doc.font(hasRouteNoChanges ? 'Roboto' : 'Roboto-Bold')
+                        .fontSize(14)
+                        .text(routeTotalOldMeals.toString(), { continued: hasRouteNoChanges });
+
+                    if (hasRouteNoChanges) {
+                        // (+no_changes) - not bold
                         doc.font('Roboto')
-                            .fontSize(noteFontSize)
-                            .fillColor('dimgray')
-                            .text(noteText, clientX, yPosition, {
-                                width: pageWidth - 10
-                            });
-                        yPosition += noteHeight;
+                            .fontSize(14)
+                            .text(` (+${routeStandardConsumersWithoutChanges}) `, { continued: true });
+
+                        // New total - bold
+                        doc.font('Roboto-Bold')
+                            .fontSize(14)
+                            .text(routeTotalNewMeals.toString(), { continued: false });
                     }
 
-                    yPosition += verticalGap;
-                });
+                    yPosition += 25; // Space after route header
 
-                // Add extra space between route groups
-                yPosition += 15;
-            });
+                    // Table settings similar to routesPdf.ts
+                    const cellFontSize = 9;
+                    const baseRowPaddingY = 4;
+                    let rowHeight = cellFontSize + (2 * baseRowPaddingY) + 2;
+                    rowHeight *= 1.8; // Increase row height for better note visibility
+                    const actualTextPaddingY = (rowHeight - cellFontSize - 2) / 2;
+
+                    const pageContentLeft = pdfConfig.margins.content.left;
+                    const pageContentWidth = pageWidth;
+                    const cellHorizontalPadding = 4;
+
+                    // Determine number of columns and column widths
+                    const columnCount = getColumnCount(routeItems.length);
+                    const columnWidths: number[] = new Array(columnCount).fill(pageContentWidth / columnCount) as number[];
+
+                    // Group items into rows
+                    type RouteItem = { clientCode: string; meals: number; deliveryRouteInfo: string };
+                    const rows: RouteItem[][] = [];
+                    for (let i = 0; i < routeItems.length; i += columnCount) {
+                        rows.push(routeItems.slice(i, i + columnCount));
+                    }
+
+                    // Render table rows
+                    rows.forEach((row, _rowIndex) => {
+                        // Check if current row fits on page
+                        if (yPosition + rowHeight > doc.page.height - doc.page.margins.bottom - pdfConfig.margins.contentToFooter) {
+                            doc.addPage();
+                            yPosition = doc.page.margins.top;
+                        }
+
+                        const currentRowY = yPosition;
+
+                        // Render cells in this row
+                        row.forEach((item, colIndex) => {
+                            const cellX = pageContentLeft + (colIndex * columnWidths[0]!);
+                            const cellWidth = columnWidths[0]!;
+
+                            renderClientCell(
+                                item,
+                                routeData,
+                                cellX,
+                                currentRowY,
+                                cellWidth,
+                                rowHeight,
+                                cellHorizontalPadding,
+                                cellFontSize,
+                                actualTextPaddingY
+                            );
+                        });
+
+                        // Draw vertical lines for this row
+                        drawVerticalLines(currentRowY, rowHeight, columnWidths, pageContentLeft);
+
+                        // Draw horizontal line at bottom of row
+                        doc.lineWidth(0.25)
+                            .strokeColor('grey')
+                            .moveTo(pageContentLeft, currentRowY + rowHeight)
+                            .lineTo(pageContentLeft + pageContentWidth, currentRowY + rowHeight)
+                            .stroke()
+                            .strokeColor('black');
+
+                        yPosition += rowHeight;
+                    });
+
+                    // Add extra space between route groups
+                    yPosition += 15;
+                });
 
             doc.y = yPosition; // Ustaw pozycję Y dla sekcji diet
 
-            doc.x = 50;
+            doc.x = pdfConfig.margins.content.left;
 
             // Always start diets on a new page
             doc.addPage();
@@ -592,112 +690,160 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                 }>>);
 
             let isFirstDietRoute = true;
-            Object.entries(dietGroupedByRoute).forEach(([routeName, routeClients]) => {
-                // Start each diet route on a new page, except the first one
-                if (!isFirstDietRoute) {
-                    doc.addPage();
-                    doc.y = doc.page.margins.top;
-                }
-                isFirstDietRoute = false;
-
-                // Calculate total consumers without changes for this route
-                const routeTotalConsumersWithoutChanges = routeClients.reduce((routeSum, { mealsByMealName }) => {
-                    const clientMaxConsumersWithoutChanges = Math.max(...Object.values(mealsByMealName).map(mealDetails =>
-                        mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
-                    ));
-                    return routeSum + (clientMaxConsumersWithoutChanges > 0 ? clientMaxConsumersWithoutChanges : 0);
-                }, 0);
-                const routeSuffix = routeTotalConsumersWithoutChanges > 0 ? ` (-${routeTotalConsumersWithoutChanges})` : '';
-
-                // Route header for diets
-                doc.moveDown()
-                    .fontSize(14)
-                    .font('Roboto-Bold')
-                    .fillColor('black')
-                    .text(`Trasa: ${routeName}${routeSuffix}`, 50);
-
-                // Render clients for this route
-                routeClients.forEach(({ clientCode, mealsByMealName }) => {
-                    // Check space for client header + at least one diet item
-                    const clientSpaceNeeded = 20 + 12 + 11; // 20 points for moveDown, 12 points for client fontSize, 11 points for diet item
-
-                    if (doc.y + clientSpaceNeeded > doc.page.height - doc.page.margins.bottom - 30) {
+            Object.entries(dietGroupedByRoute)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .forEach(([routeName, routeClients]) => {
+                    // Start each diet route on a new page, except the first one
+                    if (!isFirstDietRoute) {
                         doc.addPage();
                         doc.y = doc.page.margins.top;
                     }
+                    isFirstDietRoute = false;
 
-                    // Calculate maximum number of consumers without changes across all meals for this client
-                    const maxConsumersWithoutChanges = Math.max(...Object.values(mealsByMealName).map(mealDetails =>
-                        mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length
-                    ));
-                    const clientSuffix = maxConsumersWithoutChanges > 0 ? ` (-${maxConsumersWithoutChanges})` : '';
+                    // Get route data from consumerFoodByRoute to get already calculated consumers without changes
+                    const routeData = Object.values(consumerFoodByRoute).find(route =>
+                        route.deliveryRouteName === routeName ||
+                        (routeName === 'Bez trasy' && route.deliveryRouteName === 'Bez trasy')
+                    );
+                    const routeTotalConsumersWithoutChanges = routeData?.consumersWithoutChangesCount ?? 0;
+                    const routeSuffix = routeTotalConsumersWithoutChanges > 0 ? ` (-${routeTotalConsumersWithoutChanges})` : '';
 
+                    // Route header for diets
                     doc.moveDown()
-                        .fontSize(12)
+                        .fontSize(14)
                         .font('Roboto-Bold')
-                        .text(`${clientCode}${clientSuffix}`, 70)
-                        .font('Roboto');
+                        .fillColor('black')
+                        .text(`Trasa: ${routeName}${routeSuffix}`, pdfConfig.margins.content.left);
 
-                    Object.entries(mealsByMealName).forEach(([mealName, mealDetails]) => {
-                        if (doc.y + 20 > doc.page.height - doc.page.margins.bottom - 30) {
+                    // Sort clients alphabetically before rendering
+                    const sortedRouteClients = routeClients.sort((a, b) => a.clientCode.localeCompare(b.clientCode));
+
+                    // Render clients for this route
+                    sortedRouteClients.forEach(({ clientCode, mealsByMealName }) => {
+                        // Check space for client header + at least one diet item
+                        const clientSpaceNeeded = 20 + 12 + 11; // 20 points for moveDown, 12 points for client fontSize, 11 points for diet item
+
+                        if (doc.y + clientSpaceNeeded > doc.page.height - doc.page.margins.bottom - pdfConfig.margins.contentToFooter) {
                             doc.addPage();
                             doc.y = doc.page.margins.top;
                         }
 
-                        // Count consumers without changes
-                        const consumersWithoutChangesCount = mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0).length;
-                        const countSuffix = consumersWithoutChangesCount > 0 ? ` -${consumersWithoutChangesCount}` : '';
+                        // Get client data from consumerFoodByRoute to get already calculated consumers without changes
+                        // Find client by clientCode since consumerFoodByRoute is indexed by clientId
+                        const clientData = Object.values(routeData?.clients ?? {}).find(client => client.clientCode === clientCode);
+                        const maxConsumersWithoutChanges = clientData?.consumersWithoutChangesCount ?? 0;
+                        const clientSuffix = maxConsumersWithoutChanges > 0 ? ` (-${maxConsumersWithoutChanges})` : '';
 
-                        doc.moveDown(0.5);
-                        doc.fontSize(11).font('Roboto-Bold').text(`${mealName} (${mealDetails.baseFoodName})${countSuffix}`, 80);
-                        doc.font('Roboto');
+                        doc.moveDown()
+                            .fontSize(12)
+                            .font('Roboto-Bold')
+                            .text(`${clientCode}${clientSuffix}`, 70)
+                            .font('Roboto');
 
-                        const consumersWithChanges = mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length > 0);
-                        const consumersWithoutChanges = mealDetails.consumers.filter(diet => diet.dietDescriptionParts.length === 0);
+                        // Find consumers without changes across ALL meals for this client
+                        const mealNames = Object.keys(mealsByMealName);
+                        const hasMultipleMeals = mealNames.length > 1;
+                        let consumersWithoutChangesInAllMeals: string[] = [];
 
-                        if (consumersWithChanges.length > 0) {
-                            consumersWithChanges.forEach(diet => {
-                                if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - 30) {
-                                    doc.addPage();
-                                    doc.y = doc.page.margins.top;
-                                }
+                        if (hasMultipleMeals) {
+                            // Get all consumers from first meal
+                            const firstMealConsumers = Object.values(mealsByMealName)[0]?.consumers ?? [];
+                            const allConsumerCodes = firstMealConsumers.map(c => c.consumerCode);
 
-                                const consumerCodeText = diet.consumerCode;
-                                const dietInfoText = `${diet.dietInfo}: `;
-
-                                doc.font('Roboto-Bold').fontSize(10).text(consumerCodeText, 90, doc.y, { continued: true });
-                                doc.font('Roboto').fontSize(10).text(dietInfoText, { continued: true });
-
-                                diet.dietDescriptionParts.forEach((part, index) => {
-                                    const isLastPart = index === diet.dietDescriptionParts.length - 1;
-                                    doc.font(part.font).fontSize(10).text(part.text, {
-                                        continued: !isLastPart,
-                                    });
+                            // Check which consumers have no changes in ALL meals
+                            consumersWithoutChangesInAllMeals = allConsumerCodes.filter(consumerCode => {
+                                return mealNames.every(mealName => {
+                                    const meal = mealsByMealName[mealName];
+                                    const consumer = meal?.consumers.find(c => c.consumerCode === consumerCode);
+                                    return consumer && consumer.dietDescriptionParts.length === 0;
                                 });
-                                doc.moveDown(0.25);
                             });
                         }
 
-                        if (consumersWithoutChanges.length > 0) {
-                            if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - 30) {
+                        Object.entries(mealsByMealName).forEach(([mealName, mealDetails]) => {
+                            if (doc.y + 20 > doc.page.height - doc.page.margins.bottom - pdfConfig.margins.contentToFooter) {
                                 doc.addPage();
                                 doc.y = doc.page.margins.top;
                             }
 
-                            const noChangesText = consumersWithoutChanges.map(diet => `${diet.consumerCode}${diet.dietInfo}`).join(', ');
-                            const label = `${translate(dictionary, 'menu-creator:no-changes')}: `;
+                            // Count consumers without changes - use already calculated data
+                            const mealData = Object.values(clientData?.meals ?? {}).find(meal => meal.meal.name === mealName);
+                            const consumersWithoutChangesCount = mealData?.consumersWithoutChangesCount ?? 0;
+                            const countSuffix = consumersWithoutChangesCount > 0 ? ` -${consumersWithoutChangesCount}` : '';
 
-                            doc.fontSize(10).font('Roboto-Bold').text(label, 90, doc.y, { continued: true });
-                            doc.font('Roboto').text(noChangesText, {
-                                width: doc.page.width - 120
+                            doc.moveDown(0.5);
+                            doc.fontSize(11).font('Roboto-Bold').text(`${mealName} (${mealDetails.baseFoodName})${countSuffix}`, 80);
+                            doc.font('Roboto');
+
+                            const consumersWithChanges = mealDetails.consumers
+                                .filter(diet => diet.dietDescriptionParts.length > 0)
+                                .sort((a, b) => a.consumerCode.localeCompare(b.consumerCode));
+                            const consumersWithoutChanges = mealDetails.consumers
+                                .filter(diet => diet.dietDescriptionParts.length === 0)
+                                .sort((a, b) => a.consumerCode.localeCompare(b.consumerCode));
+
+                            if (consumersWithChanges.length > 0) {
+                                consumersWithChanges.forEach(diet => {
+                                    if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - pdfConfig.margins.contentToFooter) {
+                                        doc.addPage();
+                                        doc.y = doc.page.margins.top;
+                                    }
+
+                                    const consumerCodeText = diet.consumerCode;
+                                    const dietInfoText = `${diet.dietInfo}: `;
+
+                                    doc.font('Roboto-Bold').fontSize(10).text(consumerCodeText, 90, doc.y, { continued: true });
+                                    doc.font('Roboto').fontSize(10).text(dietInfoText, { continued: true });
+
+                                    diet.dietDescriptionParts.forEach((part, index) => {
+                                        const isLastPart = index === diet.dietDescriptionParts.length - 1;
+                                        doc.font(part.font).fontSize(10).text(part.text, {
+                                            continued: !isLastPart,
+                                        });
+                                    });
+                                    doc.moveDown(0.25);
+                                });
+                            }
+
+                            if (consumersWithoutChanges.length > 0) {
+                                if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - pdfConfig.margins.contentToFooter) {
+                                    doc.addPage();
+                                    doc.y = doc.page.margins.top;
+                                }
+
+                                const noChangesText = consumersWithoutChanges.map(diet => `${diet.consumerCode}${diet.dietInfo}`).join(', ');
+                                const label = `${translate(dictionary, 'menu-creator:no-changes')}: `;
+
+                                doc.fontSize(10).font('Roboto-Bold').text(label, 90, doc.y, { continued: true });
+                                doc.font('Roboto').text(noChangesText, {
+                                    width: doc.page.width - 120
+                                });
+                            }
+                        });
+
+                        // Add "Bez zmian we wszystkich posiłkach" section if client has multiple meals
+                        if (hasMultipleMeals) {
+                            if (doc.y + 15 > doc.page.height - doc.page.margins.bottom - pdfConfig.margins.contentToFooter) {
+                                doc.addPage();
+                                doc.y = doc.page.margins.top;
+                            }
+
+                            doc.moveDown(0.5);
+                            const label = `Bez zmian we wszystkich posiłkach: `;
+                            const noChangesInAllMealsText = consumersWithoutChangesInAllMeals.length > 0
+                                ? consumersWithoutChangesInAllMeals.join(', ')
+                                : 'Brak takich konsumentów';
+
+                            doc.fontSize(10).font('Roboto-Bold').text(label, 80, doc.y, { continued: true });
+                            doc.font('Roboto').text(noChangesInAllMealsText, {
+                                width: doc.page.width - 110
                             });
                         }
                     });
-                });
 
-                // Add space between route groups
-                doc.moveDown();
-            });
+                    // Add space between route groups
+                    doc.moveDown();
+                });
 
             const range = doc.bufferedPageRange();
             for (let i = range.start; i <= range.start + range.count - 1; i++) {
@@ -706,7 +852,12 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                 const currentY = doc.y;
                 const originalMargins = { ...doc.page.margins };
 
-                doc.page.margins = { top: 0, bottom: 0, left: 0, right: 0 };
+                doc.page.margins = {
+                    top: pdfConfig.margins.header,
+                    bottom: pdfConfig.margins.footer,
+                    left: pdfConfig.margins.header,
+                    right: pdfConfig.margins.header
+                };
 
                 doc.fontSize(10)
                     .font('Roboto')
@@ -714,7 +865,7 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
                     .text(
                         `${footerDate}     ${i + 1}/${range.count}     ${mealGroupName}`,
                         0,
-                        doc.page.height - 30,
+                        doc.page.height - pdfConfig.margins.content.bottom,
                         {
                             align: 'center',
                             width: doc.page.width,
@@ -729,7 +880,11 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
             doc.end();
 
             const fileName = `${safeFileName(mealGroupName)}_${fileNameDate}.pdf`
-            return returnPdfForFront({ pdfPromise, fileName });
+            const newPromise = new Promise<{ fileName: string; pdfPromise: Promise<Buffer> }>((resolve) => {
+                resolve({ fileName, pdfPromise });
+            });
+
+            return returnPdfForFront(newPromise);
         } catch (error) {
             console.error('Błąd podczas generowania PDF:', error);
             throw error;

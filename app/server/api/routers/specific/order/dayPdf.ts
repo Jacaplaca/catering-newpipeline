@@ -482,7 +482,11 @@ const dayPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, Role
             doc.end();
 
             const fileName = `${safeFileName(translations[mealType])}_${fileNameDate}.pdf`
-            return returnPdfForFront({ pdfPromise, fileName });
+            const newPromise = new Promise<{ fileName: string; pdfPromise: Promise<Buffer> }>((resolve) => {
+                resolve({ fileName, pdfPromise });
+            });
+
+            return returnPdfForFront(newPromise);
         } catch (error) {
             console.error('Błąd podczas generowania PDF:', error);
             throw error;

@@ -101,8 +101,8 @@ export const env = createEnv({
     S3_BUCKET: z.string(),
     S3_KEY_ID: z.string(),
     S3_KEY_SECRET: z.string(),
-    BACKUP_CRON: z.string(),
-    BACKUP_KEEP: z.string(),
+    // BACKUP_CRON: z.string(),
+    // BACKUP_KEEP: z.string(),
     AUTH_TRUST_HOST: z.string(),
     MAIN_PAGE_REDIRECT: z.string()
       .optional()
@@ -174,8 +174,8 @@ export const env = createEnv({
     S3_BUCKET: process.env.S3_BUCKET,
     S3_KEY_ID: process.env.S3_KEY_ID,
     S3_KEY_SECRET: process.env.S3_KEY_SECRET,
-    BACKUP_CRON: process.env.BACKUP_CRON,
-    BACKUP_KEEP: process.env.BACKUP_KEEP,
+    // BACKUP_CRON: process.env.BACKUP_CRON,
+    // BACKUP_KEEP: process.env.BACKUP_KEEP,
     AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST,
     MAIN_PAGE_REDIRECT: process.env.NEXT_PUBLIC_MAIN_PAGE_REDIRECT,
     NEXT_PUBLIC_MAIN_PAGE_REDIRECT: process.env.NEXT_PUBLIC_MAIN_PAGE_REDIRECT,

@@ -14,6 +14,20 @@ const specificSettings = {
     "PUBLIC:client-files:max-file-size:NUMBER": 10 * 1024 * 1024, // 10MB w bajtach
     "PUBLIC:main:logoDark:STRING": 'default/ekoplanet_transparent.png',
     "PUBLIC:main:logoLight:STRING": 'default/ekoplanet_transparent.png',
+    "PRIVATE:cleanup:order-should-delete:BOOLEAN": false,
+    "PRIVATE:cleanup:order-old-months:NUMBER": 2,
+    "PRIVATE:cleanup:order-cron:STRING": "37 2 * * 6",
+    "PRIVATE:cleanup:menu-should-delete:BOOLEAN": false,
+    "PRIVATE:cleanup:menu-old-months:NUMBER": 2,
+    "PRIVATE:cleanup:menu-cron:STRING": "47 2 * * 6",
+    "PRIVATE:cleanup:client-files-should-delete:BOOLEAN": false,
+    "PRIVATE:cleanup:client-files-old-months:NUMBER": 3,
+    "PRIVATE:cleanup:client-files-cron:STRING": "58 2 * * 6",
+    "PRIVATE:backup:db-should-backup:BOOLEAN": true,
+    "PRIVATE:backup:db-cron:STRING": "23 2 * * *",
+    "PRIVATE:backup:daily-files-to-keep:NUMBER": 10,
+    "PRIVATE:auto-order:should-auto-order:BOOLEAN": true,
+    "PRIVATE:auto-order:cron:STRING": "*/5 * * * *",
 }
 
 export default specificSettings;

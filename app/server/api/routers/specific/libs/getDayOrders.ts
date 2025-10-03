@@ -4,7 +4,7 @@ import { db } from '@root/app/server/db';
 
 export type DayOrder = {
     _id: string;
-    client: Client;
+    client: Client & { _id: string };
     status: OrderStatus;
     sentToCateringAt: { $date: Date };
     breakfastStandard: number;

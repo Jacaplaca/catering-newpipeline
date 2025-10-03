@@ -52,14 +52,20 @@ const OrderDetails: React.FC<{
         consumer: {
             diet: Diet | null
         }
-    })[]
-}> = ({ consumers }) => {
+    })[],
+    consumersWithoutChangesCount?: number
+}> = ({ consumers, consumersWithoutChangesCount = 0 }) => {
     return (
         <div className='flex flex-col gap-2 px-3 border-r-2 border-l-2 border-neutral-300 dark:border-neutral-700'>
             <div className="flex flex-col gap-2 rounded-md items-start justify-center">
                 {consumers.map((consumerData) => (
                     <Consumer key={consumerData.consumer.id} consumerData={consumerData} />
                 ))}
+                {consumersWithoutChangesCount > 0 && (
+                    <div className="text-neutral-600 dark:text-neutral-400 text-sm italic">
+                        Bez zmian: {consumersWithoutChangesCount}
+                    </div>
+                )}
             </div>
         </div>
     )
@@ -76,7 +82,7 @@ const DietNew = () => {
         return null;
     }
 
-    const allMealNames = [...new Set(Object.keys(meal2data))];
+    const allMealNames = [...new Set(Object.values(meal2data).map(mealData => mealData.mealGroup.name))];
 
     const clients: Record<string, {
         clientInfo: {
@@ -88,12 +94,14 @@ const DietNew = () => {
                 consumer: {
                     diet: Diet | null
                 }
-            })[]
+            })[],
+            consumersWithoutChangesCount: number;
         }>
     }> = {};
 
-    for (const mealName of allMealNames) {
-        const routes = meal2data[mealName];
+    for (const [_mealGroupId, mealData] of Object.entries(meal2data)) {
+        const mealName = mealData.mealGroup.name;
+        const routes = mealData.routes;
         if (!routes) continue;
         for (const route of Object.values(routes)) {
             for (const client of Object.values(route.clients)) {
@@ -109,7 +117,10 @@ const DietNew = () => {
                 }
 
                 if (!clients[clientCode].meals[mealName]) {
-                    clients[clientCode].meals[mealName] = { consumers: [] };
+                    clients[clientCode].meals[mealName] = {
+                        consumers: [],
+                        consumersWithoutChangesCount: client.consumersWithoutChangesCount || 0
+                    };
                 }
 
                 const existingConsumerIds = new Set(clients[clientCode].meals[mealName]?.consumers.map(c => c.consumer._id));
@@ -119,7 +130,6 @@ const DietNew = () => {
 
                         // const relevantMealsForConsumer = Object.values(consumerData.meals).filter(mealDetails => mealDetails.meal.name === mealName);
                         const relevantMealsForConsumer = Object.values(consumerData.meals);
-                        console.log("relevantMealsForConsumer", relevantMealsForConsumer);
 
                         if (relevantMealsForConsumer.length > 0) {
                             const meals = Object.fromEntries(relevantMealsForConsumer.map(m => [m.meal._id, m]));
@@ -157,7 +167,7 @@ const DietNew = () => {
                     {clientRowsData.map(({ clientInfo, meals }) => {
                         const hasOrders = meals && allMealNames.some(mealName => {
                             const meal = meals[mealName];
-                            return meal?.consumers?.length ?? 0 > 0;
+                            return (meal?.consumers?.length ?? 0) > 0 || (meal?.consumersWithoutChangesCount ?? 0) > 0;
                         });
                         if (!hasOrders) return null;
 
@@ -167,11 +177,13 @@ const DietNew = () => {
                                     <div className='font-bold text-base py-2'>{clientInfo.clientCode}</div>
                                     {allMealNames.map(mealName => {
                                         const mealData = meals[mealName];
-                                        console.log(mealData?.consumers);
                                         return (
                                             <div className='py-2' key={mealName}>
-                                                {mealData && mealData.consumers.length > 0 ? (
-                                                    <OrderDetails consumers={mealData.consumers} />
+                                                {mealData && (mealData.consumers.length > 0 || mealData.consumersWithoutChangesCount > 0) ? (
+                                                    <OrderDetails
+                                                        consumers={mealData.consumers}
+                                                        consumersWithoutChangesCount={mealData.consumersWithoutChangesCount}
+                                                    />
                                                 ) : <div className="px-3 border-r-2 border-l-2 border-transparent">&nbsp;</div>}
                                             </div>
                                         )

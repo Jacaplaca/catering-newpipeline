@@ -40,7 +40,10 @@ const MenuCreatorHeader = () => {
             <i className={` ${(isLoading || templateDayMenuFetching) ? 'fas fa-spinner animate-spin' : 'fas fa-book-open'}`} />
         </div>
         <div className='flex flex-col md:flex-row md:justify-between items-center gap-4 md:gap-2 mt-4 mb-4'>
-            {showMenuForConsumers ? <DayMenuPdf iconClass='text-[2rem]' /> : <div className="w-full md:w-auto"><FoodMenuDate /></div>}
+            {showMenuForConsumers ? <DayMenuPdf
+                iconClass='text-[2rem]'
+                tooltipLabel='menu-creator:day-all-clients-menu-pdf'
+            /> : <div className="w-full md:w-auto"><FoodMenuDate /></div>}
             {showMenuForConsumers ? null : <div className='w-full md:w-auto md:max-w-[300px]'>
                 <RegularMenuDropdown
                     dictionary={dictionary}

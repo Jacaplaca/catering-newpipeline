@@ -9,16 +9,19 @@ export type ConsumerFoodItem = {
     ignoredAllergens: string[];
     exclusions: Exclusion[];
     order: number | null;
+    isChanged: boolean;
 };
 
 type ConsumerDataItem = {
     consumer: Consumer & { _id: string };
     consumerFoods: ConsumerFoodItem[];
+    changesCount: number;
 };
 
 type MealDataItem = {
     meal: Meal & { _id: string };
     consumers: ConsumerDataItem[];
+    changesCount: number;
 };
 
 type ClientDataItem = {
@@ -26,6 +29,7 @@ type ClientDataItem = {
     clientCode: string;
     client: Client;
     meals: MealDataItem[];
+    changesCount: number;
 };
 
 type RouteDataItem = {
@@ -34,6 +38,7 @@ type RouteDataItem = {
     deliveryRouteCode: string;
     deliveryRoute: DeliveryRoute | null;
     clients: ClientDataItem[];
+    changesCount: number;
 };
 
 // Types for the transformed object structure
@@ -42,6 +47,9 @@ type ConsumersByIdMap = Record<string, ConsumerDataItem>;
 type TransformedMealData = {
     meal: Meal;
     consumers: ConsumersByIdMap;
+    changesCount: number;
+    consumersWithChangesCount: number;
+    consumersWithoutChangesCount: number;
 };
 type MealsByIdMap = Record<string, TransformedMealData>;
 
@@ -50,6 +58,10 @@ type TransformedClientData = {
     clientCode: string;
     client: Client;
     meals: MealsByIdMap;
+    changesCount: number;
+    mealsWithChangesCount: number;
+    mealsWithoutChangesCount: number;
+    consumersWithoutChangesCount: number;
 };
 type ClientsByIdMap = Record<string, TransformedClientData>;
 
@@ -59,6 +71,10 @@ type TransformedRouteData = {
     deliveryRouteCode: string;
     deliveryRoute: DeliveryRoute | null;
     clients: ClientsByIdMap;
+    changesCount: number;
+    mealsWithChangesCount: number;
+    mealsWithoutChangesCount: number;
+    consumersWithoutChangesCount: number;
 };
 export type RoutesByIdMap = Record<string, TransformedRouteData>;
 
@@ -66,14 +82,16 @@ export type RoutesByIdMap = Record<string, TransformedRouteData>;
 export type MealInConsumerDataItem = {
     meal: Meal & { _id: string, order?: number };
     consumerFoods: ConsumerFoodItem[];
+    changesCount: number;
 };
 
 type ConsumerWithMealsDataItem = {
     consumer: Consumer & { _id: string };
     meals: MealInConsumerDataItem[];
+    changesCount: number;
 };
 
-type ClientWithConsumersDataItem = {
+export type ClientWithConsumersDataItem = {
     clientId: string;
     clientCode: string;
     client: Client;
@@ -89,28 +107,37 @@ type RouteWithClientsByConsumerDataItem = {
 };
 
 // Types for the transformed object structure by consumer
-type MealsInConsumerByIdMap = Record<string, MealInConsumerDataItem>;
+export type MealsInConsumerByIdMap = Record<string, MealInConsumerDataItem>;
 
 export type TransformedConsumerData = {
     consumer: Consumer & { _id: string };
     meals: MealsInConsumerByIdMap;
+    changesCount: number;
 };
-type ConsumersWithMealsByIdMap = Record<string, TransformedConsumerData>;
+export type ConsumersWithMealsByIdMap = Record<string, TransformedConsumerData>;
 
-type TransformedClientWithConsumersData = {
+export type TransformedClientWithConsumersData = {
     clientId: string;
     clientCode: string;
     client: Client;
     consumers: ConsumersWithMealsByIdMap;
+    changesCount: number;
+    mealsWithChangesCount: number;
+    mealsWithoutChangesCount: number;
+    consumersWithoutChangesCount: number;
 };
-type ClientsWithConsumersByIdMap = Record<string, TransformedClientWithConsumersData>;
+export type ClientsWithConsumersByIdMap = Record<string, TransformedClientWithConsumersData>;
 
-type TransformedRouteWithConsumersData = {
+export type TransformedRouteWithConsumersData = {
     deliveryRouteId: string | null;
     deliveryRouteName: string;
     deliveryRouteCode: string;
     deliveryRoute: DeliveryRoute | null;
     clients: ClientsWithConsumersByIdMap;
+    changesCount: number;
+    mealsWithChangesCount: number;
+    mealsWithoutChangesCount: number;
+    consumersWithoutChangesCount: number;
 };
 export type RoutesWithConsumersByIdMap = Record<string, TransformedRouteWithConsumersData>;
 
@@ -325,7 +352,14 @@ async function getGroupedConsumerFoodDataObject({
                         comment: '$comment',
                         ignoredAllergens: '$ignoredAllergens',
                         exclusions: '$exclusions',
-                        order: '$menuMealFood.order'
+                        order: '$menuMealFood.order',
+                        isChanged: {
+                            $or: [
+                                { $ne: [{ $ifNull: ['$alternativeFoodId', null] }, null] },
+                                { $ne: [{ $ifNull: ['$comment', ''] }, ''] },
+                                { $gt: [{ $size: '$exclusions' }, 0] }
+                            ]
+                        }
                     }
                 }
             }
@@ -487,32 +521,65 @@ async function getGroupedConsumerFoodDataObject({
 
                     const mealsById = consumerData.meals.reduce((mealAcc: MealsInConsumerByIdMap, mealData) => {
                         const mealId = mealData.meal._id;
-                        mealAcc[mealId] = mealData;
+                        mealAcc[mealId] = { ...mealData, changesCount: mealData.consumerFoods.filter(({ isChanged }) => isChanged).length };
                         return mealAcc;
                     }, {} as MealsInConsumerByIdMap);
 
                     consumerAcc[consumerId] = {
                         consumer: consumerData.consumer,
-                        meals: mealsById
+                        meals: mealsById,
+                        changesCount: Object.values(mealsById).reduce((acc, meal) => acc + meal.changesCount, 0)
                     };
                     return consumerAcc;
                 }, {} as ConsumersWithMealsByIdMap);
+
+                // Dla grupowania byConsumer - konsumenci bez zmian to ci, którzy nie mają zmian we wszystkich swoich posiłkach
+                const consumersWithoutChanges = Object.values(consumersById).filter(consumer => consumer.changesCount === 0);
 
                 clientAcc[clientId] = {
                     clientId: clientData.clientId,
                     clientCode: clientData.clientCode,
                     client: clientData.client,
-                    consumers: consumersById
+                    consumers: consumersById,
+                    mealsWithChangesCount: Object.values(consumersById).reduce((acc, consumer) => acc + (consumer.changesCount ? 1 : 0), 0),
+                    mealsWithoutChangesCount: Object.values(consumersById).reduce((acc, consumer) => acc + (consumer.changesCount ? 0 : 1), 0),
+                    consumersWithoutChangesCount: consumersWithoutChanges.length,
+                    changesCount: Object.values(consumersById).reduce((acc, consumer) => acc + consumer.changesCount, 0)
                 };
                 return clientAcc;
             }, {} as ClientsWithConsumersByIdMap);
+
+            // Znajdź konsumentów na trasie, którzy nie mają zmian we wszystkich swoich posiłkach
+            const routeAllConsumerIdsSet = new Set<string>();
+            const routeConsumersWithChangesSet = new Set<string>();
+
+            Object.values(clientsById).forEach(client => {
+                Object.values(client.consumers).forEach(consumer => {
+                    routeAllConsumerIdsSet.add(consumer.consumer._id);
+                    if (consumer.changesCount > 0) {
+                        routeConsumersWithChangesSet.add(consumer.consumer._id);
+                    }
+                });
+            });
+
+            // Konsumenci bez zmian to ci, którzy są w routeAllConsumerIdsSet ale nie ma ich w routeConsumersWithChangesSet
+            const routeUniqueConsumersWithoutChangesSet = new Set<string>();
+            routeAllConsumerIdsSet.forEach(consumerId => {
+                if (!routeConsumersWithChangesSet.has(consumerId)) {
+                    routeUniqueConsumersWithoutChangesSet.add(consumerId);
+                }
+            });
 
             routeAcc[routeId] = {
                 deliveryRouteId: routeData.deliveryRouteId,
                 deliveryRouteName: routeData.deliveryRouteName,
                 deliveryRouteCode: routeData.deliveryRouteCode,
                 deliveryRoute: routeData.deliveryRoute,
-                clients: clientsById
+                clients: clientsById,
+                mealsWithChangesCount: Object.values(clientsById).reduce((acc, client) => acc + client.mealsWithChangesCount, 0),
+                mealsWithoutChangesCount: Object.values(clientsById).reduce((acc, client) => acc + client.mealsWithoutChangesCount, 0),
+                consumersWithoutChangesCount: routeUniqueConsumersWithoutChangesSet.size,
+                changesCount: Object.values(clientsById).reduce((acc, client) => acc + client.changesCount, 0)
             };
             return routeAcc;
         }, {} as RoutesWithConsumersByIdMap);
@@ -532,32 +599,87 @@ async function getGroupedConsumerFoodDataObject({
 
                 const consumersById = mealData.consumers.reduce((consumerAcc: ConsumersByIdMap, consumerData: ConsumerDataItem) => {
                     const consumerId = consumerData.consumer._id;
-                    consumerAcc[consumerId] = consumerData;
+                    consumerAcc[consumerId] = { ...consumerData, changesCount: consumerData.consumerFoods.filter(({ isChanged }) => isChanged).length };
                     return consumerAcc;
                 }, {} as ConsumersByIdMap);
 
                 mealAcc[mealId] = {
                     meal: mealData.meal,
-                    consumers: consumersById
+                    consumers: consumersById,
+                    consumersWithChangesCount: Object.values(consumersById).reduce((acc, consumer) => acc + (consumer.changesCount ? 1 : 0), 0),
+                    consumersWithoutChangesCount: Object.values(consumersById).reduce((acc, consumer) => acc + (consumer.changesCount ? 0 : 1), 0),
+                    changesCount: Object.values(consumersById).reduce((acc, consumer) => acc + consumer.changesCount, 0)
                 };
                 return mealAcc;
             }, {} as MealsByIdMap);
+
+            // Znajdź konsumentów, którzy nie mają zmian we wszystkich swoich posiłkach
+            const allConsumerIds = new Set<string>();
+            const consumersWithChanges = new Set<string>();
+
+            Object.values(mealsById).forEach(meal => {
+                Object.values(meal.consumers).forEach(consumer => {
+                    allConsumerIds.add(consumer.consumer._id);
+                    if (consumer.changesCount > 0) {
+                        consumersWithChanges.add(consumer.consumer._id);
+                    }
+                });
+            });
+
+            // Konsumenci bez zmian to ci, którzy są w allConsumerIds ale nie ma ich w consumersWithChanges
+            const uniqueConsumersWithoutChanges = new Set<string>();
+            allConsumerIds.forEach(consumerId => {
+                if (!consumersWithChanges.has(consumerId)) {
+                    uniqueConsumersWithoutChanges.add(consumerId);
+                }
+            });
 
             clientAcc[clientId] = {
                 clientId: clientData.clientId,
                 clientCode: clientData.clientCode,
                 client: clientData.client,
-                meals: mealsById
+                meals: mealsById,
+                mealsWithChangesCount: Object.values(mealsById).reduce((acc, meal) => acc + meal.consumersWithChangesCount, 0),
+                mealsWithoutChangesCount: Object.values(mealsById).reduce((acc, meal) => acc + meal.consumersWithoutChangesCount, 0),
+                consumersWithoutChangesCount: uniqueConsumersWithoutChanges.size,
+                changesCount: Object.values(mealsById).reduce((acc, meal) => acc + meal.changesCount, 0)
             };
             return clientAcc;
         }, {} as ClientsByIdMap);
+
+        // Znajdź konsumentów na trasie, którzy nie mają zmian we wszystkich swoich posiłkach
+        const routeAllConsumerIds = new Set<string>();
+        const routeConsumersWithChanges = new Set<string>();
+
+        Object.values(clientsById).forEach(client => {
+            Object.values(client.meals).forEach(meal => {
+                Object.values(meal.consumers).forEach(consumer => {
+                    routeAllConsumerIds.add(consumer.consumer._id);
+                    if (consumer.changesCount > 0) {
+                        routeConsumersWithChanges.add(consumer.consumer._id);
+                    }
+                });
+            });
+        });
+
+        // Konsumenci bez zmian to ci, którzy są w routeAllConsumerIds ale nie ma ich w routeConsumersWithChanges
+        const routeUniqueConsumersWithoutChanges = new Set<string>();
+        routeAllConsumerIds.forEach(consumerId => {
+            if (!routeConsumersWithChanges.has(consumerId)) {
+                routeUniqueConsumersWithoutChanges.add(consumerId);
+            }
+        });
 
         routeAcc[routeId] = {
             deliveryRouteId: routeData.deliveryRouteId,
             deliveryRouteName: routeData.deliveryRouteName,
             deliveryRouteCode: routeData.deliveryRouteCode,
             deliveryRoute: routeData.deliveryRoute,
-            clients: clientsById
+            clients: clientsById,
+            mealsWithChangesCount: Object.values(clientsById).reduce((acc, client) => acc + client.mealsWithChangesCount, 0),
+            mealsWithoutChangesCount: Object.values(clientsById).reduce((acc, client) => acc + client.mealsWithoutChangesCount, 0),
+            consumersWithoutChangesCount: routeUniqueConsumersWithoutChanges.size,
+            changesCount: Object.values(clientsById).reduce((acc, client) => acc + client.changesCount, 0)
         };
         return routeAcc;
     }, {} as RoutesByIdMap);

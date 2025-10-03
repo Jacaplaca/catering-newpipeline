@@ -6,6 +6,7 @@ import { getNextWorkingDay } from '@root/app/specific/lib/dayInfo';
 import { OrderStatus } from '@prisma/client';
 import getClientSettings from '@root/app/server/api/routers/specific/libs/getUserSettings';
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
+import { getSetting } from '@root/app/server/cache/settings';
 
 // const withWeekend = 'cm414l1ud0008t48ia51eyqc9';
 // const withoutWeekend = 'cm6163n9v006hph0jthdwqc3h';
@@ -14,7 +15,7 @@ import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
 
 async function autoOrder() {
     // return;
-    // console.log('Auto order process started');
+    // console.log('>>>>>>>>>>>>>>>>>>Auto order process started');
     const clients = await db.client.findMany({
         where: { deactivated: { not: true } },
         include: { catering: true },
@@ -302,16 +303,15 @@ async function autoOrder() {
         // console.log(`Client: ${client.id}, Latest Order: ${latestOrder.deliveryDay.year}-${latestOrder.deliveryDay.month}-${latestOrder.deliveryDay.day}`);
     }
 }
-// const every10Seconds = '*/10 * * * * *';
-// const everyMinute = '*/1 * * * *';
-const every5Minutes = '*/5 * * * *';
-// const every10Minutes = '*/10 * * * *';
-// const every30Minutes = '*/30 * * * *';
-// const everyHour = '0 * * * *';
 
-cron.schedule(every5Minutes, () => {
-    // console.log('Task executing every 10 seconds');
-    void autoOrder();
-});
+async function initAutoOrderCron() {
+    const cronAutoOrder = await getSetting<string>('auto-order', 'cron');
+    const shouldAutoOrder = await getSetting<boolean>('auto-order', 'should-auto-order');
+    cron.schedule(cronAutoOrder, () => {
+        if (shouldAutoOrder) {
+            void autoOrder();
+        }
+    });
+}
 
-export default autoOrder;
+export default initAutoOrderCron;

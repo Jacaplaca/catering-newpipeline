@@ -66,6 +66,7 @@ export const getDayMenuPdfValid = z.object({
     mealId: z.string().optional(),
     lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
     week: z.boolean().optional().default(false),
+    perCustomer: z.boolean().optional().default(false),
 });
 
 export const resetMealValidator = z.object({

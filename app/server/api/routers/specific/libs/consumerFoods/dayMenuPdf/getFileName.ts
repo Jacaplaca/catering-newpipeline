@@ -2,7 +2,7 @@ import dateToWeek from '@root/app/specific/lib/dateToWeek';
 import { format } from 'date-fns-tz';
 import { pl } from 'date-fns/locale';
 
-const getFileName = ({ dayDate, clientCode, isWeek }: { dayDate: Date, clientCode?: string | null, isWeek: boolean }): string => {
+const getFileName = ({ dayDate, clientCode, isWeek, consumerCode }: { dayDate: Date, clientCode?: string | null, isWeek: boolean, consumerCode?: string | null }): string => {
     const fileNameDate = format(dayDate, "yyyy-MM-dd ", { locale: pl });
     let fileName = `jadlospis_${fileNameDate}`;
     if (clientCode) {
@@ -12,6 +12,9 @@ const getFileName = ({ dayDate, clientCode, isWeek }: { dayDate: Date, clientCod
         } else {
             fileName = `${clientCode}_${fileName}`;
         }
+    }
+    if (consumerCode) {
+        fileName = `${consumerCode}_${fileName}`;
     }
     return fileName;
 

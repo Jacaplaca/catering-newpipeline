@@ -329,7 +329,10 @@ const labelsPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             // Finalize PDF document
             doc.end();
             const fileName = `etykiety_${safeFileName(translations[mealType])}_${fileNameDate}.pdf`
-            return returnPdfForFront({ pdfPromise, fileName });
+            const newPromise = new Promise<{ fileName: string; pdfPromise: Promise<Buffer> }>((resolve) => {
+                resolve({ fileName, pdfPromise });
+            });
+            return returnPdfForFront(newPromise);
         } catch (error) {
             console.error('Error generating labels PDF:', error);
             throw error;

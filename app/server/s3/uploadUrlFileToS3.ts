@@ -8,7 +8,7 @@ const uploadUrlFileToS3 = async (fileUrl: string, prefix?: string, key?: string)
     const { buffer, mimeType } = await getFile(fileUrl);
 
     // Step 2: Get the presigned URL for uploading to S3
-    const got = await s3putPresign({ count: 1, prefix, key });
+    const got = await s3putPresign({ count: 1, prefix, key, contentType: mimeType });
     if (got[0]) {
         const { url, key: s3Key } = got[0];
         // Step 3: Upload the file buffer to S3 using the presigned URL

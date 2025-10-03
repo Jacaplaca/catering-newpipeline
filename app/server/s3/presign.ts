@@ -6,7 +6,8 @@ import { v4 as uuidV4 } from "uuid";
 import pLimit from 'p-limit';
 const limit = pLimit(5);
 
-export const s3putPresign = async ({ count = 1, prefix, key }: { count?: number, prefix?: string, key?: string }) => {
+export const s3putPresign = async (
+    { count = 1, prefix, key, contentType }: { count?: number, prefix?: string, key?: string, contentType?: string }) => {
     const promises = Array.from({ length: count }).map(() => limit(async () => {
         const uuid = key ? key : uuidV4();
         const path = prefix ? `${prefix}/${uuid}` : uuid;
@@ -15,7 +16,8 @@ export const s3putPresign = async ({ count = 1, prefix, key }: { count?: number,
             s3Client,
             new PutObjectCommand({
                 Bucket: env.S3_BUCKET,
-                Key: path
+                Key: path,
+                ContentType: contentType ?? undefined
             })
         );
         return {

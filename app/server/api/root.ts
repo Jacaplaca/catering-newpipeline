@@ -15,6 +15,24 @@ import { tokenRouter } from '@root/app/server/api/routers/token';
 import { awsRouter } from '@root/app/server/api/routers/aws';
 import { clipboardRouter } from '@root/app/server/api/routers/clipboard';
 import specificRouter from '@root/app/server/api/routers/specific';
+import initAutoOrderCron from '@root/app/server/lib/autoOrder';
+import initBackupCron from '@root/app/server/lib/makeBackup/backup';
+import initCleanupCronMenu from '@root/app/server/lib/cleanup/menu';
+import initCleanupCronOrders from '@root/app/server/lib/cleanup/orders';
+import initCleanupCronClientFiles from '@root/app/server/lib/cleanup/clientFiles';
+
+void initAutoOrderCron();
+void initBackupCron();
+void initCleanupCronMenu();
+void initCleanupCronOrders();
+void initCleanupCronClientFiles();
+
+// void '@root/app/server/lib/autoOrder';
+// void '@root/app/server/lib/makeBackup/backup';
+// void '@root/app/server/lib/cleanup/menu';
+// void '@root/app/server/lib/cleanup/orders';
+// void '@root/app/server/lib/cleanup/clientFiles';
+
 export const appRouter = createTRPCRouter({
   article: articleRouter,
   user: userRouter,

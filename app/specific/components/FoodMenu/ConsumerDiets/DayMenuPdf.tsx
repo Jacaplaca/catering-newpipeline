@@ -11,8 +11,10 @@ const DayMenuPdf: React.FC<{
     clientId?: string,
     iconClass?: string,
     week?: boolean,
-    icon?: string
-}> = ({ clientId, iconClass, week, icon = 'fa-solid fa-file-pdf' }) => {
+    icon?: string,
+    perCustomer?: boolean,
+    tooltipLabel?: string
+}> = ({ clientId, iconClass, week, icon = 'fa-solid fa-file-pdf', perCustomer, tooltipLabel }) => {
     const { message, lang, day, dictionary } = useFoodMenuContext();
     const dayId = day.day ? dayObj2dayId(day.day) : null;
     const {
@@ -22,15 +24,17 @@ const DayMenuPdf: React.FC<{
     const thisCell = dayIdForPdf === dayId && clientIdForPdf === clientId;
     const thisCellLoading = isLoading && thisCell;
 
-    let tooltipLabel = week ? 'menu-creator:week-one-client-menu-pdf' : 'menu-creator:day-one-client-menu-pdf';
-    if (!clientId) {
-        tooltipLabel = 'menu-creator:day-all-clients-menu-pdf';
-    }
+    // const getTooltipLabel = () => {}
+
+    // let tooltipLabel = week ? 'menu-creator:week-one-client-menu-pdf' : 'menu-creator:day-one-client-menu-pdf';
+    // if (!clientId) {
+    //     tooltipLabel = 'menu-creator:day-all-clients-menu-pdf';
+    // }
 
     return (
         <Tooltip content={translate(dictionary, tooltipLabel)}>
             <button
-                onClick={(e) => handleDownload(e, { dayId, clientId, week })}
+                onClick={(e) => handleDownload(e, { dayId, clientId, week, perCustomer })}
                 disabled={thisCellLoading}>
                 <Icon loading={thisCellLoading} icon={icon} iconClass={iconClass} />
             </button>

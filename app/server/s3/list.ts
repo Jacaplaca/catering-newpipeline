@@ -1,4 +1,4 @@
-import { ListObjectsV2Command, type ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
+import { type ListObjectsV2CommandOutput, paginateListObjectsV2, type _Object } from '@aws-sdk/client-s3';
 import { env } from '@root/app/env';
 import { s3getPresign } from '@root/app/server/s3/presign';
 import { s3Client } from '@root/app/server/s3/s3';
@@ -10,9 +10,27 @@ export const s3getList = async (prefix?: string) => {
     };
 
     try {
-        const listedObjects = await s3Client.send(new ListObjectsV2Command(listParams));
-        if (!listedObjects.Contents || listedObjects.Contents.length === 0) return;
-        return listedObjects;
+        // Use paginator to handle more than 1000 objects
+        const paginator = paginateListObjectsV2({ client: s3Client }, listParams);
+
+        let allContents: _Object[] = [];
+
+        for await (const page of paginator) {
+            if (page.Contents) {
+                allContents = allContents.concat(page.Contents);
+            }
+        }
+
+        if (allContents.length === 0) return;
+
+        // Return structure compatible with existing code
+        return {
+            Contents: allContents,
+            IsTruncated: false, // Since we got all pages
+            Name: env.S3_BUCKET,
+            Prefix: prefix
+        } as ListObjectsV2CommandOutput;
+
     } catch (err) {
         console.error("Error", err);
     }

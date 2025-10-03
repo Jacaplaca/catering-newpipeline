@@ -411,6 +411,7 @@
         "no-changes": "Bez zmian",
         "day-all-clients-menu-pdf": "Jadłospis dzienny dla wszystkich klientów",
         "week-one-client-menu-pdf": "Jadłospis na obecny tydzień",
+        "week-one-client-per-consumer-menu-pdf": "Jadłospis na obecny tydzień dla poszczególnych dzieci",
         "day-one-client-menu-pdf": "Jadłospis dzienny",
         "get-from-parent-regular-menu": "Pobierz z menu ogólnego",
         "are_you_sure_you_want_to_get_from_parent_regular_menu": "Czy na pewno chcesz pobrać ten posiłek z menu ogólnego?"

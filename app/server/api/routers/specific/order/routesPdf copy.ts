@@ -1,6 +1,6 @@
 // import { db } from '@root/app/server/db';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
-import { type MealGroup, RoleType } from '@prisma/client';
+import { RoleType } from '@prisma/client';
 import translate from '@root/app/lib/lang/translate';
 import { format } from 'date-fns-tz';
 import { pl } from 'date-fns/locale';
@@ -13,8 +13,6 @@ import dayIdParser from '@root/app/server/api/routers/specific/libs/dayIdParser'
 import returnPdfForFront from '@root/app/server/api/routers/specific/libs/pdf/returnPdfForFront';
 import getDayOrders from '@root/app/server/api/routers/specific/libs/getDayOrders';
 import groupStandardOrdersByDay, { type RouteStandardDetails } from '@root/app/server/api/routers/specific/libs/groupStandardOrdersByDay';
-import getDayFoodData from '@root/app/server/api/routers/specific/libs/getDayFoodData';
-import { type TransformedClientWithConsumersData, type TransformedRouteWithConsumersData } from '@root/app/server/api/routers/specific/libs/getGroupedConsumerFoodDataObject';
 
 const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getRoutesPdfValid)
@@ -51,48 +49,6 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
 
         const dayData = await getDayOrders(dayId, catering.id);
         const groupedData: Record<string, RouteStandardDetails> = groupStandardOrdersByDay(dayData);
-        const allMealsData = await getDayFoodData({ dayIds: [dayId], cateringId: catering.id });
-        const allMealsDayData = allMealsData[dayId];
-
-        const groupedDataByDeliveryRoute: Record<string, {
-            meals: Record<string, { mealGroup: MealGroup, clients: Record<string, TransformedClientWithConsumersData>, changesCount: number, consumersWithoutChangesCount: number }>,
-            routeData: TransformedRouteWithConsumersData,
-        }> = {};
-        Object.entries(allMealsDayData ?? {}).forEach(([mealGroupId, { mealGroup, routes }]) => {
-            Object.entries(routes).forEach(([routeId, routeData]) => {
-                const changesCount = Object.values(routeData?.clients ?? {}).reduce((acc, client) => acc + client.changesCount, 0);
-                const consumersWithoutChangesCount = Object.values(routeData?.clients ?? {}).reduce((acc, client) => acc + client.consumersWithoutChangesCount, 0);
-                if (!groupedDataByDeliveryRoute[routeId]) {
-                    groupedDataByDeliveryRoute[routeId] = {
-                        meals: {
-                            [mealGroupId]: {
-                                mealGroup,
-                                clients: routeData?.clients ?? {},
-                                changesCount,
-                                consumersWithoutChangesCount
-                            }
-                        },
-                        routeData: {
-                            ...routeData,
-                            changesCount,
-                            consumersWithoutChangesCount
-                        }
-                    }
-                } else {
-                    groupedDataByDeliveryRoute[routeId].meals[mealGroupId] = {
-                        mealGroup,
-                        clients: routeData?.clients ?? {},
-                        changesCount,
-                        consumersWithoutChangesCount
-                    };
-                    groupedDataByDeliveryRoute[routeId].routeData = {
-                        ...groupedDataByDeliveryRoute[routeId].routeData,
-                        changesCount: groupedDataByDeliveryRoute[routeId].routeData.changesCount + changesCount,
-                        consumersWithoutChangesCount: groupedDataByDeliveryRoute[routeId].routeData.consumersWithoutChangesCount + consumersWithoutChangesCount
-                    };
-                }
-            });
-        })
 
         try {
             const doc = new PDFDocument({
@@ -112,13 +68,7 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             doc.registerFont('Roboto', fonts.regular);
             doc.registerFont('Roboto-Bold', fonts.bold);
 
-            const routeNames = Object.keys(groupedData).sort((a, b) => {
-                // Handle "unassigned" route - always put it last
-                if (a === "unassigned" && b !== "unassigned") return 1;
-                if (b === "unassigned" && a !== "unassigned") return -1;
-                // Regular alphabetical sort for other routes
-                return a.localeCompare(b, 'pl');
-            });
+            const routeNames = Object.keys(groupedData);
 
             if (routeNames.length === 0) {
                 doc.font('Roboto').fontSize(16).text(translate(dictionary, 'orders:noRoutesFound') || "Nie znaleziono tras dla wybranego dnia.", { align: 'center' });
@@ -137,7 +87,6 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             for (let i = 0; i < routeNames.length; i++) {
                 const routeName = routeNames[i]!; // routeName is guaranteed to be a string key
                 const routeDetails = groupedData[routeName]!;
-                const { routeData, meals } = Object.values(groupedDataByDeliveryRoute).find((route) => route.routeData.deliveryRouteName === routeName)!;
 
                 if (i > 0) {
                     doc.addPage();
@@ -223,26 +172,7 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                 let currentY = tableTopY; // Start rows after the header line
                 doc.font('Roboto').fontSize(cellFontSize);
 
-                const breakfastConsumersWithoutChangesCount = meals.breakfast?.consumersWithoutChangesCount ?? 0;
-                const lunchConsumersWithoutChangesCount = meals.lunch?.consumersWithoutChangesCount ?? 0;
-                const dinnerConsumersWithoutChangesCount = meals.dinner?.consumersWithoutChangesCount ?? 0;
-
-                // Sort clients alphabetically by clientCode and filter out clients with zero total meals
-                const sortedClients = [...routeDetails.clients]
-                    .filter(client => {
-                        const clientBreakfastConsumersWithoutChangesCount = meals.breakfast?.clients[client.clientId]?.consumersWithoutChangesCount ?? 0;
-                        const clientDinnerConsumersWithoutChangesCount = meals.dinner?.clients[client.clientId]?.consumersWithoutChangesCount ?? 0;
-                        const clientLunchConsumersWithoutChangesCount = meals.lunch?.clients[client.clientId]?.consumersWithoutChangesCount ?? 0;
-                        const clientTotalConsumersWithoutChangesCount = clientBreakfastConsumersWithoutChangesCount + clientDinnerConsumersWithoutChangesCount + clientLunchConsumersWithoutChangesCount;
-                        const totalMealsIncludingConsumersWithoutChanges = client.totalClientMeals + clientTotalConsumersWithoutChangesCount;
-
-                        // Filter out clients with 0, null, or undefined total meals
-                        return totalMealsIncludingConsumersWithoutChanges > 0;
-                    })
-                    .sort((a, b) => a.clientCode.localeCompare(b.clientCode, 'pl'));
-
-                for (const clientData of sortedClients) {
-
+                for (const clientData of routeDetails.clients) {
                     if (currentY + rowHeight > doc.page.height - doc.page.margins.bottom - 30) { // -30 for footer
                         doc.addPage();
                         currentY = doc.page.margins.top;
@@ -276,81 +206,17 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                     }
 
                     const clientDisplayText = clientData.clientCode;
-                    const clientBreakfastConsumersWithoutChangesCount = meals.breakfast?.clients[clientData.clientId]?.consumersWithoutChangesCount ?? 0;
-                    const clientDinnerConsumersWithoutChangesCount = meals.dinner?.clients[clientData.clientId]?.consumersWithoutChangesCount ?? 0;
-                    const clientLunchConsumersWithoutChangesCount = meals.lunch?.clients[clientData.clientId]?.consumersWithoutChangesCount ?? 0;
-                    const clientTotalConsumersWithoutChangesCount = clientBreakfastConsumersWithoutChangesCount + clientDinnerConsumersWithoutChangesCount + clientLunchConsumersWithoutChangesCount;
 
                     xPos = pageContentLeft;
                     doc.text(clientDisplayText, xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.client - cellHorizontalPadding, lineBreak: false, ellipsis: true });
                     xPos += columnWidths.client;
-
-                    // Breakfast cell
-                    if (clientBreakfastConsumersWithoutChangesCount > 0) {
-                        const originalBreakfast = clientData.breakfast;
-                        const finalBreakfast = originalBreakfast + clientBreakfastConsumersWithoutChangesCount;
-
-                        doc.text(originalBreakfast.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                            width: columnWidths.breakfast - cellHorizontalPadding,
-                            align: 'left',
-                            continued: true
-                        });
-                        doc.text(` (+${clientBreakfastConsumersWithoutChangesCount})`, { continued: true });
-                        doc.font('Roboto-Bold').text(` ${finalBreakfast}`).font('Roboto');
-                    } else {
-                        doc.font('Roboto-Bold').text(clientData.breakfast.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.breakfast - cellHorizontalPadding, align: 'left' }).font('Roboto');
-                    }
+                    doc.text(clientData.breakfast.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.breakfast - cellHorizontalPadding, align: 'left' });
                     xPos += columnWidths.breakfast;
-
-                    // Lunch cell
-                    if (clientLunchConsumersWithoutChangesCount > 0) {
-                        const originalLunch = clientData.lunch;
-                        const finalLunch = originalLunch + clientLunchConsumersWithoutChangesCount;
-
-                        doc.text(originalLunch.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                            width: columnWidths.lunch - cellHorizontalPadding,
-                            align: 'left',
-                            continued: true
-                        });
-                        doc.text(` (+${clientLunchConsumersWithoutChangesCount})`, { continued: true });
-                        doc.font('Roboto-Bold').text(` ${finalLunch}`).font('Roboto');
-                    } else {
-                        doc.font('Roboto-Bold').text(clientData.lunch.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.lunch - cellHorizontalPadding, align: 'left' }).font('Roboto');
-                    }
+                    doc.text(clientData.lunch.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.lunch - cellHorizontalPadding, align: 'left' });
                     xPos += columnWidths.lunch;
-
-                    // Dinner cell
-                    if (clientDinnerConsumersWithoutChangesCount > 0) {
-                        const originalDinner = clientData.dinner;
-                        const finalDinner = originalDinner + clientDinnerConsumersWithoutChangesCount;
-
-                        doc.text(originalDinner.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                            width: columnWidths.dinner - cellHorizontalPadding,
-                            align: 'left',
-                            continued: true
-                        });
-                        doc.text(` (+${clientDinnerConsumersWithoutChangesCount})`, { continued: true });
-                        doc.font('Roboto-Bold').text(` ${finalDinner}`).font('Roboto');
-                    } else {
-                        doc.font('Roboto-Bold').text(clientData.dinner.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.dinner - cellHorizontalPadding, align: 'left' }).font('Roboto');
-                    }
+                    doc.text(clientData.dinner.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.dinner - cellHorizontalPadding, align: 'left' });
                     xPos += columnWidths.dinner;
-
-                    // Total cell for client
-                    if (clientTotalConsumersWithoutChangesCount > 0) {
-                        const originalTotal = clientData.totalClientMeals;
-                        const finalTotal = originalTotal + clientTotalConsumersWithoutChangesCount;
-
-                        doc.font('Roboto').text(originalTotal.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                            width: columnWidths.total - cellHorizontalPadding,
-                            align: 'left',
-                            continued: true
-                        });
-                        doc.text(` (+${clientTotalConsumersWithoutChangesCount})`, { continued: true });
-                        doc.font('Roboto-Bold').text(` ${finalTotal}`).font('Roboto');
-                    } else {
-                        doc.font('Roboto-Bold').text(clientData.totalClientMeals.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.total - cellHorizontalPadding, align: 'left' }).font('Roboto');
-                    }
+                    doc.font('Roboto-Bold').text(clientData.totalClientMeals.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.total - cellHorizontalPadding, align: 'left' }).font('Roboto');
                     xPos += columnWidths.total;
                     // Empty cell for packaging
                     doc.text("", xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.packaging - cellHorizontalPadding, align: 'left' });
@@ -367,86 +233,18 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
                     currentY += rowHeight / 2;
                 }
 
-
-
                 // Totals Row
                 doc.font('Roboto-Bold').fontSize(headerFontSize);
                 xPos = pageContentLeft;
                 doc.text(translations.total.toUpperCase(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.client - cellHorizontalPadding });
                 xPos += columnWidths.client;
-
-                // Breakfast total
-                if (breakfastConsumersWithoutChangesCount > 0) {
-                    const originalBreakfast = routeDetails.totalBreakfast;
-                    const finalBreakfast = originalBreakfast + breakfastConsumersWithoutChangesCount;
-
-                    doc.font('Roboto').text(originalBreakfast.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                        width: columnWidths.breakfast - cellHorizontalPadding,
-                        align: 'left',
-                        continued: true
-                    });
-                    doc.text(` (+${breakfastConsumersWithoutChangesCount})`, { continued: true });
-                    doc.font('Roboto-Bold').text(` ${finalBreakfast}`);
-                } else {
-                    doc.text(routeDetails.totalBreakfast.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.breakfast - cellHorizontalPadding, align: 'left' });
-                }
+                doc.text(routeDetails.totalBreakfast.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.breakfast - cellHorizontalPadding, align: 'left' });
                 xPos += columnWidths.breakfast;
-
-                // Lunch total
-                if (lunchConsumersWithoutChangesCount > 0) {
-                    const originalLunch = routeDetails.totalLunch;
-                    const finalLunch = originalLunch + lunchConsumersWithoutChangesCount;
-
-                    doc.font('Roboto').text(originalLunch.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                        width: columnWidths.lunch - cellHorizontalPadding,
-                        align: 'left',
-                        continued: true
-                    });
-                    doc.text(` (+${lunchConsumersWithoutChangesCount})`, { continued: true });
-                    doc.font('Roboto-Bold').text(` ${finalLunch}`);
-                } else {
-                    doc.text(routeDetails.totalLunch.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.lunch - cellHorizontalPadding, align: 'left' });
-                }
+                doc.text(routeDetails.totalLunch.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.lunch - cellHorizontalPadding, align: 'left' });
                 xPos += columnWidths.lunch;
-
-                // Dinner total
-                if (dinnerConsumersWithoutChangesCount > 0) {
-                    const originalDinner = routeDetails.totalDinner;
-                    const finalDinner = originalDinner + dinnerConsumersWithoutChangesCount;
-
-                    doc.font('Roboto').text(originalDinner.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                        width: columnWidths.dinner - cellHorizontalPadding,
-                        align: 'left',
-                        continued: true
-                    });
-                    doc.text(` (+${dinnerConsumersWithoutChangesCount})`, { continued: true });
-                    doc.font('Roboto-Bold').text(` ${finalDinner}`);
-                } else {
-                    doc.text(routeDetails.totalDinner.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.dinner - cellHorizontalPadding, align: 'left' });
-                }
+                doc.text(routeDetails.totalDinner.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.dinner - cellHorizontalPadding, align: 'left' });
                 xPos += columnWidths.dinner;
-
-                // Handle total column with consumersWithoutChangesCount logic
-                const consumersWithoutChangesCount = routeData.consumersWithoutChangesCount || 0;
-                if (consumersWithoutChangesCount > 0) {
-                    const originalTotal = routeDetails.totalRouteMeals;
-                    const finalTotal = originalTotal + consumersWithoutChangesCount;
-
-                    // First write the original total (not bold)
-                    doc.font('Roboto').text(originalTotal.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, {
-                        width: columnWidths.total - cellHorizontalPadding,
-                        align: 'left',
-                        continued: true
-                    });
-
-                    // Add the consumersWithoutChangesCount in parentheses (not bold)
-                    doc.text(` (+${consumersWithoutChangesCount})`, { continued: true });
-
-                    // Add the final total (bold)
-                    doc.font('Roboto-Bold').text(` ${finalTotal}`);
-                } else {
-                    doc.text(routeDetails.totalRouteMeals.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.total - cellHorizontalPadding, align: 'left' });
-                }
+                doc.text(routeDetails.totalRouteMeals.toString(), xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.total - cellHorizontalPadding, align: 'left' });
                 xPos += columnWidths.total;
                 // Empty cell for packaging in total row
                 doc.text("", xPos + cellHorizontalPadding, currentY + actualTextPaddingY, { width: columnWidths.packaging - cellHorizontalPadding, align: 'left' });
