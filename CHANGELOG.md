@@ -1,3 +1,12 @@
+# [2.9.0](https://github.com/Jacaplaca/catering/compare/v2.8.1...v2.9.0) (2025-10-03)
+
+
+### Features
+
+* cleanups backup new consumer pdf ([13ff78d](https://github.com/Jacaplaca/catering/commit/13ff78dcdfcdcf387c63e815b36edee9391ebb20))
+
+
+
 ## [2.8.1](https://github.com/Jacaplaca/catering/compare/v2.8.0...v2.8.1) (2025-09-24)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * added week menu for client ([8ebeb9b](https://github.com/Jacaplaca/catering/commit/8ebeb9bbd59d9793a3e4e5bac667bb364b5abb9f))
-
-
-
-# [2.7.0](https://github.com/Jacaplaca/catering/compare/v2.6.8...v2.7.0) (2025-09-18)
-
-
-### Features
-
-* menu-creator pdf for all and individual clients ([1348312](https://github.com/Jacaplaca/catering/commit/13483122ddcc4417dabafb8e30478583b39678fa))
 
 
 
