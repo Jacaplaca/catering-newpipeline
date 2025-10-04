@@ -1,4 +1,8 @@
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
+import removeCateringsExcept from '@root/app/server/api/routers/specific/libs/devTools/removeCateringsExcept';
+import removeClientsExcept from '@root/app/server/api/routers/specific/libs/devTools/removeClientsExcept';
+import removeMenusExcept from '@root/app/server/api/routers/specific/libs/devTools/removeMenusExcept';
+import removeOrdersExcept from '@root/app/server/api/routers/specific/libs/devTools/removeOrdersExcept';
 // import { s3getFiles, s3getList } from '@root/app/server/s3/list';
 // import path from 'path';
 import { publicProcedure } from "server/api/trpc";
@@ -21,6 +25,24 @@ export const devRouter = {
     test: publicProcedure.query(() => {
         return "Hello World!";
     }),
+    // removeCaterings: publicProcedure.query(async () => {
+    //     await removeCateringsExcept(["cm34dgxuf000tqmfqens7pj2e"]);
+    //     return { success: true };
+    // }),
+    // removeClients: publicProcedure.query(async () => {
+    //     await removeClientsExcept("cm34dgxuf000tqmfqens7pj2e", ["cm6ujo6u10026o00jwos11tub", "cm6163n9v006hph0jthdwqc3h"]);
+    //     return { success: true };
+    // }),
+    // removeMenus: publicProcedure.query(async () => {
+    //     //make 0 indexed month
+    //     await removeMenusExcept("cm34dgxuf000tqmfqens7pj2e", ["2025-09-06", "2025-09-07"]);
+    //     return { success: true };
+    // }),
+    // removeOrders: publicProcedure.query(async () => {
+    //     //make 0 indexed month
+    //     await removeOrdersExcept("cm34dgxuf000tqmfqens7pj2e", ["2025-09-02", "2025-09-03"]);
+    //     return { success: true };
+    // }),
     // autoOrder: publicProcedure.query(async () => {
     //     await autoOrder();
     //     return { autoOrder: 'success' };

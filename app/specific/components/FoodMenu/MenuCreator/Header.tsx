@@ -6,14 +6,19 @@ import FoodMenuDate from '@root/app/specific/components/FoodMenu/Date';
 import RegularMenuDropdown from '@root/app/specific/components/ui/Dropdown/RegularMenu';
 import { env } from '@root/app/env';
 import DayMenuPdf from '@root/app/specific/components/FoodMenu/ConsumerDiets/DayMenuPdf';
+import { format } from 'date-fns-tz';
+import ContextMenuForMenuCreator from '@root/app/specific/components/FoodMenu/MenuCreator/ContextMenuForMenuCreator';
 
 const MenuCreatorHeader = () => {
-    const { dictionary, standardMenuForm, menuQueries, templateDayObject, isFormNotEmpty, showMenuForConsumers, handleShowMenuForConsumers } = useFoodMenuContext();
+    const { day, dictionary, standardMenuForm, menuQueries, templateDayObject, isFormNotEmpty, showMenuForConsumers, handleShowMenuForConsumers } = useFoodMenuContext();
     const { isLoading, chooseTemplateDay } = standardMenuForm;
     const { templateDayMenuFetching } = menuQueries;
 
     const isFormDirty = standardMenuForm.form.formState.isDirty;
     const canEditIndividually = isFormNotEmpty && !isFormDirty;
+
+    const dayDate = day?.day && new Date(day.day.year, day.day.month, day.day.day);
+    const dayDateString = dayDate && format(dayDate, 'yyyy-MM-dd');
 
     return (<div>
         {
@@ -36,14 +41,16 @@ const MenuCreatorHeader = () => {
                 showMenuForConsumers
                     ? 'menu-creator:title-for-consumers'
                     : 'menu-creator:title-standard-menu'
-            )}</h1>
+            )} {dayDateString ? `- ${dayDateString}` : ''}</h1>
             <i className={` ${(isLoading || templateDayMenuFetching) ? 'fas fa-spinner animate-spin' : 'fas fa-book-open'}`} />
         </div>
         <div className='flex flex-col md:flex-row md:justify-between items-center gap-4 md:gap-2 mt-4 mb-4'>
-            {showMenuForConsumers ? <DayMenuPdf
-                iconClass='text-[2rem]'
-                tooltipLabel='menu-creator:day-all-clients-menu-pdf'
-            /> : <div className="w-full md:w-auto"><FoodMenuDate /></div>}
+            {showMenuForConsumers ? <div className='flex items-center gap-2'>
+                {/* <ContextMenuForMenuCreator /> */}
+                <DayMenuPdf
+                    iconClass='text-[2rem]'
+                    tooltipLabel='menu-creator:day-all-clients-menu-pdf'
+                /></div> : <div className="w-full md:w-auto"><FoodMenuDate /></div>}
             {showMenuForConsumers ? null : <div className='w-full md:w-auto md:max-w-[300px]'>
                 <RegularMenuDropdown
                     dictionary={dictionary}

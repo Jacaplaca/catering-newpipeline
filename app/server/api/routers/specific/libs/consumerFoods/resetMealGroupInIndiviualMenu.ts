@@ -1,5 +1,5 @@
 import { type Prisma } from '@prisma/client';
-import { addFoodToConsumers } from '@root/app/server/api/routers/specific/libs/consumerFoods/addFoodToConsumers';
+import addFoodToConsumers from '@root/app/server/api/routers/specific/libs/consumerFoods/addFoodToConsumers';
 import addMealFoodsToMenu from '@root/app/server/api/routers/specific/libs/menu/addMealFoodsToMenu';
 import { db } from '@root/app/server/db';
 

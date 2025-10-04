@@ -1,5 +1,5 @@
 import { type MenuMealFood, type RegularMenu } from '@prisma/client';
-import { addFoodToConsumers } from '@root/app/server/api/routers/specific/libs/consumerFoods/addFoodToConsumers';
+import addFoodToConsumers from '@root/app/server/api/routers/specific/libs/consumerFoods/addFoodToConsumers';
 import { db } from '@root/app/server/db';
 
 const queriesGen = (clientId: string, cateringId: string, menuId: string) => {

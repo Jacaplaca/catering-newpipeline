@@ -74,3 +74,9 @@ export const resetMealValidator = z.object({
     mealId: z.string(),
     clientId: z.string(),
 });
+
+export const getGroupedByFoodAndConsumerValidator = z.object({
+    consumerIds: z.array(z.string()),
+    foodIds: z.array(z.string()),
+    regularMenuId: z.string().optional(),
+});

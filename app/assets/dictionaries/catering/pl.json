@@ -359,10 +359,10 @@
     },
     "menu-creator": {
         "title-standard-menu": "Standardowe menu",
-        "title-for-consumers": "Indywidualne menu",
-        "menu-for-consumers-button": "Indywidualne menu",
+        "title-for-consumers": "Szczegółowe menu",
+        "menu-for-consumers-button": "Szczegółowe menu",
         "menu-standard-button": "Standardowe menu",
-        "menu-for-consumers-button-tooltip": "Najpierw zapisz standardowe menu, aby móc wyświetlić indywidualne menu",
+        "menu-for-consumers-button-tooltip": "Najpierw zapisz standardowe menu, aby móc wyświetlić szczegółowe menu",
         "food_replacement_editor": "Edytuj potrawę",
         "dish": "Danie",
         "breakfast": "Śniadanie",
@@ -414,7 +414,11 @@
         "week-one-client-per-consumer-menu-pdf": "Jadłospis na obecny tydzień dla poszczególnych dzieci",
         "day-one-client-menu-pdf": "Jadłospis dzienny",
         "get-from-parent-regular-menu": "Pobierz z menu ogólnego",
-        "are_you_sure_you_want_to_get_from_parent_regular_menu": "Czy na pewno chcesz pobrać ten posiłek z menu ogólnego?"
+        "are_you_sure_you_want_to_get_from_parent_regular_menu": "Czy na pewno chcesz pobrać ten posiłek z menu ogólnego?",
+        "publish": "Opublikuj menu na ten dzień",
+        "publishing": "Opublikowanie menu...",
+        "cant_publish_menu": "Nie można opublikować menu, ponieważ do niektórych dzieci są jeszcze przypisane posiłki z alergenami. Klienci u których występują alergeny.",
+        "published_menu": "Menu opublikowane. Teraz klienci oraz rodzice mogą przeglądać jadłospis."
     },
     "exclusion": {
         "duplicate_name_error": "Istnieje już wykluczenie z taką nazwą",

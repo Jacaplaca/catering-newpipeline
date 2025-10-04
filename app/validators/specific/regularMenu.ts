@@ -83,6 +83,15 @@ export const getClientsWithCommonAllergensValidator = z.object({
     tagId: z.string().optional(),
 });
 
+export const closeAndPublishValidator = z.object({
+    day: z.object({
+        year: z.number(),
+        month: z.number(),
+        day: z.number(),
+    }),
+    clientId: z.string().optional(),
+});
+
 export const getOneClientWithCommonAllergensValidator = z.object({
     day: z.object({
         year: z.number(),

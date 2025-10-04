@@ -1,7 +1,7 @@
 import { RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { db } from '@root/app/server/db';
-import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodGetOneValidator, consumerFoodValidator, getSimilarCommentsValidator, resetOneValidator, resetMealValidator } from '@root/app/validators/specific/consumerFood';
+import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodGetOneValidator, consumerFoodValidator, getSimilarCommentsValidator, resetOneValidator, resetMealValidator, getGroupedByFoodAndConsumerValidator } from '@root/app/validators/specific/consumerFood';
 import { type ClientFoodAssignment } from '@root/types/specific';
 import { TRPCError } from '@trpc/server';
 import getCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/getCommonAllergens';
