@@ -1,3 +1,12 @@
+## [2.9.1](https://github.com/Jacaplaca/catering/compare/v2.9.0...v2.9.1) (2025-10-04)
+
+
+### Bug Fixes
+
+* auto assign consumer food for the same consumer and food according other menus ([ab40880](https://github.com/Jacaplaca/catering/commit/ab40880afb3a5ccb61cfd62f339a0d4b5b481739))
+
+
+
 # [2.9.0](https://github.com/Jacaplaca/catering/compare/v2.8.1...v2.9.0) (2025-10-03)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * label client order fix missing consumer foods ([3e02e36](https://github.com/Jacaplaca/catering/commit/3e02e367ae983fb79485ca58ac043c2b08e77d35))
-
-
-
-## [2.7.1](https://github.com/Jacaplaca/catering/compare/v2.7.0...v2.7.1) (2025-09-18)
-
-
-### Bug Fixes
-
-* added week menu for client ([8ebeb9b](https://github.com/Jacaplaca/catering/commit/8ebeb9bbd59d9793a3e4e5bac667bb364b5abb9f))
 
 
 
