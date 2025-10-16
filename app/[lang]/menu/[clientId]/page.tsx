@@ -1,11 +1,11 @@
 import { type Page } from '@prisma/client';
-import { getClientFromApi } from '@root/app/lib/getClientFromApi';
+import { getUserFromApi } from '@root/app/lib/getUserFromApi';
 import { getContentFromApi } from '@root/app/lib/getContentFromApi';
 import { breadcrumbGen } from '@root/app/lib/schemaGen';
 import makeHref from '@root/app/lib/url/makeHref';
 import PageLayout from '@root/app/partials/PageLayout';
-import Documents from '@root/app/specific/components/Documents';
 import { type NextPage } from 'next';
+import PublicData from '@root/app/specific/components/PublicData';
 
 const pageName = 'menu';
 
@@ -22,7 +22,7 @@ const menu: NextPage<{
   const { title, h1, description } = page;
   const schemaBreadcrumb = breadcrumbGen({ title, lang, page: pageName });
 
-  const clientName = await getClientFromApi({ clientId: params.clientId });
+  const userPublicData = await getUserFromApi({ clientId: params.clientId });
 
   return (
     <PageLayout
@@ -35,18 +35,23 @@ const menu: NextPage<{
       schemaBreadcrumb={schemaBreadcrumb}
       lang={lang}
     >
-      {clientName && (
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">
-          {clientName}
-        </h2>
-      )}
-
-      <div className="mt-10">
-        <Documents
-          lang={lang}
-          clientId={params.clientId}
-          pageName={pageName}
-        />
+      <div className='w-full h-full dark:bg-neutral-800/50 rounded-lg p-6'>
+        <div className='pt-6'>
+          {/* asdf */}
+          {userPublicData && (
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">
+              {userPublicData.name}
+            </h2>
+          )}
+          {userPublicData && <div className="mt-10">
+            <PublicData
+              id={params.clientId}
+              role={userPublicData?.role}
+              lang={lang}
+              pageName={pageName}
+            />
+          </div>}
+        </div>
       </div>
     </PageLayout>
   );

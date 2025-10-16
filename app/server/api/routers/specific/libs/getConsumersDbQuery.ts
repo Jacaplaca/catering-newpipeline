@@ -4,7 +4,7 @@ const getConsumerDbQuery = ({
     customerSearchValue,
     dietSearchValue,
     showColumns,
-    catering,
+    cateringId,
     id,
     clientId,
     withNameOnly,
@@ -14,7 +14,7 @@ const getConsumerDbQuery = ({
 }: {
     customerSearchValue?: string,
     dietSearchValue?: string,
-    catering: { id: string },
+    cateringId?: string,
     showColumns?: string[],
     id?: string,
     clientId?: string,
@@ -56,13 +56,15 @@ const getConsumerDbQuery = ({
         query.$or = orConditions
     }
 
-    const pipeline = [
-        {
+    const pipeline = [] as Prisma.InputJsonValue[]
+
+    if (cateringId) {
+        pipeline.push({
             $match: {
-                cateringId: catering.id
+                cateringId
             }
-        },
-    ] as Prisma.InputJsonValue[]
+        });
+    }
 
     if (withNameOnly) {
         pipeline.push({

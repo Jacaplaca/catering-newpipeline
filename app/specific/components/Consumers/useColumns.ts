@@ -44,6 +44,10 @@ const useConsumerColumns = ({
             sort: () => sort('client.code')
         },
         {
+            key: "linkCopy",
+            title: '',
+        },
+        {
             key: "createdAt",
             title: 'consumers:createdAt_column',
             sort: () => sort('createdAt')

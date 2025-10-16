@@ -24,13 +24,6 @@ const DayMenuPdf: React.FC<{
     const thisCell = dayIdForPdf === dayId && clientIdForPdf === clientId;
     const thisCellLoading = isLoading && thisCell;
 
-    // const getTooltipLabel = () => {}
-
-    // let tooltipLabel = week ? 'menu-creator:week-one-client-menu-pdf' : 'menu-creator:day-one-client-menu-pdf';
-    // if (!clientId) {
-    //     tooltipLabel = 'menu-creator:day-all-clients-menu-pdf';
-    // }
-
     return (
         <Tooltip content={translate(dictionary, tooltipLabel)}>
             <button

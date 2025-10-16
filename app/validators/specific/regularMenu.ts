@@ -1,3 +1,5 @@
+import { env } from '@root/app/env';
+import { i18n } from '@root/i18n-config';
 import { clientWithCommonAllergensSortNames } from '@root/types/specific';
 import { z } from 'zod';
 
@@ -117,4 +119,10 @@ export const updateFoodsOrderInput = z.object({
         id: z.string(),
         order: z.number().int().min(0),
     })).min(1),
-})
+});
+
+export const getConsumerWeekMenuValidator = z.object({
+    dayId: z.string(),
+    consumerId: z.string(),
+    // lang: z.enum(i18n.locales).default(env.NEXT_PUBLIC_DEFAULT_LOCALE),
+});

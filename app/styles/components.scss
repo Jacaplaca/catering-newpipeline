@@ -148,12 +148,15 @@
   p {
     @apply mb-2;
   }
+}
 
-  .copy-button {
-    @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-secondary dark:hover:bg-darkmode-secondary-accent bg-secondary hover:bg-secondary-accent;
-  }
-  .copied-to-clipboard {
-    @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-success dark:text-text bg-success text-white;
-  }
+.copy-button {
+  @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-secondary dark:hover:bg-darkmode-secondary-accent bg-secondary hover:bg-secondary-accent;
+}
 
+.copy-button-skeleton {
+  @apply  p-2 cursor-not-allowed rounded-md  bg-neutral-300 text-neutral-100 dark:bg-neutral-500 dark:text-neutral-200;
+}
+.copied-to-clipboard {
+  @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-success dark:text-text bg-success text-white;
 }

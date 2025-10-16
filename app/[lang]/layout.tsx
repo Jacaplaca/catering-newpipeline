@@ -32,9 +32,10 @@ export default async function RootLayout(props: {
               scrollbar-color: unset !important;
             }
             
-            *:hover {
-              scrollbar-color: unset !important;
-            }
+            // making scrollbar wider on hover
+            // *:hover {
+            //   scrollbar-color: unset !important;
+            // }
             
             /* Force thick scrollbar on html and body */
             html {

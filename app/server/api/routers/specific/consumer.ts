@@ -4,9 +4,10 @@ import getConsumerDbQuery from '@root/app/server/api/routers/specific/libs/getCo
 import { options } from '@root/app/server/api/specific/aggregate';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { db } from '@root/app/server/db';
-import { consumerEditValidator, deleteConsumersValid, getConsumerValid, getConsumersCountValid, getConsumersValid, getDietaryAllForClientValid } from '@root/app/validators/specific/consumer';
+import { consumerEditValidator, deleteConsumersValid, getConsumerValid, getConsumersCountPublicValid, getConsumersCountValid, getConsumersPublicValid, getConsumersValid, getDietaryAllForClientValid } from '@root/app/validators/specific/consumer';
 import { type ConsumerCustomTable, consumersSortNames } from '@root/types/specific';
-import { OrderStatus, RoleType } from '@prisma/client';
+import { RoleType } from '@prisma/client';
+import { publicProcedure } from '@root/app/server/api/trpc';
 
 const dietaryAll = createCateringProcedure([RoleType.client, RoleType.dietician, RoleType.manager])
     .input(getDietaryAllForClientValid)
@@ -28,7 +29,7 @@ const dietaryAll = createCateringProcedure([RoleType.client, RoleType.dietician,
                 ...getConsumerDbQuery({
                     withDiet: true,
                     showColumns: ['name', 'code']
-                    , catering, clientId, withNameOnly: true, isClient: true, onlyActiveConsumer: true
+                    , cateringId: catering.id, clientId, withNameOnly: true, isClient: true, onlyActiveConsumer: true
                 }),
                 ...getLowerCaseSort(orderBy),
             ],
@@ -58,7 +59,7 @@ const getMany = createCateringProcedure([RoleType.manager, RoleType.dietician, R
         const isClient = user.roleId === RoleType.client;
 
         const pipeline = [
-            ...getConsumerDbQuery({ customerSearchValue, dietSearchValue, showColumns, catering, clientId: jobId ? jobId : clientId, isClient }),
+            ...getConsumerDbQuery({ customerSearchValue, dietSearchValue, showColumns, cateringId: catering.id, clientId: jobId ? jobId : clientId, isClient }),
             ...getLowerCaseSort(orderBy),
             { $skip: pagination.skip },
             { $limit: pagination.take },
@@ -82,7 +83,57 @@ const count = createCateringProcedure([RoleType.manager, RoleType.dietician, Rol
 
         const count = await db.consumer.aggregateRaw({
             pipeline: [
-                ...getConsumerDbQuery({ customerSearchValue, dietSearchValue, showColumns, catering, clientId: jobId ? jobId : clientId, isClient }),
+                ...getConsumerDbQuery({ customerSearchValue, dietSearchValue, showColumns, cateringId: catering.id, clientId: jobId ? jobId : clientId, isClient }),
+                { $count: 'count' },
+            ]
+        }) as unknown as { count: number }[];
+        return count[0]?.count ?? 0;
+    });
+
+const getManyPublic = publicProcedure
+    .input(getConsumersPublicValid)
+    .query(async ({ input }) => {
+        const { page, limit, sortName, sortDirection, customerSearchValue, showColumns, clientId } = input;
+
+        const pagination = getQueryPagination({ page, limit });
+
+        const allowedSortNames = consumersSortNames;
+
+        const orderBy = getQueryOrder({
+            name: sortName,
+            direction: sortDirection,
+            allowedNames: allowedSortNames,
+            inNumbers: true
+        });
+
+        const jobId = clientId;
+        const isClient = true;
+
+        const pipeline = [
+            ...getConsumerDbQuery({ customerSearchValue, showColumns: ['code'], clientId: jobId ? jobId : clientId, isClient }),
+            ...getLowerCaseSort(orderBy),
+            { $skip: pagination.skip },
+            { $limit: pagination.take },
+        ]
+
+        const result = await db.consumer.aggregateRaw({
+            pipeline,
+            options
+        }) as unknown as ConsumerCustomTable[];
+        return result.map(item => ({
+            id: item.id,
+            code: item.code ?? ''
+        }));
+    });
+
+const countPublic = publicProcedure
+    .input(getConsumersCountPublicValid)
+    .query(async ({ input }) => {
+        const { showColumns, clientId } = input;
+
+        const count = await db.consumer.aggregateRaw({
+            pipeline: [
+                ...getConsumerDbQuery({ showColumns, clientId }),
                 { $count: 'count' },
             ]
         }) as unknown as { count: number }[];
@@ -96,7 +147,7 @@ const getOne = createCateringProcedure([RoleType.dietician, RoleType.client, Rol
         const { id } = input;
 
         const clients = await db.consumer.aggregateRaw({
-            pipeline: getConsumerDbQuery({ id, catering })
+            pipeline: getConsumerDbQuery({ id, cateringId: catering.id })
         }) as unknown as ConsumerCustomTable[];
         return clients[0];
     });
@@ -366,6 +417,8 @@ const consumerRouter = {
     edit,
     deleteOne,
     dietaryAll,
+    countPublic,
+    getManyPublic,
 };
 
 export default consumerRouter;

@@ -1,6 +1,6 @@
 import getDictFromApi from '@root/app/lib/lang/getDictFromApi';
 import translate from '@root/app/lib/lang/translate';
-import DocumentsComponent from '@root/app/specific/components/Documents/DocumentsComponent';
+import DocumentsComponent from '@root/app/specific/components/PublicData/Client/Documents/DocumentsComponent';
 import { api } from '@root/app/trpc/server';
 import { type FunctionComponent } from 'react';
 
@@ -21,7 +21,12 @@ const Documents: FunctionComponent<{
     }
 
     return (
-        <DocumentsComponent clientFiles={clientFiles} dictionary={dictionary} lang={lang} />
+        <DocumentsComponent
+            clientId={clientId}
+            clientFiles={clientFiles}
+            dictionary={dictionary}
+            lang={lang}
+        />
     )
 }
 

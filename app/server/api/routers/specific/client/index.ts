@@ -9,7 +9,6 @@ import getActiveWithCode from '@root/app/server/api/routers/specific/client/getA
 import activate from '@root/app/server/api/routers/specific/client/activate';
 import addClient from '@root/app/server/api/routers/specific/client/addClient';
 import removeClient from '@root/app/server/api/routers/specific/client/removeClient';
-import getPublic from '@root/app/server/api/routers/specific/client/getPublic';
 
 const clientRouter = {
     getInfinite,
@@ -23,7 +22,6 @@ const clientRouter = {
     activate,
     addClient,
     removeClient,
-    getPublic
 }
 
 export default clientRouter;

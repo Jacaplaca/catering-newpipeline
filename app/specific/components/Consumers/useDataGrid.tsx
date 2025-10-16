@@ -2,6 +2,7 @@ import { RoleType } from '@prisma/client';
 import HighlightText from '@root/app/_components/Table/HighlightText';
 import SkeletonCell from '@root/app/_components/Table/SkeletonCell';
 import Checkbox from '@root/app/_components/ui/Inputs/Checkbox';
+import CopyLink from '@root/app/specific/components/Consumers/CopyLink';
 import { type ConsumerCustomTable } from '@root/types/specific';
 import { format } from 'date-fns-tz';
 
@@ -120,6 +121,10 @@ const useConsumersDataGrid = ({
                         text={client?.code?.toString() ?? ""}
                         fragment={searchValue} />,
                     key: 'client.code'
+                },
+                {
+                    component: <CopyLink id={id} disabled={deactivated} />,
+                    key: 'linkCopy'
                 },
                 {
                     component: <HighlightText

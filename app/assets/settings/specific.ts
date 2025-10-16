@@ -1,9 +1,9 @@
 const specificSettings = {
     "PUBLIC:email:fromAlias:STRING": 'Catering',
     "PUBLIC:main:siteName:STRING": 'Catering',
-    "PRIVATE:table-columns:consumer-for-manager:STRING_ARRAY": "code, name, diet.code, diet.dietician.name, diet.description, client.code, client.name, createdAt",
-    "PRIVATE:table-columns:consumer-for-dietician:STRING_ARRAY": "code, name, diet.code, diet.description, client.code, client.name, createdAt",
-    "PRIVATE:table-columns:consumer-for-client:STRING_ARRAY": "code, name, diet.code, createdAt",
+    "PRIVATE:table-columns:consumer-for-manager:STRING_ARRAY": "code, name, diet.code, diet.dietician.name, diet.description, client.code, client.name, linkCopy, createdAt",
+    "PRIVATE:table-columns:consumer-for-dietician:STRING_ARRAY": "code, name, diet.code, diet.description, client.code, client.name, linkCopy, createdAt",
+    "PRIVATE:table-columns:consumer-for-client:STRING_ARRAY": "code, name, diet.code, linkCopy, createdAt",
     "PRIVATE:table-columns:order-for-client:STRING_ARRAY": "deliveryDay, status, breakfastStandard, breakfastDietCount, lunchStandard, lunchDietCount, dinnerStandard, dinnerDietCount, sentToCateringAt",
     "PRIVATE:table-columns:order-for-kitchen:STRING_ARRAY": "deliveryDay, status, client.name, client.code, breakfastStandard, breakfastDietCount, lunchStandard, lunchDietCount, dinnerStandard, dinnerDietCount, sentToCateringAt",
     "PRIVATE:table-columns:order-for-manager:STRING_ARRAY": "deliveryDay, status, client.name, client.code, breakfastStandard, breakfastDietCount, lunchStandard, lunchDietCount, dinnerStandard, dinnerDietCount, sentToCateringAt",

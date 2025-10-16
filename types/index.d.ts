@@ -215,5 +215,6 @@ export type TableActionType = {
   icon?: string
   isDivider?: boolean,
   hidden?: boolean,
-  iconClassName?: string
+  iconClassName?: string,
+  disabled?: boolean
 }

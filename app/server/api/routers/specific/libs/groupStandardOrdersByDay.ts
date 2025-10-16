@@ -88,7 +88,8 @@ const groupStandardOrdersByDay = (dayData: DayOrder[]): Record<string, RouteStan
                 dinner: data.dinner,
                 totalClientMeals: data.breakfast + data.lunch + data.dinner,
             }))
-            .filter(client => client.totalClientMeals > 0) // Filter out clients with zero total meals
+            // remove this filter because it doesn't work well with 0 diets orders
+            // .filter(client => client.totalClientMeals > 0) // Filter out clients with zero total meals
             .sort((a, b) => a.clientName.localeCompare(b.clientName) || a.clientCode.localeCompare(b.clientCode));
 
         // Recalculate totals based on filtered clients only

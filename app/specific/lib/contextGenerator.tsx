@@ -1,4 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
+import { ContextDevTool } from 'react-context-devtool';
 
 type StoreType<T> = T;
 type ContextType<T> = T | undefined;
@@ -17,6 +18,7 @@ export const createGenericContext = <T,>(
         return (
             <Context.Provider value={store}>
                 {children}
+                <ContextDevTool context={Context} id={contextName} displayName={contextName} />
             </Context.Provider>
         );
     };

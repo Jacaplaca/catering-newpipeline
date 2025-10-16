@@ -1,7 +1,7 @@
 import { db } from '@root/app/server/db';
 import { type Prisma, RoleType } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
-import { regularMenuCreateValidator, regularMenuEditValidator, regularMenuGetOneValidator, regularMenuRemoveValidator, regularMenuListValidator, regularMenuConfigureDaysValidator, getClientsWithCommonAllergensValidator, createAssignmentsValidator, updateFoodsOrderInput, getOneClientWithCommonAllergensValidator, regularMenuAddNewClientsValidator, closeAndPublishValidator } from '@root/app/validators/specific/regularMenu';
+import { regularMenuCreateValidator, regularMenuEditValidator, regularMenuGetOneValidator, regularMenuRemoveValidator, regularMenuListValidator, regularMenuConfigureDaysValidator, getClientsWithCommonAllergensValidator, createAssignmentsValidator, updateFoodsOrderInput, getOneClientWithCommonAllergensValidator, closeAndPublishValidator, getConsumerWeekMenuValidator } from '@root/app/validators/specific/regularMenu';
 import { TRPCError } from '@trpc/server';
 import getManyClients from '@root/app/server/api/routers/specific/libs/getManyClients';
 import checkCommonAllergens from '@root/app/server/api/routers/specific/libs/allergens/checkCommonAllergens';
@@ -15,84 +15,11 @@ import addFoodToConsumers from '@root/app/server/api/routers/specific/libs/consu
 import assignConsumerFoods from '@root/app/server/api/routers/specific/libs/consumerFoods/assignConsumerFoods';
 import addMealFoodsToMenu from '@root/app/server/api/routers/specific/libs/menu/addMealFoodsToMenu';
 import updateRegularMenu from '@root/app/server/api/routers/specific/libs/regularMenu/update';
-
-// const getClientsWithMenu = async (regularMenuIds: string[]) => {
-//   const uniqueClientIds = await db.consumerFood.findMany({
-//     where: {
-//       regularMenuId: { in: regularMenuIds },
-//     },
-//     select: {
-//       clientId: true,
-//     },
-//     distinct: ['clientId'],
-//   });
-
-//   // Return array of client IDs
-//   return uniqueClientIds.map(item => item.clientId);
-// }
-
-// const getRegularMenuIds = async (day: { year: number, month: number, day: number }, cateringId: string) => {
-//   const regularMenus = await db.regularMenu.findMany({
-//     where: { cateringId, day },
-//     select: { id: true },
-//   });
-//   return regularMenus.map(menu => menu.id);
-// };
-
-// const getCateringClients = async (cateringId: string) => {
-//   const clients = await db.client.findMany({
-//     where: { cateringId, deactivated: false },
-//     select: {
-//       id: true,
-//     },
-//   });
-//   return clients.map(client => client.id);
-// };
-
-// const getClientsWithoutMenu = async ({ cateringId, regularMenuIds }: { cateringId: string, regularMenuIds: string[] }) => {
-//   const clientsWithMenu = await getClientsWithMenu(regularMenuIds);
-//   const clients = await getCateringClients(cateringId);
-//   return clients.filter(client => !clientsWithMenu.includes(client));
-// };
-
-// const addNewClientsToMenu = createCateringProcedure([RoleType.manager, RoleType.dietician])
-//   .input(regularMenuAddNewClientsValidator)
-//   .mutation(async ({ input, ctx }) => {
-//     const { session: { catering } } = ctx;
-//     const { day } = input;
-//     const cateringId = catering.id;
-
-//     const regularMenuIds = await getRegularMenuIds(day, cateringId);
-
-//     if (!regularMenuIds.length) {
-//       throw new TRPCError({
-//         code: 'NOT_FOUND',
-//         message: 'Menu not found',
-//       });
-//     }
-//     const clientsWithoutMenu = await getClientsWithoutMenu({ cateringId, regularMenuIds });
-//     return clientsWithoutMenu;
-//   });
-
-// const checkIfAllClientsHaveMenu = createCateringProcedure([RoleType.manager, RoleType.dietician])
-//   .input(regularMenuAddNewClientsValidator)
-//   .query(async ({ input, ctx }) => {
-//     const { session: { catering } } = ctx;
-//     const { day } = input;
-//     const cateringId = catering.id;
-
-//     const regularMenuIds = await getRegularMenuIds(day, cateringId);
-
-//     if (!regularMenuIds.length) {
-//       throw new TRPCError({
-//         code: 'NOT_FOUND',
-//         message: 'Menu not found',
-//       });
-//     }
-
-//     return await getClientsWithoutMenu({ cateringId, regularMenuIds });
-
-//   });
+import { publicProcedure } from '@root/app/server/api/trpc';
+import getWeekDays from '@root/app/server/api/routers/specific/libs/getWeekDays';
+import getDayFoodData from '@root/app/server/api/routers/specific/libs/getDayFoodData';
+import groupDataByConsumer from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/groupDataByConsumer';
+import transformMenuForConsumer from '@root/app/server/api/routers/specific/libs/regularMenu/transformMenuForConsumer';
 
 const create = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(regularMenuCreateValidator)
@@ -182,6 +109,7 @@ const getOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
     // Transform data to match getOne structure
     const transformedResult = {
       id: result.id,
+      isPublished: result.isPublished,
       day: result.day,
       foods: result.menuMealFoods.map(menuMealFood => ({
         id: menuMealFood.food.id,
@@ -447,13 +375,34 @@ const closeAndPublish = createCateringProcedure([RoleType.manager, RoleType.diet
       name: client.info.name,
       code: client.info.code,
     }));
-    if (clientsWithCommonAllergensShort.length) {
+    if (clientsWithCommonAllergensShort.length === 0) {
       await db.regularMenu.updateMany({
         where: { cateringId: catering.id, day },
         data: { isPublished: true },
       });
     }
     return clientsWithCommonAllergensShort;
+  });
+const unPublish = createCateringProcedure([RoleType.manager, RoleType.dietician])
+  .input(closeAndPublishValidator)
+  .mutation(async ({ input, ctx }) => {
+    const { session: { catering } } = ctx;
+    const { day, clientId } = input;
+
+    const clients = await db.client.findMany({
+      where: {
+        cateringId: catering.id,
+        ...(clientId && { id: clientId }),
+      },
+    });
+
+    if (clients.length) {
+      await db.regularMenu.updateMany({
+        where: { cateringId: catering.id, day },
+        data: { isPublished: false },
+      });
+    }
+    return clients;
   });
 
 const getOneClientWithCommonAllergens = createCateringProcedure([RoleType.manager, RoleType.dietician])
@@ -559,6 +508,47 @@ const updateFoodsOrder = createCateringProcedure([RoleType.manager, RoleType.die
     });
   });
 
+const getConsumerWeekMenu = publicProcedure
+  .input(getConsumerWeekMenuValidator)
+  .query(async ({ input }) => {
+    const { dayId, consumerId } = input;
+
+    let cateringId = null;
+    let clientId = null;
+    const consumer = await db.consumer.findUnique({ where: { id: consumerId } });
+    if (consumer) {
+      cateringId = consumer.cateringId;
+      clientId = consumer.clientId;
+    }
+
+    if (!cateringId || !clientId) {
+      throw new Error('Catering not found');
+    }
+
+    const days = getWeekDays(dayId);
+
+    const allMealsData = await getDayFoodData({
+      dayIds: days,
+      cateringId,
+      ignoreOrders: true,
+      clientId,
+      onlyPublished: true,
+      consumerIds: [consumerId],
+    });
+
+
+
+    try {
+      const groupedData = groupDataByConsumer(allMealsData);
+      const consumerData = transformMenuForConsumer(groupedData);
+      return consumerData;
+
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  });
+
 const regularRouter = {
   // getMany,
   create,
@@ -572,6 +562,8 @@ const regularRouter = {
   updateFoodsOrder,
   getOneClientWithCommonAllergens,
   closeAndPublish,
+  unPublish,
+  getConsumerWeekMenu,
   // addNewClientsToMenu,
   // checkIfAllClientsHaveMenu,
   // count,

@@ -152,6 +152,7 @@ function getGroupedConsumerFoodDataObject(args: {
     consumerIds?: string[];
     groupBy: 'byConsumer';
     clientId?: string;
+    onlyPublished?: boolean;
 }): Promise<RoutesWithConsumersByIdMap>;
 function getGroupedConsumerFoodDataObject(args: {
     cateringId: string;
@@ -160,6 +161,7 @@ function getGroupedConsumerFoodDataObject(args: {
     consumerIds?: string[];
     groupBy?: 'byMeal';
     clientId?: string;
+    onlyPublished?: boolean;
 }): Promise<RoutesByIdMap>;
 async function getGroupedConsumerFoodDataObject({
     cateringId,
@@ -167,7 +169,8 @@ async function getGroupedConsumerFoodDataObject({
     dayObj,
     consumerIds,
     groupBy = 'byMeal',
-    clientId
+    clientId,
+    onlyPublished = false
 }: {
     cateringId: string;
     mealIds: string[];
@@ -179,6 +182,7 @@ async function getGroupedConsumerFoodDataObject({
     consumerIds?: string[];
     groupBy?: 'byMeal' | 'byConsumer';
     clientId?: string;
+    onlyPublished?: boolean;
 }): Promise<RoutesByIdMap | RoutesWithConsumersByIdMap> {
     const { year, month, day } = dayObj;
 
@@ -188,7 +192,7 @@ async function getGroupedConsumerFoodDataObject({
                 cateringId: cateringId,
                 mealId: { $in: mealIds },
                 ...(consumerIds && { consumerId: { $in: consumerIds } }),
-                ...(clientId && { clientId: clientId })
+                ...(clientId && { clientId: clientId }),
             }
         },
         {
@@ -209,7 +213,8 @@ async function getGroupedConsumerFoodDataObject({
                     month,
                     day
                 },
-                'regularMenu.cateringId': cateringId
+                'regularMenu.cateringId': cateringId,
+                ...(onlyPublished && { 'regularMenu.isPublished': true })
             }
         },
         {

@@ -58,12 +58,13 @@ const theme = {
     "tabpanel": "py-3"
 }
 
-const Tabs: FC<TabItemProps & { variant?: keyof TabStyles }> = ({ variant = 'underline', children }) => {
+const Tabs: FC<TabItemProps & { variant?: keyof TabStyles, onActiveTabChange?: (tab: number) => void }> = ({ variant = 'underline', onActiveTabChange, children }) => {
     return (
         <FlowbiteTabs
             aria-label="Tabs with underline"
             variant={variant}
             theme={theme}
+            onActiveTabChange={onActiveTabChange}
         >
             {children}
         </FlowbiteTabs>

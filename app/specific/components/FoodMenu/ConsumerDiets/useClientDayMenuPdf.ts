@@ -3,7 +3,7 @@ import downloadPdfFromBase64 from '@root/app/lib/pdf/downloadPdfFromBase64';
 import { api } from '@root/app/trpc/react';
 import { useEffect, useState } from 'react';
 
-const useClientDayMenuPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) => {
+const useClientDayMenuPdf = (lang: LocaleApp, updateMessage?: UpdateMessageType) => {
     const [clientId, setClientId] = useState<string | undefined>(undefined);
     const [dayId, setDayId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,7 @@ const useClientDayMenuPdf = (lang: LocaleApp, updateMessage: UpdateMessageType) 
 
     useEffect(() => {
         if (pdfError) {
-            updateMessage({ content: pdfError.message, status: 'error', timeout: 5000 });
+            updateMessage?.({ content: pdfError.message, status: 'error', timeout: 5000 });
             setIsLoading(false);
             setClientId(undefined);
             setDayId(null);

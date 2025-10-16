@@ -13,12 +13,27 @@ export const getConsumersValid = z.object({
     clientPlaceId: z.string().optional(),
 });
 
+export const getConsumersPublicValid = z.object({
+    limit: z.number().int().min(1).default(10),
+    page: z.number().int().min(1).default(1),
+    sortName: z.enum(consumersSortNames).optional(),
+    sortDirection: z.enum(['asc', 'desc']).optional(),
+    customerSearchValue: z.string().optional(),
+    showColumns: z.array(z.string()).optional(),
+    clientId: z.string().optional(),
+});
+
 export const getConsumersCountValid = z.object({
     customerSearchValue: z.string().optional(),
     dietSearchValue: z.string().optional(),
     showColumns: z.array(z.string()).optional(),
     clientId: z.string().optional(),
     clientPlaceId: z.string().optional(),
+});
+
+export const getConsumersCountPublicValid = z.object({
+    showColumns: z.array(z.string()).optional(),
+    clientId: z.string().optional(),
 });
 
 export const consumerEditValidator = z.object({

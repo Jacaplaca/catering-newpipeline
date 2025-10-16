@@ -1,9 +1,10 @@
+import { type UserPublicData } from '@root/app/server/api/routers/specific/publicData';
 import { api } from "app/trpc/server";
 
-export const getClientFromApi = async ({ clientId }: { clientId: string }): Promise<string> => {
-    const clientName = await api.specific.client.getPublic({
+export const getUserFromApi = async ({ clientId }: { clientId: string }): Promise<UserPublicData | null> => {
+    const userPublicData = await api.specific.publicData.get({
         id: clientId,
-    }) ?? '';
+    }) ?? null;
     // if (!page) {
     //     throw new Error(`Page not found: ${key}`);
     // }
@@ -13,5 +14,5 @@ export const getClientFromApi = async ({ clientId }: { clientId: string }): Prom
     // }
 
     // page.content = content.map(c => replaceVariables(c, { ...context }));
-    return clientName;
+    return userPublicData;
 };

@@ -7,6 +7,7 @@ function usePublishMenu({
 }: {
     clientId?: string,
 }) {
+    const utils = api.useUtils();
     const { day } = useFoodMenuContext();
     const [error, setError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -19,6 +20,20 @@ function usePublishMenu({
         onSuccess: () => {
             setError(null);
             setIsSuccess(true);
+            void utils.specific.regularMenu.getOne.invalidate();
+        }
+    });
+
+    const { mutateAsync: unpublishMenuApi, isPending: isUnpending } = api.specific.regularMenu.unPublish.useMutation({
+        onError: (err) => {
+            // setError(err.message);
+            // setIsSuccess(false);
+            // void utils.specific.regularMenu.getOne.invalidate();
+        },
+        onSuccess: () => {
+            void utils.specific.regularMenu.getOne.invalidate();
+            // setError(null);
+            // setIsSuccess(true);
         }
     });
 
@@ -43,6 +58,15 @@ function usePublishMenu({
         }
     };
 
+    const unpublishMenu = () => {
+        if (!day.day) {
+            setError("Cannot unpublish, day is not selected.");
+            setIsSuccess(false);
+            return;
+        }
+        void unpublishMenuApi({ day: day.day, clientId });
+    };
+
     return {
         publishMenu,
         isPending,
@@ -50,6 +74,8 @@ function usePublishMenu({
         isSuccess,
         reset,
         data,
+        unpublishMenu,
+        isUnpending,
     };
 }
 

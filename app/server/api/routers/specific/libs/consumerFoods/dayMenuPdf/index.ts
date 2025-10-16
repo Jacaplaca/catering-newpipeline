@@ -1,4 +1,4 @@
-import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
+import { createCateringProcedure, createOptionalCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { RoleType } from '@prisma/client';
 import { getDict } from '@root/app/server/cache/translations';
 import dayIdParser from '@root/app/server/api/routers/specific/libs/dayIdParser';
@@ -13,15 +13,29 @@ import groupDataByConsumer from '@root/app/server/api/routers/specific/libs/cons
 
 
 
-const dayMenuPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
+const dayMenuPdf = createOptionalCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getDayMenuPdfValid)
     .query(async ({ input, ctx }) => {
-        const { session: { catering } } = ctx;
         const { dayId, lang, clientId, week, perCustomer } = input;
+
+        let cateringId = null;
+
+        if (ctx?.session?.catering) {
+            cateringId = ctx.session.catering?.id ?? null;
+            if (!clientId) {
+                throw new Error('Client ID is required');
+            }
+            const client = await db.client.findUnique({ where: { id: clientId } });
+            cateringId = client?.cateringId ?? null;
+        }
+
+        if (!cateringId) {
+            throw new Error('Catering not found');
+        }
 
         const days = week ? getWeekDays(dayId) : [dayId];
 
-        const allMealsData = await getDayFoodData({ dayIds: days, cateringId: catering.id, ignoreOrders: true, clientId });
+        const allMealsData = await getDayFoodData({ dayIds: days, cateringId, ignoreOrders: true, clientId, onlyPublished: !Boolean(ctx?.session?.catering?.id) });
         const mealGroups = await db.mealGroup.findMany({ orderBy: { order: 'asc' } });
         const mealGroupOrder = mealGroups.map(mg => mg.id);
 

@@ -13,14 +13,18 @@ const getDayFoodData = async ({
     cateringId,
     ignoreOrders = false,
     clientId,
-    allowEmpty = false
+    allowEmpty = false,
+    onlyPublished = false,
+    consumerIds = []
 }: {
     dayIds: string[];
     cateringId: string,
     ignoreOrders?: boolean,
     clientId?: string,
     allowEmpty?: boolean,
-    allowEmptyMealGroups?: boolean
+    allowEmptyMealGroups?: boolean,
+    onlyPublished?: boolean,
+    consumerIds?: string[]
 }) => {
     const mealGroups = await db.mealGroup.findMany();
     const result: GetDayFoodDataResult = {};
@@ -30,7 +34,16 @@ const getDayFoodData = async ({
         let hasMealData = false;
 
         for (const mealGroup of mealGroups) {
-            const { consumerFoodByRoute } = await getGroupedFoodData({ dayId, mealGroupIdProp: mealGroup.id, cateringId, groupBy: 'byConsumer', ignoreOrders, clientId });
+            const { consumerFoodByRoute } = await getGroupedFoodData({
+                dayId,
+                mealGroupIdProp: mealGroup.id,
+                cateringId,
+                groupBy: 'byConsumer',
+                ignoreOrders,
+                clientId,
+                onlyPublished,
+                consumerIds
+            });
 
             // Check if mealGroup has data or if we should include empty ones
             const hasData = Object.keys(consumerFoodByRoute).length > 0;

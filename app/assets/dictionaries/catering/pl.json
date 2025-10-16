@@ -164,7 +164,9 @@
         "choose_allergens": "Wybierz alergeny",
         "allergens_label": "Alergeny",
         "allergens_placeholder": "Wybierz alergeny",
-        "selected_allergens": "Alergeny:"
+        "selected_allergens": "Alergeny:",
+        "menu_link": "Link do jadłospisu dziecka",
+        "copy_button_tooltip": "Kopiuj link do jadłospisu dziecka"
     },
     "email": {
         "phone_label": "Tel",
@@ -296,7 +298,8 @@
         "menu": "Menu standardowe",
         "diet": "Menu dietetyczne",
         "checklist": "Wykaz składników",
-        "no_client": "Nie ma takiego klienta"
+        "no_client": "Nie ma takiego klienta",
+        "week_menu": "Jadłospis na cały tydzień"
     },
     "routes": {
         "title": "Trasy",
@@ -417,8 +420,12 @@
         "are_you_sure_you_want_to_get_from_parent_regular_menu": "Czy na pewno chcesz pobrać ten posiłek z menu ogólnego?",
         "publish": "Opublikuj menu na ten dzień",
         "publishing": "Opublikowanie menu...",
-        "cant_publish_menu": "Nie można opublikować menu, ponieważ do niektórych dzieci są jeszcze przypisane posiłki z alergenami. Klienci u których występują alergeny.",
-        "published_menu": "Menu opublikowane. Teraz klienci oraz rodzice mogą przeglądać jadłospis."
+        "cancel_publish": "Anuluj opublikowanie menu",
+        "cant_publish_menu": "Nie można opublikować menu, ponieważ do niektórych dzieci są jeszcze przypisane posiłki z alergenami.",
+        "published_menu": "Menu opublikowane. Teraz klienci oraz rodzice mogą przeglądać jadłospis.",
+        "clients_with_allergens": "Klienci u których występują alergeny:",
+        "menu_is_published": "Menu jest opublikowane",
+        "menu_in_not_published": "Menu nie jest opublikowane"
     },
     "exclusion": {
         "duplicate_name_error": "Istnieje już wykluczenie z taką nazwą",
@@ -444,6 +451,18 @@
         "group_column": "Grupa",
         "group_label": "Grupa",
         "meal_group_placeholder": "Wpisz nazwę grupy posiłków"
+    },
+    "public-profile": {
+        "consumer_menu_links_title": "Linki do jadłospisów dzieci",
+        "consumer_menu_links_description": "Kliknij na dziecko i skopiuj link do schowka, aby udostępnić go rodzicom.",
+        "copy_consumer_menu_link": "Skopiuj link do jadłospisu dziecka",
+        "menu_prepared_for_you": "Menu przygotowane specjalnie dla Ciebie",
+        "ingredients": "Składniki",
+        "exclusions": "Wykluczenia",
+        "comment": "Komentarz",
+        "changed": "Zmienione",
+        "changes": "zmian",
+        "no_menu": "Brak menu"
     }
 }
 

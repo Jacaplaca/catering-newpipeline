@@ -21,14 +21,21 @@ const RowActions: FunctionComponent<{
             theme={{ arrowIcon: "hidden" }}
             disabled={disabled}
         >
-            {actions.filter(action => !action.hidden).map(({ label, onClick, icon, isDivider, key, iconClassName }) => {
+            {actions.filter(action => !action.hidden).map(({ label, onClick, icon, isDivider, key, iconClassName, disabled }) => {
                 if (isDivider) {
                     return <Dropdown.Divider key={key} />
                 }
                 return (
-                    <Dropdown.Item key={key} onClick={onClick}>
-                        {icon && <i className={`${icon} mr-2 ${iconClassName}`}></i>}
-                        {translate(dictionary, label)}
+                    <Dropdown.Item
+                        key={key}
+                        onClick={onClick}
+                        disabled={disabled}
+                    >
+                        <div className={`flex items-center gap-2 ${disabled ? 'opacity-50 cursor-not-allowed line-through' : ''}`}>
+
+                            {icon && <i className={`${icon} mr-2 ${iconClassName}`}></i>}
+                            {translate(dictionary, label)}
+                        </div>
                     </Dropdown.Item>
                 )
             })}

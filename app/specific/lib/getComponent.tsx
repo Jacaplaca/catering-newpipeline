@@ -7,13 +7,13 @@ import Kitchens from '@root/app/specific/components/Kitchens'
 import Consumers from '@root/app/specific/components/Consumers'
 import Orders from '@root/app/specific/components/Orders'
 import ClientFiles from '@root/app/specific/components/ClientFiles'
-import Documents from '@root/app/specific/components/Documents'
 import Routes from '@root/app/specific/components/Routes'
 import Allergens from '@root/app/specific/components/Allergens'
 import Food from '@root/app/specific/components/Food'
 import FoodMenu from '@root/app/specific/components/FoodMenu'
 import Exclusion from '@root/app/specific/components/Exclusion'
 import Meals from '@root/app/specific/components/Meals'
+import Documents from '@root/app/specific/components/PublicData/Client/Documents'
 
 const getComponent = ({
     key,

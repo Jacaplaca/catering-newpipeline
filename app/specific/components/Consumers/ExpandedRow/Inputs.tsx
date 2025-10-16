@@ -10,12 +10,15 @@ import InputsWrapper from '@root/app/_components/ui/Inputs/InputsWrapper';
 import FormSection from '@root/app/_components/ui/form/Section';
 import ClientDropdown from '@root/app/specific/components/ui/Dropdown/Client';
 import AllergenDropdown from '@root/app/specific/components/ui/Dropdown/Allergen';
+import makeHref from '@root/app/lib/url/makeHref';
+import LinkCopy from '@root/app/_components/Dashboard/Settings/Invite/LinkCopy';
 
 const ConsumerInputs = () => {
 
     const {
+        lang,
         dictionary,
-        rowClick: { form, isFetching, update,
+        rowClick: { form, isFetching, update, expandedRowId,
             clients: {
                 chooseClient,
             },
@@ -109,6 +112,11 @@ const ConsumerInputs = () => {
             ><InputsWrapper>
                     {Inputs[2]}
                     {Inputs[3]}
+                    <LinkCopy
+                        horizontal
+                        label={translate(dictionary, 'consumers:menu_link')}
+                        link={makeHref({ lang, page: 'menu', slugs: [expandedRowId ?? ''] }, true)}
+                    />
                 </InputsWrapper>
             </FormSection>
         </div>

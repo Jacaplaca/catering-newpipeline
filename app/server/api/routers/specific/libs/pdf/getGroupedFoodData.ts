@@ -18,9 +18,9 @@ type GroupedFoodDataByConsumer = {
     mealGroupId: string;
 };
 
-function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy: 'byConsumer', ignoreOrders?: boolean; clientId?: string }): Promise<GroupedFoodDataByConsumer>;
-function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy?: 'byMeal'; ignoreOrders?: boolean; clientId?: string }): Promise<GroupedFoodDataByMeal>;
-async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, groupBy = 'byMeal', ignoreOrders = false, clientId }: { dayId: string, mealId?: string, mealGroupIdProp?: string, cateringId: string, groupBy?: 'byMeal' | 'byConsumer', ignoreOrders?: boolean, clientId?: string }): Promise<GroupedFoodDataByMeal | GroupedFoodDataByConsumer> {
+function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy: 'byConsumer', ignoreOrders?: boolean; clientId?: string, onlyPublished?: boolean, consumerIds?: string[] }): Promise<GroupedFoodDataByConsumer>;
+function getGroupedFoodData(args: { dayId: string; mealId?: string; mealGroupIdProp?: string; cateringId: string; groupBy?: 'byMeal'; ignoreOrders?: boolean; clientId?: string, onlyPublished?: boolean, consumerIds?: string[] }): Promise<GroupedFoodDataByMeal>;
+async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, groupBy = 'byMeal', ignoreOrders = false, clientId, onlyPublished = false, consumerIds: consumerIdsProp = [] }: { dayId: string, mealId?: string, mealGroupIdProp?: string, cateringId: string, groupBy?: 'byMeal' | 'byConsumer', ignoreOrders?: boolean, clientId?: string, onlyPublished?: boolean, consumerIds?: string[] }): Promise<GroupedFoodDataByMeal | GroupedFoodDataByConsumer> {
 
     const { year, month, day } = dayIdParser(dayId);
     const meal = mealId ? await db.meal.findUnique({
@@ -105,14 +105,22 @@ async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, 
         }
         consumerIds = results ? results.map(doc => String(doc._id)) : [];
     }
+    const getConsumerIds = () => {
+        if (consumerIdsProp.length > 0) {
+            return consumerIdsProp;
+        }
+        return ignoreOrders ? undefined : consumerIds;
+    }
+
     if (groupBy === 'byConsumer') {
         const consumerFoodByRoute = await getGroupedConsumerFoodDataObject({
             cateringId,
             mealIds,
             dayObj: { year, month, day },
-            consumerIds: ignoreOrders ? undefined : consumerIds,
+            consumerIds: getConsumerIds(),
             groupBy,
-            clientId
+            clientId,
+            onlyPublished
         });
         return { consumerFoodByRoute, mealGroupName, orderIds, mealGroupId };
     } else {
@@ -120,9 +128,10 @@ async function getGroupedFoodData({ dayId, mealId, mealGroupIdProp, cateringId, 
             cateringId,
             mealIds,
             dayObj: { year, month, day },
-            consumerIds: ignoreOrders ? undefined : consumerIds,
+            consumerIds: getConsumerIds(),
             groupBy,
-            clientId
+            clientId,
+            onlyPublished
         });
         return { consumerFoodByRoute, mealGroupName, orderIds, mealGroupId };
     }
