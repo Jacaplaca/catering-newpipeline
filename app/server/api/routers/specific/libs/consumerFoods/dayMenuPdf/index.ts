@@ -22,9 +22,10 @@ const dayMenuPdf = createOptionalCateringProcedure([RoleType.kitchen, RoleType.m
 
         if (ctx?.session?.catering) {
             cateringId = ctx.session.catering?.id ?? null;
-            if (!clientId) {
+            if (!clientId && week) {
                 throw new Error('Client ID is required');
             }
+        } else {
             const client = await db.client.findUnique({ where: { id: clientId } });
             cateringId = client?.cateringId ?? null;
         }
