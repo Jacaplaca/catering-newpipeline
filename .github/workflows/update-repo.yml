@@ -130,7 +130,7 @@ jobs:
     - name: Build Docker images
       if: ${{ github.event.inputs.should_rebuild == 'yes' }}
       run: |
-        ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
+        ssh -o ServerAliveInterval=60 -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
           sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
