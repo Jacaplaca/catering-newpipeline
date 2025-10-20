@@ -13,7 +13,7 @@ import groupDataByConsumer from '@root/app/server/api/routers/specific/libs/cons
 
 
 
-const dayMenuPdf = createOptionalCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
+const dayMenuPdf = createOptionalCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician, RoleType.client])
     .input(getDayMenuPdfValid)
     .query(async ({ input, ctx }) => {
         const { dayId, lang, clientId, week, perCustomer } = input;
