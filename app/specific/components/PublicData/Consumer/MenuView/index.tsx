@@ -3,19 +3,33 @@ import { pl } from 'date-fns/locale/pl';
 import { registerLocale } from 'react-datepicker';
 import { format } from 'date-fns-tz';
 import dateToWeek from '@root/app/specific/lib/dateToWeek';
-import parseDate from '@root/app/lib/date/parseDate';
 import { type ConsumerFoodItem, type MealInConsumerDataItem, type MealsInConsumerByIdMap } from '@root/app/server/api/routers/specific/libs/getGroupedConsumerFoodDataObject';
 import FoodItem from '@root/app/specific/components/PublicData/Consumer/MenuView/FoodItem';
 import translate from '@root/app/lib/lang/translate';
 
 registerLocale('pl', pl);
 
+const parseDateString = (dateStr: string) => {
+    const parts = dateStr.split('-').map(part => parseInt(part, 10));
+    const year = parts[0];
+    const month = parts[1];
+    const day = parts[2];
+
+    if (year === undefined || month === undefined || day === undefined) {
+        const notValidDate = new Date(dateStr);
+        return { year: notValidDate.getFullYear(), month: notValidDate.getMonth(), day: notValidDate.getDate() };
+    }
+
+    return { year, month, day };
+}
 
 const formatDate = (dateStr: string) => {
-    const parsedDate = parseDate(new Date(dateStr));
-    const date = new Date(parsedDate.year, parsedDate.month + 1, parsedDate.day);
+    const parsedDate = parseDateString(dateStr);
+    const date = new Date(parsedDate.year, parsedDate.month, parsedDate.day);
     const { week, weekYear } = dateToWeek(date);
-    return `${format(date, 'EEEE, d MMMM yyyy', { locale: pl })} (${week}/${weekYear})`;
+    const formattedDate = `${format(date, 'EEEE, d MMMM yyyy', { locale: pl })} (${week}/${weekYear})`;
+    // return `${dateStr} ${JSON.stringify(date)} ${date.toLocaleDateString('pl-PL', { weekday: 'long' })} ${formattedDate} ${date.toISOString()}`
+    return formattedDate;
 };
 
 const sortMealGroups = (dayData: CleanedDailyMenu): [string, CleanedMealGroup][] => {

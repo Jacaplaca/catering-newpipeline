@@ -2,11 +2,12 @@ import dayId2dayIdWithPad from '@root/app/lib/date/dayId2dayIdWithPad';
 import dayIdParser from '@root/app/server/api/routers/specific/libs/dayIdParser';
 import { startOfWeek, addDays } from 'date-fns';
 
-const getWeekDays = (day: string): string[] => {
-    const parsedDay = dayIdParser(day, 1); // monthIndexStart = 1 because input is in yyyy-MM-dd format
+const getWeekDays = (day: string, monthIndexStart = 0): string[] => {
+    const parsedDay = dayIdParser(day, monthIndexStart); // monthIndexStart = 1 because input is in yyyy-MM-dd format
 
     // Create Date object from parsed day
-    const inputDate = new Date(parsedDay.year, parsedDay.month + 1, parsedDay.day);
+    const normalizedMonth = monthIndexStart === 1 ? parsedDay.month - 1 : parsedDay.month;
+    const inputDate = new Date(parsedDay.year, normalizedMonth, parsedDay.day);
 
     // Get start of week (Monday)
     const startOfWeekDate = startOfWeek(inputDate, { weekStartsOn: 1 });
