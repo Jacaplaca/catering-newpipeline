@@ -1,3 +1,12 @@
+## [2.10.3](https://github.com/Jacaplaca/catering/compare/v2.10.2...v2.10.3) (2025-10-30)
+
+
+### Bug Fixes
+
+* date in consumer menu and in week days and all editable dates in menu ([bd5f74c](https://github.com/Jacaplaca/catering/commit/bd5f74c71f4bc57abf52b5190bcd647eaba48eb8))
+
+
+
 ## [2.10.2](https://github.com/Jacaplaca/catering/compare/v2.10.1...v2.10.2) (2025-10-20)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * auto assign consumer food for the same consumer and food according other menus ([ab40880](https://github.com/Jacaplaca/catering/commit/ab40880afb3a5ccb61cfd62f339a0d4b5b481739))
-
-
-
-# [2.9.0](https://github.com/Jacaplaca/catering/compare/v2.8.1...v2.9.0) (2025-10-03)
-
-
-### Features
-
-* cleanups backup new consumer pdf ([13ff78d](https://github.com/Jacaplaca/catering/commit/13ff78dcdfcdcf387c63e815b36edee9391ebb20))
 
 
 
