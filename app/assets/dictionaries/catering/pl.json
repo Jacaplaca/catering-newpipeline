@@ -45,6 +45,8 @@
         "client-no-name": "Brak nazwy!",
         "add-new-client": "Dodaj nową placówkę",
         "add-new-client-confirmation": "Czy na pewno chcesz dodać nową placówkę?",
+        "item-activity-log-label": "Log aktywności",
+        "item-activity-log-title": "Zarządzaj logiem aktywności",
         "remove-place": "Usuń",
         "remove-place-confirmation": "Czy na pewno chcesz usunąć tę placówkę?"
     },
@@ -292,6 +294,13 @@
         "delete_confirmation_diet_files_selected_button": "Usuń pliki diety",
         "delete_confirmation_all_week_files_question": "Czy napewno usunąć wszystkie pliki wszystkich użytkowników z tego tygodnia?",
         "delete_confirmation_all_week_files_button": "Usuń tydzień"
+    },
+    "activity-log": {
+        "title": "Log aktywności",
+        "no_activity_available": "Brak aktywności do wyświetlenia",
+        "data_column": "Data",
+        "details_column": "Szczegóły aktywności",
+        "activity_type_update_consumer_food": "Aktualizacja jadłospisu dziecka"
     },
     "documents": {
         "tab_menu": "Tygodniowe",

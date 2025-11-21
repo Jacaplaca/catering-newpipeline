@@ -1,4 +1,5 @@
-import { RoleType } from '@prisma/client';
+import { RoleType, ActivityLogAction } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { createCateringProcedure } from '@root/app/server/api/specific/trpc';
 import { db } from '@root/app/server/db';
 import { autoReplaceValidator, consumerFoodGetByClientIdValidator, consumerFoodGetOneValidator, consumerFoodValidator, getSimilarCommentsValidator, resetOneValidator, resetMealValidator, getGroupedByFoodAndConsumerValidator } from '@root/app/validators/specific/consumerFood';
@@ -112,10 +113,29 @@ const getMenuId = async ({
   return menuId;
 }
 
+const addActivityLog = async ({
+  action,
+  data,
+  user,
+}: {
+  action: ActivityLogAction;
+  data: unknown;
+  user: { id: string; cateringId: string };
+}) => {
+  await db.activityLog.create({
+    data: {
+      action,
+      data: data as Prisma.InputJsonValue,
+      user: { connect: { id: user.id } },
+      catering: { connect: { id: user.cateringId } },
+    },
+  });
+};
+
 const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(consumerFoodValidator)
-  .mutation(async ({ input }) => {
-    // const { session: { catering } } = ctx;
+  .mutation(async ({ input, ctx }) => {
+    const { session: { catering, user } } = ctx;
     const { id, food, exclusions, comment, alternativeFood, ignoredAllergens } = input;
 
     if (!food.id) {
@@ -125,7 +145,7 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
       });
     }
 
-    await db.consumerFood.update({
+    const updatedConsumerFood = await db.consumerFood.update({
       where: { id },
       data: {
         food: {
@@ -144,8 +164,16 @@ const update = createCateringProcedure([RoleType.manager, RoleType.dietician])
             },
           })),
         },
+        updatedBy: { connect: { id: user.id } },
       },
     });
+
+    await addActivityLog({
+      action: ActivityLogAction.update_consumer_food,
+      data: updatedConsumerFood,
+      user: { id: user.id, cateringId: catering.id },
+    });
+
     const rawAssignments = await getRawAssignments({ id });
     return rawAssignments[0] as unknown as ClientFoodAssignment;
   });
@@ -162,7 +190,6 @@ const getOne = createCateringProcedure([RoleType.manager])
       },
     });
   });
-
 
 
 
@@ -217,7 +244,7 @@ const getByClientId = createCateringProcedure([RoleType.manager, RoleType.dietic
 const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(autoReplaceValidator)
   .mutation(async ({ input, ctx }) => {
-    const { session: { catering } } = ctx;
+    const { session: { catering, user } } = ctx;
     const { id } = input;
 
     const currentAssignment = await db.consumerFood.findFirst({
@@ -370,7 +397,7 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
 
     const { foodId, alternativeFoodId, exclusions, comment } = alternativeAssignment;
 
-    return db.consumerFood.update({
+    const updatedConsumerFood = await db.consumerFood.update({
       where: { id },
       data: {
         food: {
@@ -387,15 +414,24 @@ const autoReplace = createCateringProcedure([RoleType.manager, RoleType.dieticia
           }))
         },
         comment: comment ?? '',
+        updatedBy: { connect: { id: user.id } },
       },
     });
+
+    await addActivityLog({
+      action: ActivityLogAction.update_consumer_food,
+      data: updatedConsumerFood,
+      user: { id: user.id, cateringId: catering.id },
+    });
+
+    return updatedConsumerFood;
   });
 
 
 const resetOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(resetOneValidator)
   .mutation(async ({ input, ctx }) => {
-    const { session: { catering } } = ctx;
+    const { session: { catering, user } } = ctx;
     const { id } = input;
 
     const currentAssignment = await db.consumerFood.findFirst({
@@ -412,7 +448,7 @@ const resetOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
       return null;
     }
 
-    await db.consumerFood.update({
+    const updatedConsumerFood = await db.consumerFood.update({
       where: { id },
       data: {
         food: {
@@ -423,8 +459,16 @@ const resetOne = createCateringProcedure([RoleType.manager, RoleType.dietician])
         alternativeFood: { disconnect: true },
         exclusions: { deleteMany: {} },
         comment: '',
+        updatedBy: { connect: { id: user.id } },
       },
     });
+
+    await addActivityLog({
+      action: ActivityLogAction.update_consumer_food,
+      data: updatedConsumerFood,
+      user: { id: user.id, cateringId: catering.id },
+    });
+
     const rawAssignments = await getRawAssignments({ id });
     return rawAssignments[0] as unknown as ClientFoodAssignment;
   });

@@ -32,6 +32,7 @@ const OrdersComponent: FunctionComponent<{
 
     const { user } = props.session ?? {};
     const showForManager = user?.roleId === RoleType.manager;
+    const byClientAndMonthStore = useByClientAndMonthTable(props);
 
     return (
         <SessionProvider session={props.session}>
@@ -51,11 +52,13 @@ const OrdersComponent: FunctionComponent<{
                         <OrdersTable />
                     </OrderTableContextProvider>
                 </FlowbiteTabs.Item>
-                <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_client_and_month')}>
-                    <ByClientAndMonthTableContextProvider store={useByClientAndMonthTable(props)} >
-                        {showForManager && <ByClientAndMonth dictionary={props.dictionary} />}
-                    </ByClientAndMonthTableContextProvider>
-                </FlowbiteTabs.Item>
+                {showForManager && (
+                    <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_client_and_month')}>
+                        <ByClientAndMonthTableContextProvider store={byClientAndMonthStore}>
+                            <ByClientAndMonth dictionary={props.dictionary} />
+                        </ByClientAndMonthTableContextProvider>
+                    </FlowbiteTabs.Item>
+                )}
             </Tabs>
         </SessionProvider>
     );

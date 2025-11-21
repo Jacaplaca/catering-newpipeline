@@ -44,7 +44,14 @@
     "upload_file_dropzone_multiple": "Przeciągnij i upuść pliki tutaj lub kliknij, aby wybrać pliki",
     "remove_all": "Usuń wszystkie",
     "max_file_size": "Maksymalny rozmiar pliku to {}",
-    "loading": "Ładowanie..."
+    "loading": "Ładowanie...",
+    "payment_reminder_title": "Przypomnienie o płatności",
+    "payment_required_title": "Wymagana płatność",
+    "payment_urgent_title": "Pilne: Brak wpłaty",
+    "payment_expired_message_part1": "Twoja subskrypcja wygasła",
+    "payment_expired_message_part2": "temu. Opłać fakturę, aby zachować ciągłość dostępu do usług.",
+    "day_singular": "dzień",
+    "days_plural": "dni"
   },
   "error": {
     "DEFAULT": "Coś poszło nie tak!. Powrót do Strony Głównej"

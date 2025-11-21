@@ -15,6 +15,7 @@ import InformationalBanner from '@root/app/_components/Banners/Informational';
 import translate from '@root/app/lib/lang/translate';
 import getSettingsFromApi from '@root/app/lib/settings/getSettingsFromApi';
 import { auth } from '@root/app/server/auth';
+import PaymentReminder from '@root/app/_components/PaymentReminder';
 export interface ChildNavigationLink {
   name: string;
   url: string;
@@ -48,6 +49,8 @@ const Header: FunctionComponent<{
   const dictionary = await getDictFromApi(lang, ["shared", "profile-button", "banner"])
   const profileButtonContent = await getContentFromApi({ lang, key: 'profileButton', contentType: 'mdContent' }) as MdContent;
   const settings = await getSettingsFromApi('app') as unknown as { active: boolean };
+  const role = session?.user.roleId;
+  const isManager = role === 'manager';
 
   return (
     <header
@@ -103,6 +106,7 @@ const Header: FunctionComponent<{
         dictionary={dictionary}
         text={translate(dictionary, 'banner:conservation_work')}
       />}
+      {isManager && <PaymentReminder dictionary={dictionary} />}
     </header >
   );
 };

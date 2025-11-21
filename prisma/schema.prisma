@@ -102,9 +102,10 @@ model User {
     dietician   Dietician?
     kitchen     Kitchen?
     manager    Manager?
+    updatedConsumerFoods ConsumerFood[]
     Clipboard       Clipboard[]
     editedFiles ClientFile[]
-
+    activityLogs ActivityLog[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -156,6 +157,8 @@ model Catering {
     meals Meal[]
     exclusions Exclusion[]
     mealCategories MealCategory[]
+    paymentReminders PaymentReminder[]
+    activityLogs ActivityLog[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -262,7 +265,6 @@ model Dietician {
     catering Catering @relation(fields: [cateringId], references: [id])
     name String?
     consumers Consumer[]
-
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -870,6 +872,54 @@ model ConsumerFood {
     exclusions ConsumerFoodExclusion[]
     comment String?
     ignoredAllergens String[]
+    updatedById String?
+    updatedBy User? @relation(fields: [updatedById], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// model Announcement {
+//     id String @id @default(cuid()) @map("_id")
+//     title String
+//     content String
+//     cateringId String
+//     catering Catering @relation(fields: [cateringId], references: [id])
+//     forRoleId String?
+//     forRole Role? @relation(fields: [forRoleId], references: [id])
+//     canBeDismissed Boolean @default(false)
+//     isPublished Boolean @default(false)
+//     publishedAt DateTime?
+//     expiresAt DateTime?
+//     fromUserId String?
+//     fromUser User? @relation(fields: [fromUserId], references: [id])
+//     toUserIds String[]
+//     toUsers User[] @relation("AnnouncementToUser")?
+//     messageMarkdown String
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+// }
+
+model PaymentReminder {
+    id String @id @default(cuid()) @map("_id")
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    dueDate DateTime
+    isPublished Boolean @default(false)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum ActivityLogAction {
+    update_consumer_food
+}
+model ActivityLog {
+    id String @id @default(cuid()) @map("_id")
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    userId String?
+    user User? @relation(fields: [userId], references: [id])
+    action ActivityLogAction
+    data Json?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

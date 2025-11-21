@@ -133,6 +133,17 @@
         "order": 8,
         "items": [
             {
+                "label": "Activity log",
+                "icon": "fa-solid fa-clock",
+                "key": "activity-log",
+                "order": 1
+            }
+        ]
+    },
+    {
+        "order": 9,
+        "items": [
+            {
                 "label": "Settings",
                 "icon": "fa-solid fa-cog",
                 "key": "settings",

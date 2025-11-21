@@ -18,6 +18,7 @@ const useByClientAndMonthTable = ({
     pageName,
     settings,
     dictionary,
+    session,
 }: {
     session: Session | null,
     lang: LocaleApp,
@@ -29,6 +30,8 @@ const useByClientAndMonthTable = ({
     const { sort, sortDirection, sortName } = useTableSort<OrdersGroupedByClientAndMonthSortName>("id", 'desc')
     const { searchValue, search } = useSearch({ lang, pageName });
     const month = useDeliveryMonth();
+    const { user } = session ?? {};
+    const role = user?.roleId;
 
     const columns = useByClientAndMonthColumns({ sort });
 
@@ -50,7 +53,8 @@ const useByClientAndMonthTable = ({
     });
 
     const monthSummary = useFetchMonthSummary({
-        deliveryMonth: month.deliveryMonth
+        deliveryMonth: month.deliveryMonth,
+        role
     });
 
     const [rows] = useRows<OrderGroupedByClientAndMonthCustomTable>(fetchedRows);

@@ -18,6 +18,8 @@ import exclusion from '@root/app/server/api/routers/specific/exclusion';
 import mealCategory from '@root/app/server/api/routers/specific/mealCategory';
 import mealGroup from '@root/app/server/api/routers/specific/mealGroup';
 import publicData from '@root/app/server/api/routers/specific/publicData';
+import paymentReminder from '@root/app/server/api/routers/specific/paymentReminder';
+import activityLog from '@root/app/server/api/routers/specific/activityLog';
 // Ensure that each of these routers is created by createTRPCRouter
 const specificRouter = createTRPCRouter({
     client,
@@ -43,6 +45,8 @@ const specificRouter = createTRPCRouter({
     mealCategory,
     mealGroup,
     publicData,
+    paymentReminder,
+    activityLog,
 });
 
 export default specificRouter;

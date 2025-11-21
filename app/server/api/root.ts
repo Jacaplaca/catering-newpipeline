@@ -53,7 +53,7 @@ export const appRouter = createTRPCRouter({
     hasFinished: specificRouter.settings.hasFinished
   },
   personalization: { get: specificRouter.settings.get },
-  specific: specificRouter
+  specific: specificRouter,
 });
 
 export type AppRouter = typeof appRouter;

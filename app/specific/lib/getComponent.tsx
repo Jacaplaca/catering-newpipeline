@@ -14,6 +14,7 @@ import FoodMenu from '@root/app/specific/components/FoodMenu'
 import Exclusion from '@root/app/specific/components/Exclusion'
 import Meals from '@root/app/specific/components/Meals'
 import Documents from '@root/app/specific/components/PublicData/Client/Documents'
+import ActivityLog from '@root/app/specific/components/ActivityLog'
 
 const getComponent = ({
     key,
@@ -99,6 +100,10 @@ const getComponent = ({
         "meals": {
             title: translate(dictionary, 'dashboard:item-meals-title'),
             component: <Meals lang={lang} pageName={pageName} />,
+        },
+        "activity-log": {
+            title: translate(dictionary, 'dashboard:item-activity-log-title'),
+            component: <ActivityLog lang={lang} pageName={pageName} />,
         },
     } as Record<string, { title: string, component: JSX.Element }>
 
