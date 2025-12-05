@@ -6,7 +6,7 @@ const edit = createCateringProcedure([RoleType.manager])
     .input(clientEditValidator)
     .mutation(async ({ ctx, input }) => {
         const { db, session } = ctx
-        const { id, name, email, address, city, contactPerson, country, notes, phone, zip, code, firstOrderDeadline, secondOrderDeadline, allowWeekendOrder, deliveryRoute } = input;
+        const { id, name, email, address, city, contactPerson, country, notes, phone, zip, code, firstOrderDeadline, secondOrderDeadline, allowWeekendOrder, deliveryRoute, clientCategory } = input;
         const { cateringId } = session.user;
         const { settings } = session.catering
 
@@ -118,6 +118,7 @@ const edit = createCateringProcedure([RoleType.manager])
                     update: info
                 },
                 deliveryRouteId: deliveryRoute?.id ?? null,
+                clientCategoryId: clientCategory?.id ?? null,
             }
         });
     })

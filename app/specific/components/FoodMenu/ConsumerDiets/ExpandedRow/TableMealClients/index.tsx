@@ -27,10 +27,11 @@ export type MealWithDishes = {
 
 
 // Header component for individual dishes (second level)
-const TableDishHeader = ({ dishesByMeal, minColumnWidth }: {
+const TableDishHeader = ({ dishesByMeal, minColumnWidth, highlightedAllergenIds }: {
     dishesByMeal: MealWithDishes[];
     dictionary: Record<string, string>;
     minColumnWidth: number;
+    highlightedAllergenIds: string[];
 }) => (
     <div className="flex bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-600">
         <div className="w-[250px] flex-shrink-0 p-2 border-r border-neutral-200 dark:border-neutral-600">
@@ -51,7 +52,7 @@ const TableDishHeader = ({ dishesByMeal, minColumnWidth }: {
                             <span className="text-xs text-neutral-700 dark:text-neutral-300 font-medium text-center">
                                 {dish.name}
                             </span>
-                            <AllergenList allergens={dish.allergens} variant="dish" />
+                            <AllergenList allergens={dish.allergens} variant="dish" highlightedIds={highlightedAllergenIds} />
                             {env.NEXT_PUBLIC_MENU_FRONT && (
                                 <div className="mt-3 pt-1 w-full flex justify-end">
                                     {dish.id}
@@ -66,12 +67,13 @@ const TableDishHeader = ({ dishesByMeal, minColumnWidth }: {
 );
 
 // Consumer row component
-const ConsumerRow = ({ consumer, dishesByMeal, assignments, totalDishColumns, minColumnWidth }: {
+const ConsumerRow = ({ consumer, dishesByMeal, assignments, totalDishColumns, minColumnWidth, highlightedAllergenIds }: {
     consumer: MealTableConsumerType;
     dishesByMeal: MealWithDishes[];
     assignments: ClientFoodAssignment[];
     totalDishColumns: number;
     minColumnWidth: number;
+    highlightedAllergenIds: string[];
 }) => {
 
     return (
@@ -79,7 +81,8 @@ const ConsumerRow = ({ consumer, dishesByMeal, assignments, totalDishColumns, mi
             {/* Consumer name */}
             <Consumer
                 consumer={consumer}
-                hasAssignments={assignments.length > 0} />
+                hasAssignments={assignments.length > 0}
+                highlightedAllergenIds={highlightedAllergenIds} />
             {/* Cells for each dish */}
             <div className="flex flex-1">
                 {dishesByMeal.map(({ dishes, mealId }) =>
@@ -131,7 +134,7 @@ const EmptyConsumersState = ({ dictionary, allergens }: { dictionary: Record<str
 
 // Main component
 const TableMealClients = () => {
-    const { dictionary, filter: { allergens } } = useConsumerDietsTableContext();
+    const { dictionary, filter: { consumerAllergens, foodAllergens, foods } } = useConsumerDietsTableContext();
     const { rowClick } = useFoodMenuContext();
     const { clientConsumers, clientFoods: { data, isFetching: clientFoodsFetching } } = rowClick;
     const { rawAssignments, menuMealFoods } = data ?? { rawAssignments: [], menuMealFoods: [] };
@@ -149,6 +152,21 @@ const TableMealClients = () => {
             const uniqueFoodMap = new Map<string, DishInfo>();
 
             mealAssignments.forEach(a => {
+                // Filter by specific foods if selected
+                if (foods.length > 0) {
+                    const isSelectedFood = foods.some(f => f.id === a.food.id);
+                    if (!isSelectedFood) return;
+                }
+
+                // Filter by food allergens if selected (Food must contain ALL selected allergens)
+                if (foodAllergens.length > 0) {
+                    const foodAllergenIds = a.food.allergens.map(fa => fa.allergen.id);
+                    const hasAllSelectedAllergens = foodAllergens.every(fa =>
+                        foodAllergenIds.includes(fa.id)
+                    );
+                    if (!hasAllSelectedAllergens) return;
+                }
+
                 if (!uniqueFoodMap.has(a.food.id)) {
                     uniqueFoodMap.set(a.food.id, {
                         id: a.food.id,
@@ -188,6 +206,10 @@ const TableMealClients = () => {
     const totalDishColumns = dishesByMeal.reduce((sum, { dishes }) => sum + Math.max(1, dishes.length), 0);
     const minColumnWidth = 150;
 
+    // Extract IDs for highlighting
+    const consumerAllergenIds = consumerAllergens.map(a => a.id);
+    const foodAllergenIds = foodAllergens.map(a => a.id);
+
     if (clientFoodsFetching) {
         return <div className='flex justify-center items-center h-full'>
             <i className={`my-4 animate-spin fas fa-spinner text-2xl`} />
@@ -206,8 +228,8 @@ const TableMealClients = () => {
     }
 
     const filteredConsumers = clientConsumers?.filter(consumer => {
-        const consumerAllergens = consumer.allergens.map(a => a.id);
-        return allergens.every(allergen => consumerAllergens.includes(allergen.id));
+        const consumerAllergenIds = consumer.allergens.map(a => a.id);
+        return consumerAllergens.every(allergen => consumerAllergenIds.includes(allergen.id));
     });
 
     return (
@@ -222,6 +244,7 @@ const TableMealClients = () => {
                     dishesByMeal={dishesByMeal}
                     dictionary={dictionary}
                     minColumnWidth={minColumnWidth}
+                    highlightedAllergenIds={foodAllergenIds}
                 />
             </div>
 
@@ -235,12 +258,13 @@ const TableMealClients = () => {
                         assignments={assignments.filter(a => a.consumer.id === consumer.id)}
                         totalDishColumns={totalDishColumns}
                         minColumnWidth={minColumnWidth}
+                        highlightedAllergenIds={consumerAllergenIds}
                     />
                 ))}
                 {(!filteredConsumers || filteredConsumers.length === 0) && (
                     <EmptyConsumersState
                         dictionary={dictionary}
-                        allergens={allergens.map(a => a.name)}
+                        allergens={consumerAllergens.map(a => a.name)}
                     />
                 )}
             </div>

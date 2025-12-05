@@ -12,6 +12,7 @@ interface SelectedDisplayProps {
     crossedItems?: string[];
     clearAll?: () => void;
     clearAllLabel?: string;
+    className?: string;
 }
 
 const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
@@ -25,7 +26,8 @@ const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
     noBackground = false,
     crossedItems,
     clearAll,
-    clearAllLabel
+    clearAllLabel,
+    className = ''
 }) => {
     if (!selectedItems || selectedItems.length === 0) {
         return null;
@@ -36,7 +38,7 @@ const SelectedDisplay: FunctionComponent<SelectedDisplayProps> = ({
     };
 
     return (
-        <div className={`flex flex-wrap gap-2 p-2 ${!noBackground ? 'bg-neutral-50 dark:bg-neutral-800' : ''} rounded-md ${!noBorder ? 'border border-neutral-200 dark:border-neutral-600' : ''}`}>
+        <div className={`flex flex-wrap gap-2 p-2 ${!noBackground ? 'bg-neutral-50 dark:bg-neutral-800' : ''} rounded-md ${!noBorder ? 'border border-neutral-200 dark:border-neutral-600' : ''} ${className}`}>
             <div className="flex items-center justify-between w-full">
                 <div className="text-sm text-neutral-600 dark:text-neutral-300 font-medium mr-2 flex items-center gap-2">
                     {iconClassName && (

@@ -9,35 +9,26 @@ import { options } from '@root/app/server/api/specific/aggregate';
 import { type z } from 'zod';
 import { type getClientsWithCommonAllergensValidator } from '@root/app/validators/specific/regularMenu';
 
-const getManyClients = async (input: z.infer<typeof clientsValidator> | z.infer<typeof getClientsWithCommonAllergensValidator>, catering: Catering, config?: { allowedClientIds?: string[] }): Promise<ClientCustomTable[]> => {
-    const { page, limit, sortName, sortDirection, searchValue, showColumns, tagId } = input;
+const getManyClientsForCount = async (
+    input: z.infer<typeof clientsValidator> | z.infer<typeof getClientsWithCommonAllergensValidator>,
+    catering: Catering,
+    config?: { allowedClientIds?: string[] }
+): Promise<string[]> => {
+    const { searchValue, showColumns, tagId } = input;
     const { allowedClientIds } = config ?? {};
-
-    const pagination = getQueryPagination({ page, limit });
-
-    const allowedSortNames = clientSortNames;
-
-    const orderBy = getQueryOrder({
-        name: sortName,
-        direction: sortDirection,
-        allowedNames: allowedSortNames,
-        inNumbers: true
-    });
 
     const pipeline = [
         ...getClientsDbQuery({ searchValue, showColumns, catering, tagId, allowedClientIds }),
-        ...getLowerCaseSort(orderBy),
-        { $skip: pagination.skip },
-        { $limit: pagination.take },
     ]
 
     const result = await db.client.aggregateRaw({
         pipeline,
         options
-    });
+    }) as unknown as { id: string }[];
 
-    return result as unknown as ClientCustomTable[];
+    return result.map((item) => item.id);
+
 };
 
-export default getManyClients;
+export default getManyClientsForCount;
 

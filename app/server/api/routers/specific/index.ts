@@ -20,6 +20,7 @@ import mealGroup from '@root/app/server/api/routers/specific/mealGroup';
 import publicData from '@root/app/server/api/routers/specific/publicData';
 import paymentReminder from '@root/app/server/api/routers/specific/paymentReminder';
 import activityLog from '@root/app/server/api/routers/specific/activityLog';
+import clientCategory from '@root/app/server/api/routers/specific/clientCategory';
 // Ensure that each of these routers is created by createTRPCRouter
 const specificRouter = createTRPCRouter({
     client,
@@ -37,6 +38,7 @@ const specificRouter = createTRPCRouter({
     deliveryRoute,
     allergen,
     foodCategory,
+    clientCategory,
     food,
     regularMenu,
     consumerFood,

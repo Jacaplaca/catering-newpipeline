@@ -20,6 +20,7 @@ import getWeekDays from '@root/app/server/api/routers/specific/libs/getWeekDays'
 import getDayFoodData from '@root/app/server/api/routers/specific/libs/getDayFoodData';
 import groupDataByConsumer from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/groupDataByConsumer';
 import transformMenuForConsumer from '@root/app/server/api/routers/specific/libs/regularMenu/transformMenuForConsumer';
+import getManyClientsForCount from '@root/app/server/api/routers/specific/libs/getManyClientsForCount';
 
 const create = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(regularMenuCreateValidator)
@@ -341,9 +342,9 @@ const getClientsWithCommonAllergens = createCateringProcedure([RoleType.manager,
   .input(getClientsWithCommonAllergensValidator)
   .query(async ({ input, ctx }) => {
     const { session: { catering } } = ctx;
-    const { day } = input;
+    const { day, clientIds } = input;
 
-    const clients = await getManyClients(input, catering);
+    const clients = await getManyClients(input, catering, { allowedClientIds: clientIds });
 
     const clientsWithCommonAllergens = await Promise.all(clients.map(async (client) => {
       const hasCommonAllergens = await checkCommonAllergens(catering.id, day, client.id);
@@ -351,6 +352,141 @@ const getClientsWithCommonAllergens = createCateringProcedure([RoleType.manager,
       return { ...client, hasCommonAllergens, hasIndividualMenu };
     }));
     return clientsWithCommonAllergens;
+  });
+
+const getClientWithCommonAllergensIds = createCateringProcedure([RoleType.manager, RoleType.dietician])
+  .input(getClientsWithCommonAllergensValidator)
+  .query(async ({ input, ctx }) => {
+    const { session: { catering } } = ctx;
+    const { day, consumerAllergenId, foodAllergenId } = input;
+
+    let allowedClientIds: string[] | undefined;
+
+    if (consumerAllergenId) {
+      const consumersWithAllergen = await db.consumerAllergen.findMany({
+        where: { allergenId: consumerAllergenId },
+        select: { consumerId: true },
+      });
+      const consumerIds = consumersWithAllergen.map((ca) => ca.consumerId);
+
+      if (consumerIds.length === 0) {
+        allowedClientIds = [];
+      } else {
+        const consumerFoods = await db.consumerFood.findMany({
+          where: {
+            consumerId: { in: consumerIds },
+            cateringId: catering.id,
+            regularMenu: {
+              day: {
+                year: day.year,
+                month: day.month,
+                day: day.day,
+              },
+            },
+          },
+          select: { clientId: true },
+          distinct: ['clientId'],
+        });
+        allowedClientIds = consumerFoods.map((cf) => cf.clientId);
+      }
+    }
+
+    if (foodAllergenId) {
+      const foodsWithAllergen = await db.foodAllergen.findMany({
+        where: { allergenId: foodAllergenId },
+        select: { foodId: true }
+      });
+      const foodIds = foodsWithAllergen.map(f => f.foodId);
+
+      if (foodIds.length === 0) {
+        allowedClientIds = [];
+      } else {
+        // Fetch potential matches: either the main food or the alternative food has the allergen
+        const consumerFoods = await db.consumerFood.findMany({
+          where: {
+            cateringId: catering.id,
+            regularMenu: {
+              day: {
+                year: day.year,
+                month: day.month,
+                day: day.day,
+              },
+            },
+            OR: [
+              { alternativeFoodId: { in: foodIds } },
+              { foodId: { in: foodIds } }
+            ]
+          },
+          select: {
+            clientId: true,
+            foodId: true,
+            alternativeFoodId: true
+          },
+        });
+
+        // Filter in memory to correctly handle the logic:
+        // If alternativeFoodId exists, checking it overrides checking foodId.
+        // If alternativeFoodId is missing (null), we check foodId.
+        const clientIdsFromFood = consumerFoods
+          .filter(cf => {
+            const actualFoodId = cf.alternativeFoodId ?? cf.foodId;
+            return foodIds.includes(actualFoodId);
+          })
+          .map(cf => cf.clientId);
+
+        const uniqueClientIdsFromFood = [...new Set(clientIdsFromFood)];
+
+        if (allowedClientIds === undefined) {
+          allowedClientIds = uniqueClientIdsFromFood;
+        } else {
+          allowedClientIds = allowedClientIds.filter(id => uniqueClientIdsFromFood.includes(id));
+        }
+      }
+    }
+
+    if (input.foodId) {
+      const targetFoodId = input.foodId;
+      // Fetch potential matches: either the main food or the alternative food matches foodId
+      const consumerFoods = await db.consumerFood.findMany({
+        where: {
+          cateringId: catering.id,
+          regularMenu: {
+            day: {
+              year: day.year,
+              month: day.month,
+              day: day.day,
+            },
+          },
+          OR: [
+            { alternativeFoodId: targetFoodId },
+            { foodId: targetFoodId }
+          ]
+        },
+        select: {
+          clientId: true,
+          foodId: true,
+          alternativeFoodId: true
+        },
+      });
+
+      // Filter in memory to correctly handle the logic (same as for allergens)
+      const clientIdsFromSpecificFood = consumerFoods
+        .filter(cf => {
+          const actualFoodId = cf.alternativeFoodId ?? cf.foodId;
+          return actualFoodId === targetFoodId;
+        })
+        .map(cf => cf.clientId);
+
+      const uniqueClientIds = [...new Set(clientIdsFromSpecificFood)];
+
+      if (allowedClientIds === undefined) {
+        allowedClientIds = uniqueClientIds;
+      } else {
+        allowedClientIds = allowedClientIds.filter(id => uniqueClientIds.includes(id));
+      }
+    }
+
+    return await getManyClientsForCount(input, catering, { allowedClientIds });
   });
 
 const closeAndPublish = createCateringProcedure([RoleType.manager, RoleType.dietician])
@@ -558,6 +694,7 @@ const regularRouter = {
   getOne,
   configuredDays,
   getClientsWithCommonAllergens,
+  getClientWithCommonAllergensIds,
   createAssignments,
   updateFoodsOrder,
   getOneClientWithCommonAllergens,

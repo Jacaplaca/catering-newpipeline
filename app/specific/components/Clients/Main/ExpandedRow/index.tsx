@@ -3,8 +3,8 @@ import ExpandedRow from '@root/app/_components/Table/ExpandedRow';
 import { Form } from '@root/app/_components/ui/form';
 import Buttons from '@root/app/_components/ui/form/Buttons';
 import translate from '@root/app/lib/lang/translate';
-import ClientInputs from '@root/app/specific/components/Clients/ExpandedRow/Inputs';
-import { useClientTableContext } from '@root/app/specific/components/Clients/context';
+import ClientInputs from '@root/app/specific/components/Clients/Main/ExpandedRow/Inputs';
+import { useClientTableContext } from '@root/app/specific/components/Clients/Main/context';
 
 const ClientExpandedRow = () => {
 

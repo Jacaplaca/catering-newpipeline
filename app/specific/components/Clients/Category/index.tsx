@@ -11,27 +11,23 @@ import t from '@root/app/lib/lang/translate';
 import { useState, type FunctionComponent } from "react";
 import RowActions from '@root/app/_components/Table/Actions';
 import TableWrapper from '@root/app/_components/Table/Wrapper';
-import { useClientTableContext } from '@root/app/specific/components/Clients/context';
 import TableActionConfirm from '@root/app/_components/Table/ActionConfirm';
 import MyButton from '@root/app/_components/ui/buttons/MyButton';
-import ClientExpandedRow from '@root/app/specific/components/Clients/ExpandedRow';
 import { Table } from 'flowbite-react';
-import Invite from '@root/app/_components/Dashboard/Settings/Invite';
-// import TagSearch from '@root/app/specific/components/ui/TagSearch';
+import { useClientCategoryTableContext } from '@root/app/specific/components/Clients/Category/context';
+import { api } from '@root/app/trpc/react';
 import TableToast from '@root/app/_components/Table/Toast';
+import ClientCategoryExpandedRow from '@root/app/specific/components/Clients/Category/ExpandedRow';
 
-const ClientsTable: FunctionComponent = () => {
-
+const ClientCategoryTable: FunctionComponent = () => {
     const {
         pageName,
         lang,
         dictionary,
-        settings,
         data: { table, skeleton },
-        columns: { columns, toggleColumn, showColumns },
+        columns: { columns },
         isFetching,
         totalCount,
-        search,
         rowClick: { expandedRowId, onRowClick },
         sort: { sortName, sortDirection },
         action: {
@@ -41,13 +37,16 @@ const ClientsTable: FunctionComponent = () => {
             getConfirmationData,
             actions
         },
-        // filter: { tags: { updateTagId } },
-        message
-    } = useClientTableContext();
+        message,
+    } = useClientCategoryTableContext();
 
-    const [isInviteOpen, setInviteOpen] = useState(false);
+    const [isAddOpen, setAddOpen] = useState(false);
 
-    const handleInviteOpen = () => { setInviteOpen(true); }
+    const addOpen = () => {
+        onRowClick(null);
+        setAddOpen(true);
+    }
+    const addClose = () => { setAddOpen(false) }
 
     return (
         <div className='relative'>
@@ -56,34 +55,27 @@ const ClientsTable: FunctionComponent = () => {
                 getData={getConfirmationData}
             />
             <MainModal
-                isOpen={isInviteOpen}
-                closeModal={() => setInviteOpen(false)}
-                header={t(dictionary, 'invite:title', [settings?.main?.siteName?.toString()])}
+                isOpen={isAddOpen}
+                closeModal={addClose}
+                header={t(dictionary, 'clients:add_category')}
             >
-                <Invite
-                    lang={lang}
-                    dictionary={dictionary}
-                    role='client'
-                />
+                <ClientCategoryExpandedRow />
             </MainModal>
             <TableWrapper>
                 <TableHeader
-                    search={search}
                     dictionary={dictionary}
-                    title={'clients:title'}
-                    searchPlaceholder={'clients:search_placeholder'}
-                ><MyButton
-                    onClick={handleInviteOpen}
-                    icon='fas fa-user-plus'
-                    id={t(dictionary, 'clients:add_client')}
-                    ariaLabel={t(dictionary, 'clients:add_client')}
-                >{t(dictionary, 'clients:add_client')}</MyButton>
+                    searchPlaceholder={'clients:search_category_placeholder'}
+                >
+                    <MyButton
+                        onClick={addOpen}
+                        icon='fa-solid fa-building'
+                        id={t(dictionary, 'clients:add_category')}
+                        ariaLabel={t(dictionary, 'clients:add_category')}
+                    >{t(dictionary, 'clients:add_category')}</MyButton>
                 </TableHeader>
                 <QuickFilterRow
                     dictionary={dictionary}
                     columns={columns}
-                    toggleColumn={toggleColumn}
-                    checkedColumns={showColumns}
                 >
                     <RowActions
                         label={t(dictionary, 'shared:actions')}
@@ -91,11 +83,8 @@ const ClientsTable: FunctionComponent = () => {
                         disabled={!showActions}
                         dictionary={dictionary}
                     />
-                    {/* <TagSearch
-                        updateTagId={updateTagId}
-                        dictionary={dictionary}
-                    /> */}
                 </QuickFilterRow>
+
                 <Table
                     theme={tableTheme}
                     hoverable
@@ -106,17 +95,16 @@ const ClientsTable: FunctionComponent = () => {
                         isCheck={isAllChecked}
                         sortName={sortName}
                         sortDirection={sortDirection}
-                        show={showColumns}
                         dictionary={dictionary}
                     />
                     <TableContent
                         tableData={isFetching ? skeleton : table}
                         className="divide-y"
                         key={isFetching ? 'skeleton' : 'table'}
-                        show={showColumns}
+                        // show={showColumns}
                         onRowClick={onRowClick}
                         expandedRowId={expandedRowId}
-                        ExpandedRow={ClientExpandedRow}
+                        ExpandedRow={ClientCategoryExpandedRow}
                     />
                 </Table>
                 <TableFooter
@@ -135,4 +123,4 @@ const ClientsTable: FunctionComponent = () => {
 }
 
 
-export default ClientsTable;
+export default ClientCategoryTable;

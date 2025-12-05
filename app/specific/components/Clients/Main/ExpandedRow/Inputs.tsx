@@ -1,8 +1,8 @@
-import { useClientTableContext } from '@root/app/specific/components/Clients/context';
+import { useClientTableContext } from '@root/app/specific/components/Clients/Main/context';
 import { type clientEditValidator } from '@root/app/validators/specific/client';
 import { type z } from 'zod';
 import getInputsBulk from '@root/app/lib/table/getInputsBulk';
-import useClientInputs from '@root/app/specific/components/Clients/ExpandedRow/useInputs';
+import useClientInputs from '@root/app/specific/components/Clients/Main/ExpandedRow/useInputs';
 import translate from '@root/app/lib/lang/translate';
 import FormSection from '@root/app/_components/ui/form/Section';
 import InputsWrapper from '@root/app/_components/ui/Inputs/InputsWrapper';
@@ -10,6 +10,7 @@ import DeliveryRouteDropdown from '@root/app/specific/components/ui/Dropdown/Del
 import { FormField } from '@root/app/_components/ui/form';
 import makeHref from '@root/app/lib/url/makeHref';
 import LinkCopy from '@root/app/_components/Dashboard/Settings/Invite/LinkCopy';
+import ClientCategoryDropdown from '@root/app/specific/components/ui/Dropdown/ClientCategory';
 
 const ClientInputs = () => {
 
@@ -44,24 +45,33 @@ const ClientInputs = () => {
                         field: { value },
                     }) => {
                         return (
-                            // <AuthInput
-                            //     message={translate(dictionary, form.formState.errors.deliveryRoute?.message)}
-                            //     label={translate(dictionary, 'consumers:client.name_column')}
-                            //     horizontal
-                            // >
                             <DeliveryRouteDropdown
                                 dictionary={dictionary}
                                 onSelect={(deliveryRoute) => {
-                                    // if (deliveryRoute) {
                                     form.setValue('deliveryRoute', deliveryRoute, { shouldValidate: true, shouldDirty: true });
                                     void form.trigger();
-                                    // }
                                 }}
                                 selected={value}
-                            // inputClassName='w-full'
-                            // foundLimitChars={35}
                             />
-                            // </AuthInput>
+                        )
+                    }}
+                />
+
+                <FormField
+                    control={form.control}
+                    name={'clientCategory'}
+                    render={({
+                        field: { value },
+                    }) => {
+                        return (
+                            <ClientCategoryDropdown
+                                dictionary={dictionary}
+                                onSelect={(clientCategory) => {
+                                    form.setValue('clientCategory', clientCategory, { shouldValidate: true, shouldDirty: true });
+                                    void form.trigger();
+                                }}
+                                selected={value}
+                            />
                         )
                     }}
                 />

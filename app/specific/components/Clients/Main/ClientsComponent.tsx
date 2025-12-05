@@ -1,7 +1,7 @@
 'use client';
-import ClientsTable from '@root/app/specific/components/Clients/ClientsTable';
-import { TableContextProvider } from '@root/app/specific/components/Clients/context';
-import useClientTable from '@root/app/specific/components/Clients/useClientTable';
+import ClientsTable from '@root/app/specific/components/Clients/Main/ClientsTable';
+import { TableContextProvider } from '@root/app/specific/components/Clients/Main/context';
+import useClientTable from '@root/app/specific/components/Clients/Main/useClientTable';
 import { type SettingParsedType } from '@root/types';
 import { type FunctionComponent } from 'react';
 

@@ -1,8 +1,8 @@
-import { useClientTableContext } from '@root/app/specific/components/Clients/context';
+import { useClientTableContext } from '@root/app/specific/components/Clients/Main/context';
 import { type clientEditValidator } from '@root/app/validators/specific/client';
 import { type z } from 'zod';
 import getInputsBulk from '@root/app/lib/table/getInputsBulk';
-import useClientInputs from '@root/app/specific/components/Clients/ExpandedRow/useInputs';
+import useClientInputs from '@root/app/specific/components/Clients/Main/ExpandedRow/useInputs';
 // import Tags from '@root/app/_components/ui/Inputs/Tags';
 import translate from '@root/app/lib/lang/translate';
 import FormSection from '@root/app/_components/ui/form/Section';

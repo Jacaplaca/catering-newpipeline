@@ -13,8 +13,7 @@ import { Table } from 'flowbite-react';
 import TableToast from '@root/app/_components/Table/Toast';
 import { useConsumerDietsTableContext } from '@root/app/specific/components/FoodMenu/ConsumerDiets/context';
 import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/context';
-import AllergenDropdown from '@root/app/specific/components/ui/Dropdown/Allergen';
-import translate from '@root/app/lib/lang/translate';
+import ConsumerDietsFilters from '@root/app/specific/components/FoodMenu/ConsumerDiets/Filters';
 
 const ConsumerDietsTable: FunctionComponent = () => {
 
@@ -26,10 +25,9 @@ const ConsumerDietsTable: FunctionComponent = () => {
         columns,
         isFetching,
         totalCount,
+        countIsFetching,
         search,
         sort: { sortName, sortDirection },
-        filter: { allergens, addRemoveAllergen, clearAllergens },
-        fetchOneWithCommonAllergens
     } = useConsumerDietsTableContext();
     const { rowClick: { onRowClick, expandedRowId }, message, getConfirmationData } = useFoodMenuContext(
         // { updateClientRow: fetchOneWithCommonAllergens.actions.fetchForClient }
@@ -47,22 +45,8 @@ const ConsumerDietsTable: FunctionComponent = () => {
                     dictionary={dictionary}
                     title={'clients:title'}
                     searchPlaceholder={'clients:search_placeholder'}
-                >
-                    <div className='flex items-center gap-2 max-w-72'>
-                        <AllergenDropdown
-                            dictionary={dictionary}
-                            inputClassName='w-72'
-                            foundLimitChars={35}
-                            selectedItems={allergens}
-                            onItemsChange={addRemoveAllergen}
-                            showSelectionIcon
-                            placeholder={translate(dictionary, 'food:allergens_placeholder')}
-                            selectedLabel={translate(dictionary, 'food:selected_allergens')}
-                            clearAll={clearAllergens}
-                            clearAllLabel={translate(dictionary, 'food:clear_allergens')}
-                        />
-                    </div>
-                </TableHeader>
+                />
+                <ConsumerDietsFilters />
                 <Table
                     theme={tableTheme}
                     hoverable
@@ -88,6 +72,7 @@ const ConsumerDietsTable: FunctionComponent = () => {
                 </Table>
                 <TableFooter
                     totalCount={totalCount}
+                    isLoading={countIsFetching}
                     pageName={pageName}
                     lang={lang}
                     dictionary={dictionary}

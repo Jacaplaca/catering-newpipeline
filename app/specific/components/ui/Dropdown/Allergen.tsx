@@ -21,6 +21,7 @@ type AllergenDropdownProps = {
     selectedLabel: string;
     clearAll?: () => void;
     clearAllLabel?: string;
+    limitItems?: number;
 }
 
 const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
@@ -35,6 +36,7 @@ const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
     selectedLabel,
     clearAll,
     clearAllLabel,
+    limitItems,
 }) => {
 
     const { searchValue, searchItems, onResultClick, handleRemoveItem, ref } = useDropdownMultiple({
@@ -64,6 +66,22 @@ const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
         showSelectionIcon,
     });
 
+    if (limitItems === 1 && selectedItems.length > 0) {
+        return (
+            <SelectedDisplay
+                className={inputClassName}
+                noBorder={true}
+                noBackground
+                // label={selectedLabel}
+                selectedItems={selectedItems}
+                onRemove={handleRemoveItem}
+                // iconClassName='fa-solid fa-wheat-slash'
+                clearAll={clearAll}
+                clearAllLabel={clearAllLabel}
+            />
+        )
+    }
+
     return (
         <div className='flex flex-col gap-2'>
             <SearchWithResults
@@ -82,7 +100,7 @@ const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
                 onSearch={searchItems}
                 inputClassName={inputClassName}
             />
-            {selectedItems && (
+            {selectedItems && (!limitItems || limitItems > 1) && (
                 <SelectedDisplay
                     label={selectedLabel}
                     selectedItems={selectedItems}

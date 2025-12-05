@@ -11,7 +11,10 @@ function useFetchConsumerDiets({
     searchValue,
     sortName,
     sortDirection,
-    tagId
+    tagId,
+    consumerAllergenId,
+    foodAllergenId,
+    foodId,
 }: {
     columns: TableColumnType[],
     // showColumns: string[],
@@ -19,29 +22,37 @@ function useFetchConsumerDiets({
     sortName: ClientWithCommonAllergensSortName,
     sortDirection: 'asc' | 'desc',
     tagId?: string,
+    consumerAllergenId?: string,
+    foodAllergenId?: string,
+    foodId?: string,
 }) {
     const { day } = useFoodMenuContext();
     const showColumns = columns.map(el => el.key);
-    const { data: totalCount = 0, refetch: countRefetch, isFetching: countIsFetching } = api.specific.client.count
-        .useQuery({ searchValue, tagId, showColumns }, {
-            // enabled: showColumns.length > 0,
-        });
-
-    const { page, limit } = usePagination(totalCount);
-
-    const { data: fetchedRows = [], refetch: rowsRefetch, isFetching } = api.specific.regularMenu.getClientsWithCommonAllergens
-        .useQuery({ day: day.day ?? { year: 0, month: 0, day: 0 }, page, limit, sortName, sortDirection, searchValue, tagId, showColumns },
+    const { data: clientIds, refetch: countRefetch, isFetching: countIsFetching } = api.specific.regularMenu.getClientWithCommonAllergensIds
+        .useQuery({ day: day.day ?? { year: 0, month: 0, day: 0 }, sortName, sortDirection, searchValue, tagId, showColumns, consumerAllergenId, foodAllergenId, foodId },
             {
                 // enabled: showColumns.length > 0,
+            });
+
+    const { page, limit } = usePagination(clientIds?.length ?? 0);
+
+    const { data: fetchedRows = [], refetch: rowsRefetch, isFetching } = api.specific.regularMenu.getClientsWithCommonAllergens
+        .useQuery({
+            day: day.day ?? { year: 0, month: 0, day: 0 }, page, limit, sortName, sortDirection,
+            searchValue, tagId, showColumns, consumerAllergenId, foodAllergenId, foodId, clientIds
+        },
+            {
+                // enabled: clientIds?.length ? true : false,
                 placeholderData: placeholderData<ClientWithCommonAllergens>(limit, columns),
             },
         );
 
     return {
         data: {
-            totalCount,
+            totalCount: clientIds?.length ?? 0,
             fetchedRows,
             isFetching: countIsFetching || isFetching,
+            countIsFetching,
         },
         refetch: {
             countRefetch,

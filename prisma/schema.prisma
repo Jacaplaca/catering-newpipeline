@@ -5,7 +5,7 @@
 
 generator client {
     provider = "prisma-client-js"
-    binaryTargets = ["native", "debian-openssl-1.1.x"]
+    binaryTargets = ["native", "debian-openssl-1.1.x", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -138,6 +138,7 @@ model Catering {
 
     users User[]
     clients Client[]
+    clientCategories ClientCategory[]
     dieticians Dietician[]
     kitchens Kitchen[]
     managers Manager[]
@@ -214,8 +215,23 @@ model Client {
     regularMenus RegularMenu[]
     deactivated Boolean @default(false)
     labelOrder Int?
+    clientCategoryId String?
+    clientCategory ClientCategory? @relation(fields: [clientCategoryId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model ClientCategory {
+    id        String   @id @default(cuid()) @map("_id")
+    name      String
+    code String
+    clients     Client[]
+    cateringId String
+    catering Catering @relation(fields: [cateringId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([code, cateringId])
 }
 
 model DeliveryRoute {

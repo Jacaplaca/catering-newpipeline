@@ -65,6 +65,7 @@ const useClientRow = ({
         firstOrderDeadline: '',
         secondOrderDeadline: '',
         deliveryRoute: null,
+        clientCategory: null,
         allowWeekendOrder: false,
     };
 
@@ -90,6 +91,7 @@ const useClientRow = ({
                 // tags: clientData?.tags.map((tag) => tag.tag.name) ?? [],
                 firstOrderDeadline: clientData?.info.firstOrderDeadline ?? '',
                 deliveryRoute: clientData?.deliveryRoute ? { id: clientData.deliveryRoute._id, name: clientData.deliveryRoute.name } : null,
+                clientCategory: clientData?.clientCategory ? { id: clientData.clientCategory._id, name: clientData.clientCategory.name } : null,
                 secondOrderDeadline: clientData?.info.secondOrderDeadline ?? '',
                 allowWeekendOrder: clientData?.info.allowWeekendOrder ?? false,
             };
@@ -139,17 +141,13 @@ const useClientRow = ({
         form.reset(defaultValues);
     };
 
-    // const tags = useTags({
-    //     tagsLocal: form.getValues().tags,
-    //     setTagsLocal: (tags: string[]) => {
-    //         console.log(tags);
-    //         form.setValue('tags', tags, { shouldDirty: true });
-    //         void form.trigger();
-    //     },
-    // });
-
     const chooseDeliveryRoute = (item: { id: string, name: string }) => {
         form.setValue('deliveryRoute', item, { shouldDirty: true });
+        void form.trigger();
+    }
+
+    const chooseClientCategory = (item: { id: string, name: string }) => {
+        form.setValue('clientCategory', item, { shouldDirty: true });
         void form.trigger();
     }
 
@@ -169,7 +167,8 @@ const useClientRow = ({
         }),
         isFetching: fullClientFetching,
         // tags,
-        chooseDeliveryRoute
+        chooseDeliveryRoute,
+        chooseClientCategory
     };
 };
 

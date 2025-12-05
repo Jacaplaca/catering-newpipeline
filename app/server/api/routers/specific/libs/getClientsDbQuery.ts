@@ -6,14 +6,16 @@ const getClientsDbQuery = ({
     catering,
     id,
     tagId,
-    clientId
+    clientId,
+    allowedClientIds
 }: {
     searchValue?: string,
     catering: Catering,
     showColumns?: string[],
     id?: string,
     tagId?: string,
-    clientId?: string
+    clientId?: string,
+    allowedClientIds?: string[]
     // role?: RoleType | 'all'
 }) => {
     const orConditions = showColumns?.map(column => ({
@@ -22,7 +24,7 @@ const getClientsDbQuery = ({
 
     type MatchObject = {
         cateringId?: string;
-        id?: string;
+        id?: string | { $in: string[] };
         deactivated?: boolean;
         $or?: Record<string, {
             $regex?: string;
@@ -37,6 +39,10 @@ const getClientsDbQuery = ({
 
     if (id) {
         query.id = id;
+    }
+
+    if (allowedClientIds) {
+        query.id = { $in: allowedClientIds };
     }
 
     if (searchValue && showColumns?.length) {
@@ -74,6 +80,14 @@ const getClientsDbQuery = ({
         },
         {
             $lookup: {
+                from: 'ClientCategory',
+                localField: 'clientCategoryId',
+                foreignField: '_id',
+                as: 'clientCategory'
+            }
+        },
+        {
+            $lookup: {
                 from: 'DeliveryRoute',
                 localField: 'deliveryRouteId',
                 foreignField: '_id',
@@ -83,7 +97,8 @@ const getClientsDbQuery = ({
         {
             $addFields: {
                 email: { $first: '$user.email' },
-                deliveryRoute: { $first: '$deliveryRoute' }
+                deliveryRoute: { $first: '$deliveryRoute' },
+                clientCategory: { $first: '$clientCategory' }
             }
         },
         {
@@ -99,7 +114,8 @@ const getClientsDbQuery = ({
                 tags: 1,
                 deactivated: 1,
                 email: 1,
-                deliveryRoute: 1
+                deliveryRoute: 1,
+                clientCategory: 1
             }
         },
         {

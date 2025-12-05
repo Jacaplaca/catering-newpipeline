@@ -25,6 +25,7 @@ type FoodDropdownProps = {
     updateFoodsOrder?: (items: { id: string, order: number }[]) => void;
     isFoodsLoading?: boolean;
     isSortable?: boolean;
+    hideInputWhenLimit?: boolean;
 }
 
 const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
@@ -42,6 +43,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
     updateFoodsOrder,
     isFoodsLoading = false,
     isSortable = false,
+    hideInputWhenLimit = false,
 }) => {
 
     const [foodIdsFromHoveredAllergenId, setFoodIdsFromHoveredAllergenId] = useState<string[]>([]);
@@ -103,12 +105,15 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
         showSelectionIcon,
     });
 
+    const overLimit = limitItems && selectedItems.length >= limitItems;
+    const hideInput = hideInputWhenLimit && overLimit;
+
     // const allAllergens = selectedItems?.flatMap(item => item.allergens) ?? [];
     // const allergens = Array.from(new Map(allAllergens.map(allergen => [allergen.id, allergen])).values());
 
     return (
         <div className='flex flex-col gap-2 w-full'>
-            <SearchWithResults
+            {!hideInput && <SearchWithResults
                 dictionary={dictionary}
                 ListComponent={<ListWrapper
                     totalHeight={rowVirtualizer.getTotalSize()}
@@ -123,7 +128,7 @@ const FoodDropdown: FunctionComponent<FoodDropdownProps> = ({
                 placeholder={placeholder}
                 onSearch={searchItems}
                 inputClassName={inputClassName}
-            />
+            />}
             {selectedItems && (
                 <SelectedFoods
                     selectedItems={selectedItems}

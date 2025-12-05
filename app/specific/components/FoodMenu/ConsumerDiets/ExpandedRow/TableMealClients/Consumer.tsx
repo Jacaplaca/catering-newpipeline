@@ -10,8 +10,9 @@ export type MealTableConsumerType = { id: string; name: string; allergens: { id:
 
 const Consumer: React.FC<{
     consumer: MealTableConsumerType,
-    hasAssignments: boolean
-}> = ({ consumer, hasAssignments }) => {
+    hasAssignments: boolean,
+    highlightedAllergenIds?: string[]
+}> = ({ consumer, hasAssignments, highlightedAllergenIds }) => {
     const { createAssignments } = useFoodMenuContext();
     const { dictionary } = useConsumerDietsTableContext();
 
@@ -35,7 +36,7 @@ const Consumer: React.FC<{
                     {consumer.notes}
                 </p>
             )}
-            <AllergenList allergens={consumer.allergens} variant="consumer" />
+            <AllergenList allergens={consumer.allergens} variant="consumer" highlightedIds={highlightedAllergenIds} />
             {!hasAssignments && (
                 <div className="mt-3 pt-1 w-full flex justify-end">
                     <Tooltip

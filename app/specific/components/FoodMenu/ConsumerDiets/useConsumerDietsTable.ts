@@ -34,7 +34,8 @@ const useConsumerDietsTable = ({
         data: {
             totalCount,
             fetchedRows,
-            isFetching
+            isFetching,
+            countIsFetching,
         },
         refetch: {
             countRefetch,
@@ -45,6 +46,9 @@ const useConsumerDietsTable = ({
             limit
         },
     } = useFetchConsumerDiets({
+        consumerAllergenId: filter.consumerAllergens[0]?.id,
+        foodAllergenId: filter.foodAllergens[0]?.id,
+        foodId: filter.foods[0]?.id,
         columns,
         searchValue,
         sortName,
@@ -91,6 +95,7 @@ const useConsumerDietsTable = ({
         columns,
         isFetching,
         totalCount,
+        countIsFetching,
         search,
         sort: { sortName, sortDirection },
         filter,

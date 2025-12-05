@@ -83,6 +83,10 @@ export const getClientsWithCommonAllergensValidator = z.object({
     searchValue: z.string().optional(),
     showColumns: z.array(z.string()).optional(),
     tagId: z.string().optional(),
+    consumerAllergenId: z.string().optional(),
+    foodAllergenId: z.string().optional(),
+    foodId: z.string().optional(),
+    clientIds: z.array(z.string()).optional(),
 });
 
 export const closeAndPublishValidator = z.object({

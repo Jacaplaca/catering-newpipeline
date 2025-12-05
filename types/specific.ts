@@ -1,8 +1,8 @@
-import { type Client, type Diet, type Dietician, type ClientInfo, type OrderStatus, type Consumer, type DeliveryDay, type DeliveryRoute, type Allergen, type FoodCategory, type ConsumerFood, type RegularMenu, type Food, type ConsumerAllergen, type FoodAllergen, type ConsumerFoodExclusion, type Exclusion, type ExclusionAllergen, type Meal, type MealCategory, type MealGroup } from '@prisma/client';
+import { type Client, type Diet, type Dietician, type ClientInfo, type OrderStatus, type Consumer, type DeliveryDay, type DeliveryRoute, type Allergen, type FoodCategory, type ConsumerFood, type RegularMenu, type Food, type ConsumerAllergen, type FoodAllergen, type ConsumerFoodExclusion, type Exclusion, type ExclusionAllergen, type Meal, type MealCategory, type MealGroup, type ClientCategory } from '@prisma/client';
 import { type TableTypeValues } from '@root/app/validators/settings';
 
 export const clientSortNames = ['name', 'email', 'code', "info.name", "info.email", "info.phone",
-    "info.address", "info.city", "info.zip", "info.contactPerson", "info.country", "deliveryRoute.code",
+    "info.address", "info.city", "info.zip", "info.contactPerson", "info.country", "deliveryRoute.code", "clientCategory.name",
     // 'settings.lastOrderTime'
 ] as const;
 
@@ -22,6 +22,9 @@ export type MealSortName = typeof mealSortNames[number];
 
 export const foodCategorySortNames = ['name'] as const;
 export type FoodCategorySortName = typeof foodCategorySortNames[number];
+
+export const clientCategorySortNames = ['name', 'code'] as const;
+export type ClientCategorySortName = typeof clientCategorySortNames[number];
 
 export const mealCategorySortNames = ['name'] as const;
 export type MealCategorySortName = typeof mealCategorySortNames[number];
@@ -61,6 +64,7 @@ export type ClientCustomTable = {
     createdAt: Date;
     updatedAt: Date;
     deliveryRoute: DeliveryRoute & { _id: string };
+    clientCategory: ClientCategory & { _id: string };
 };
 
 export type ClientWithCommonAllergens = ClientCustomTable & {

@@ -1,7 +1,7 @@
 import useTableCheckbox from '@root/app/hooks/table/useTableCheckbox';
-import useActivateClient from '@root/app/specific/components/Clients/actions/useActivate';
-import useRemoveClient from '@root/app/specific/components/Clients/actions/useRemove';
-import useRemoveClientWithForce from '@root/app/specific/components/Clients/actions/useRemoveWithForce';
+import useActivateClient from '@root/app/specific/components/Clients/Main/actions/useActivate';
+import useRemoveClient from '@root/app/specific/components/Clients/Main/actions/useRemove';
+import useRemoveClientWithForce from '@root/app/specific/components/Clients/Main/actions/useRemoveWithForce';
 import { type TableActionType } from '@root/types';
 import { useState } from 'react';
 

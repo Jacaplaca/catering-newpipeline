@@ -1,5 +1,5 @@
 import { db } from '@root/app/server/db';
-import { type Food, type Meal, type Consumer, type Client, type DeliveryRoute, type Exclusion } from "@prisma/client";
+import { type Food, type Meal, type Consumer, type Client, type DeliveryRoute, type Exclusion, type ClientCategory } from "@prisma/client";
 
 export type ConsumerFoodItem = {
     id: string;
@@ -27,7 +27,7 @@ type MealDataItem = {
 type ClientDataItem = {
     clientId: string;
     clientCode: string;
-    client: Client;
+    client: Client & { clientCategory: ClientCategory | null };
     meals: MealDataItem[];
     changesCount: number;
 };
@@ -56,7 +56,7 @@ type MealsByIdMap = Record<string, TransformedMealData>;
 type TransformedClientData = {
     clientId: string;
     clientCode: string;
-    client: Client;
+    client: Client & { clientCategory: ClientCategory | null };
     meals: MealsByIdMap;
     changesCount: number;
     mealsWithChangesCount: number;
@@ -94,7 +94,7 @@ type ConsumerWithMealsDataItem = {
 export type ClientWithConsumersDataItem = {
     clientId: string;
     clientCode: string;
-    client: Client;
+    client: Client & { clientCategory: ClientCategory | null };
     consumers: ConsumerWithMealsDataItem[];
 };
 
@@ -119,7 +119,7 @@ export type ConsumersWithMealsByIdMap = Record<string, TransformedConsumerData>;
 export type TransformedClientWithConsumersData = {
     clientId: string;
     clientCode: string;
-    client: Client;
+    client: Client & { clientCategory: ClientCategory | null };
     consumers: ConsumersWithMealsByIdMap;
     changesCount: number;
     mealsWithChangesCount: number;
@@ -227,6 +227,25 @@ async function getGroupedConsumerFoodDataObject({
         },
         {
             $unwind: '$client'
+        },
+        {
+            $lookup: {
+                from: 'ClientCategory',
+                localField: 'client.clientCategoryId',
+                foreignField: '_id',
+                as: 'clientCategory'
+            }
+        },
+        {
+            $unwind: {
+                path: '$clientCategory',
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $addFields: {
+                'client.clientCategory': '$clientCategory'
+            }
         },
         {
             $lookup: {

@@ -1,4 +1,4 @@
-import type useClientTable from '@root/app/specific/components/Clients/useClientTable';
+import type useClientTable from '@root/app/specific/components/Clients/Main/useClientTable';
 import { createGenericContext } from '@root/app/specific/lib/contextGenerator';
 
 type UseTable = ReturnType<typeof useClientTable>;

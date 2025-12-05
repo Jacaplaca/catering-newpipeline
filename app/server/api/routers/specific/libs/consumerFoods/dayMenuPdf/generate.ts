@@ -79,7 +79,29 @@ const generatePDF = async ({
 
     const forWhom = consumer ? cleanConsumerName(consumer.code, clientCode) : clientCode;
 
-    const pdfTitle = getPdfTitle({ dayDate, forWhom, isWeek: week, dictionary });
+    let categoryCode: string | undefined;
+    const targetClientId = clientId ?? consumer?.clientId;
+
+    if (targetClientId && allMealsData) {
+        searchLoop:
+        for (const dayData of Object.values(allMealsData)) {
+            if (!dayData) continue;
+            for (const groupData of Object.values(dayData)) {
+                if (!groupData?.routes) continue;
+                for (const routeData of Object.values(groupData.routes)) {
+                    const clientData = routeData.clients[targetClientId];
+                    if (clientData?.client?.clientCategory?.code) {
+                        categoryCode = clientData.client.clientCategory.code;
+                        break searchLoop;
+                    }
+                }
+            }
+        }
+    }
+
+    const titleForWhom = categoryCode ? `${forWhom} (${categoryCode})` : forWhom;
+
+    const pdfTitle = getPdfTitle({ dayDate, forWhom: titleForWhom, isWeek: week, dictionary });
     doc.font('Roboto-Bold')
         .fontSize(pdfConfig.fontSize.title)
         .text(pdfTitle, { align: 'center' });
@@ -146,7 +168,10 @@ const generatePDF = async ({
                 const { deliveryRouteName, clients } = routeData;
 
                 Object.entries(clients).forEach(([_clientId, clientData]) => {
-                    const { clientCode, consumers } = clientData;
+                    const { clientCode: rawClientCode, consumers, client } = clientData;
+
+                    const categoryCode = client.clientCategory?.code;
+                    const clientCode = categoryCode ? `${rawClientCode} (${categoryCode})` : rawClientCode;
 
                     Object.entries(consumers).forEach(([_consumerId, consumerData]) => {
                         const { consumer, meals } = consumerData;
@@ -237,8 +262,8 @@ const generatePDF = async ({
                             const mealDetails = clientAcc.mealsByMealName[mealName];
                             if (mealDetails) {
                                 let consumerCode = consumer.code ?? 'UNKNOWN';
-                                if (shouldCleanConsumerName && clientCode) {
-                                    consumerCode = cleanConsumerName(consumer.code, clientCode);
+                                if (shouldCleanConsumerName && rawClientCode) {
+                                    consumerCode = cleanConsumerName(consumer.code, rawClientCode);
                                 }
 
                                 mealDetails.consumersInfo.push({

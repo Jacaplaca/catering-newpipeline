@@ -43,6 +43,10 @@ export const clientEditValidator = z.object({
         id: z.string(),
         name: z.string(),
     }).nullable(),
+    clientCategory: z.object({
+        id: z.string(),
+        name: z.string(),
+    }).nullable(),
     firstOrderDeadline: z.string().optional(),
     secondOrderDeadline: z.string().optional(),
     allowWeekendOrder: z.boolean().optional(),

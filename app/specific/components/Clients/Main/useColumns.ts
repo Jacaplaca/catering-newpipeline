@@ -64,6 +64,11 @@ const useClientColumns = ({
             sort: () => sort('info.country')
         },
         {
+            key: "clientCategory.name",
+            title: 'clients:category_column',
+            sort: () => sort('clientCategory.name')
+        },
+        {
             key: "deliveryRoute.code",
             title: 'clients:route_column',
             sort: () => sort('deliveryRoute.code')

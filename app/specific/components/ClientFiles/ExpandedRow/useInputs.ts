@@ -1,4 +1,4 @@
-import { useClientTableContext } from '@root/app/specific/components/Clients/context';
+import { useClientTableContext } from '@root/app/specific/components/Clients/Main/context';
 import { type clientEditValidator } from '@root/app/validators/specific/client';
 import { type InputsBulkType } from '@root/types';
 import { type z } from 'zod';
