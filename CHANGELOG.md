@@ -1,3 +1,12 @@
+# [2.12.0](https://github.com/Jacaplaca/catering/compare/v2.11.0...v2.12.0) (2025-12-05)
+
+
+### Features
+
+* client-category-and-new-filters-and-alpine ([738a683](https://github.com/Jacaplaca/catering/commit/738a683874ad3baafae299f8fd24fb9c4b821f87))
+
+
+
 # [2.11.0](https://github.com/Jacaplaca/catering/compare/v2.10.3...v2.11.0) (2025-11-21)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * no client id ([7297570](https://github.com/Jacaplaca/catering/commit/7297570bd53bce4eeb2c760dae9c10575f1c4423))
-
-
-
-# [2.10.0](https://github.com/Jacaplaca/catering/compare/v2.9.1...v2.10.0) (2025-10-16)
-
-
-### Features
-
-* consumer menu link and little fixes ([0560697](https://github.com/Jacaplaca/catering/commit/0560697ced02b0c9e8ad53aa4b5552be7f9695fa))
 
 
 
