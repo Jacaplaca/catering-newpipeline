@@ -67,9 +67,9 @@ jobs:
             mkdir "$TARGET_DIR/public"
           fi
 
-          if [ ! -d "$TARGET_DIR/public/fontawesome" ]; then
-            tar -xf fontawesome.tar -C "$TARGET_DIR/public"
-          fi
+          # if [ ! -d "$TARGET_DIR/public/fontawesome" ]; then
+          #   tar -xf fontawesome.tar -C "$TARGET_DIR/public"
+          # fi
 
           ls -la "$TARGET_DIR"
         '
