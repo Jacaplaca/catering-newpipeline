@@ -138,7 +138,8 @@ jobs:
 
           echo "Stopping and removing backup service to free up resources..."
           # Zatrzymujemy i usuwamy kontener backupu
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml rm -s -f -v backup || true
+          # WAŻNE: Dodano -p catering_$STAGE, aby trafić we właściwy projekt (inaczej szukałby w "deployment")
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE rm -s -f -v backup || true
           
           echo "=== AFTER STOP: Checking if backup container is gone ==="
           sudo docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}" | grep backup || echo "Confirmed: No backup container running."
@@ -157,8 +158,8 @@ jobs:
           # sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
           
           # TYMCZASOWO: Budujemy tylko backup service (szybkie testy)
-          # Dodano --no-cache aby wymusić przebudowanie
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build --no-cache backup
+          # Dodano --no-cache oraz -p catering_$STAGE dla poprawnej nazwy obrazu
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE build --no-cache backup
         '
 
     - name: Restart Docker containers
