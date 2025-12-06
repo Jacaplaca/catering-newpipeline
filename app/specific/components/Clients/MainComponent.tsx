@@ -8,7 +8,7 @@ import { type FunctionComponent } from 'react';
 import Tabs from '@root/app/_components/ui/Tabs';
 import translate from '@root/app/lib/lang/translate';
 // import { ByClientAndMonthTableContextProvider } from '@root/app/specific/components/Orders/ByClientAndMonth/context';
-import { Tabs as FlowbiteTabs } from 'flowbite-react';
+import { TabItem } from 'flowbite-react';
 import { type SettingParsedType } from '@root/types';
 import ClientCategoryTable from '@root/app/specific/components/Clients/Category/index';
 import ClientsMain from '@root/app/specific/components/Clients/Main';
@@ -28,18 +28,18 @@ const ClientMainComponent: FunctionComponent<{
                 aria-label="Tabs with underline" variant="default"
                 title={translate(dictionary, 'clients:title')}
             >
-                <FlowbiteTabs.Item active title={translate(dictionary, 'clients:clients_list')}>
+                <TabItem active title={translate(dictionary, 'clients:clients_list')}>
                     {/* <FoodTableContextProvider store={useFoodTable(props)} > */}
                     <ClientsMain lang={lang} pageName={pageName} dictionary={dictionary} settings={settings} />
                     {/* </FoodTableContextProvider> */}
-                </FlowbiteTabs.Item>
-                <FlowbiteTabs.Item title={translate(dictionary, 'clients:categories_list')}>
+                </TabItem>
+                <TabItem title={translate(dictionary, 'clients:categories_list')}>
                     {/* <OrderTableContextProvider store={useOrderTable(props)} > */}
                     <ClientCategoryTableContextProvider store={useClientCategoryTable({ lang, pageName, settings, dictionary })} >
                         <ClientCategoryTable />
                     </ClientCategoryTableContextProvider>
                     {/* </OrderTableContextProvider> */}
-                </FlowbiteTabs.Item>
+                </TabItem>
             </Tabs>
         </div>
     );

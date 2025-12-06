@@ -1,7 +1,7 @@
 import SimpleDropdown from '@root/app/_components/ui/SimpleDropdown';
 import translate from '@root/app/lib/lang/translate';
 import { type TableActionType } from '@root/types';
-import { Dropdown } from 'flowbite-react';
+import { DropdownDivider, DropdownItem } from 'flowbite-react';
 import { type FunctionComponent } from 'react';
 
 const RowActions: FunctionComponent<{
@@ -23,10 +23,10 @@ const RowActions: FunctionComponent<{
         >
             {actions.filter(action => !action.hidden).map(({ label, onClick, icon, isDivider, key, iconClassName, disabled }) => {
                 if (isDivider) {
-                    return <Dropdown.Divider key={key} />
+                    return <DropdownDivider key={key} />
                 }
                 return (
-                    <Dropdown.Item
+                    <DropdownItem
                         key={key}
                         onClick={onClick}
                         disabled={disabled}
@@ -36,7 +36,7 @@ const RowActions: FunctionComponent<{
                             {icon && <i className={`${icon} mr-2 ${iconClassName}`}></i>}
                             {translate(dictionary, label)}
                         </div>
-                    </Dropdown.Item>
+                    </DropdownItem>
                 )
             })}
         </SimpleDropdown>

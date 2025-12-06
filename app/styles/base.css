@@ -1,19 +1,6 @@
-html {
-  @apply text-base;
-  scrollbar-gutter: stable;
-}
 
-html::-webkit-scrollbar{
-  width: 16px;
-  height: 16px;
-}
 
-body {
-  @apply bg-body dark:bg-darkmode-body flex flex-col min-h-screen font-primary font-normal leading-relaxed text-text dark:text-darkmode-text ;
-  overflow-y: scroll;
-}
-
-.button {
+@utility button {
   @apply flex bg-secondary dark:bg-darkmode-secondary   items-center justify-center  outline-none;
   @apply hover:bg-secondary-accent dark:hover:bg-darkmode-secondary-accent;
   @apply dark:text-white text-text text-base font-semibold;
@@ -30,7 +17,7 @@ body {
 }
 
 
-.form {
+@utility form {
   @apply bg-form dark:bg-darkmode-form  rounded-xl shadow-big dark:shadow-darkmode-big;
   @apply border-[1px] border-border dark:border-darkmode-border;
 }
@@ -47,17 +34,39 @@ body {
   @apply dark:text-darkmode-text text-text text-sm font-semibold;
 }
 
-// input {
-//   @apply absolute opacity-0;
-// }
+/* .scrollbar::-webkit-scrollbar {
+  @apply w-2 h-3
+}
 
-// input {
-//   @apply input;
-// }
+.scrollbar-thin::-webkit-scrollbar {
+  @apply w-1 h-1
+}
 
-// textarea {
-//   @apply input;
-// }
+.scrollbar::-webkit-scrollbar-track {
+  @apply dark:bg-zinc-700 bg-white;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  @apply dark:bg-zinc-500 bg-zinc-400;
+  border-radius: 100vh;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply dark:bg-zinc-500 bg-zinc-400;
+} */
+
+
+html {
+  /* font-size: var(--font-size-base); */
+}
+
+body {
+  /* @apply bg-body; */
+  /* @apply  dark:bg-darkmode-body flex flex-col min-h-screen font-primary font-normal leading-relaxed text-text dark:text-darkmode-text ; */
+  @apply  bg-body dark:bg-darkmode-body flex flex-col min-h-screen font-primary font-normal leading-relaxed text-text dark:text-darkmode-text ;
+  overflow-y: scroll;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif, Poppins;
+}
 
 h1,
 h2,
@@ -65,10 +74,10 @@ h3,
 h4,
 h5,
 h6 {
-  @apply font-secondary font-bold leading-normal text-text dark:text-darkmode-text;
+  @apply font-secondary /*font-bold*/ leading-tight text-text dark:text-darkmode-text;
 }
 
-h1,
+/* h1,
 .h1 {
   @apply text-h1-sm md:text-h1 ;
 }
@@ -96,7 +105,7 @@ h5,
 h6,
 .h6 {
   @apply text-h6 font-medium;
-}
+} */
 
 b,
 strong {
@@ -111,39 +120,7 @@ code {
   @apply whitespace-break-spaces;
 }
 
-// .content > h2 {
-//   @apply mb-6 mt-16;
-// }
 
-// .content > h1, h2, h3 {
-//   @apply text-center
-// }
-
-// .content > p > img  {
-//   @apply block mx-auto;
-// }
-
-// .scrollbar::-webkit-scrollbar {
-//   @apply w-2 h-3
-// }
-
-// .scrollbar-thin::-webkit-scrollbar {
-//   @apply w-1 h-1
-// }
-
-// .scrollbar::-webkit-scrollbar-track {
-//   @apply dark:bg-zinc-700 bg-white;
-// }
-
-// .scrollbar::-webkit-scrollbar-thumb {
-//   @apply dark:bg-zinc-500 bg-zinc-400;
-//   border-radius: 100vh;
-// }
-
-// .scrollbar::-webkit-scrollbar-thumb:hover {
-//   @apply dark:bg-zinc-500 bg-zinc-400;
-// }
-
-// body {
-//   @apply scrollbar
-// }
+/* body {
+  @apply scrollbar
+} */

@@ -1,9 +1,16 @@
 "use client";
 
 import { type DashboardMenuElement } from '@root/types';
-import { Drawer as DrawerFlowbite, Sidebar } from "flowbite-react";
+import {
+    Drawer as DrawerFlowbite,
+    DrawerItems as DrawerFlowbiteItems,
+    Sidebar,
+    SidebarItem,
+    SidebarItemGroup,
+    SidebarItems,
+} from "flowbite-react";
 import { useSearchParams } from 'next/navigation';
-import { type FunctionComponent, useState, useEffect } from "react";
+import { type FunctionComponent, useState, useEffect, type JSX } from "react";
 
 const Drawer: FunctionComponent<{
     isOpen: boolean,
@@ -30,7 +37,6 @@ const Drawer: FunctionComponent<{
         }
         const opended = [...openedItems, ...openedKeys];
         setOpenedItems(opended)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selected])
 
     const openGroup = (key: string) => setOpenedItems(openedItems.includes(key) ? openedItems.filter(item => item !== key) : [...openedItems, key]);
@@ -56,7 +62,7 @@ transition-transform duration-200 ${isOpened(key) && "rotate-180"}`}></i>
         }
 
         acc.push(
-            <Sidebar.ItemGroup
+            <SidebarItemGroup
                 key={`item-${key}-${label}-${index}`}
                 className={`p-0 m-0 pl-0 ${key && 'pl-0'}
 ${key ? (isOpened(key) ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0') : ""}
@@ -68,25 +74,26 @@ ${key ? 'transition-all duration-300 ease-in-out overflow-hidden' : ''}`}
                         return <i key={'icon' + itemIndex} className={`${item.icon} `} />
                     }
                     const itemContent = (
-                        <Sidebar.Item
+                        <SidebarItem
                             key={"item" + item.key}
                             {...(item.url
                                 ? { href: item.url }
                                 : { onClick: () => handleClick(item.key) }
                             )}
-                            icon={isOpen ? Icon : null}
-                            className={`px-2 sm:px-4 cursor-pointer text-sm font-medium
-                                hover:dark:bg-darkmode-secondary hover:bg-secondary
-                                hover:dark:text-white hover:text-neutral-800
-                                transition-all duration-150
-                                ${group.key ? 'pb-1 pt-1 sm:pb-1.5 sm:pt-1.5' : ''}
+                            icon={isOpen ? Icon : undefined}
+                            className={`px-4 cursor-pointer text-sm font-medium
+                            hover:dark:bg-darkmode-secondary hover:bg-secondary
+                            hover:dark:text-white hover:text-neutral-800
+                            transition-all duration-150
+                            ${group.key ? 'pb-1.5 pt-1.5' : ''}
+
                             ${selectedKey === item.key
                                     ? `font-semibold dark:text-darkmode-drawer-icon-selected text-drawer-icon-selected
                                 dark:bg-neutral-800 bg-neutral-200`
                                     : `dark:text-darkmode-drawer-icon text-drawer-icon`}`}
                         >
                             {isOpen ? <p>{item.label}</p> : <Icon />}
-                        </Sidebar.Item>
+                        </SidebarItem>
                     );
 
                     return key ? (
@@ -99,7 +106,7 @@ ${itemIndex > 0 ? `delay-[${itemIndex * 50}ms]` : ''}
 ${isOpen ? "ps-3" : "ps-0"}
 `}>{itemContent}</div>) : itemContent;
                 })}
-            </Sidebar.ItemGroup>
+            </SidebarItemGroup>
         );
 
         // acc.push(<div key={'spacer-in-dashboard'} className='pb-6'></div>)
@@ -111,21 +118,24 @@ ${isOpen ? "ps-3" : "ps-0"}
         <DrawerFlowbite
             open={true}
             onClose={() => { return }}
+            backdrop={false}
             theme={
                 {
                     root: {
                         base: `
-        transition-w duration-300 ${isOpen ? "!w-48 sm:!w-64" : "!w-12 sm:!w-16"}
-        left-0 !h-full `,
+        transition-w duration-300 ${isOpen ? "!w-64" : "!w-16"}
+        left-0 !h-full p-0 dark:bg-darkmode-drawer-background bg-drawer-background 
+        shadow-drawer dark:shadow-darkmode-drawer
+        `,
                         backdrop: "bg-black bg-opacity-50",
                         // edge: "border-r border-red-800",
                     },
                 }
             }
         >
-            <DrawerFlowbite.Items
+            <DrawerFlowbiteItems
                 className={`dark:bg-darkmode-drawer-background
-bg-drawer-background text-white h-full shadow-drawer dark:shadow-darkmode-drawer`}
+bg-drawer-background text-white  `}
             ><button onClick={toggleDrawer} className={`w-full pb-3 pt-3 hover:dark:bg-neutral-800 hover:bg-neutral-200  ${isOpen ? "justify-end pr-3" : "justify-center pr-0"}  flex `}>
                     <i className={`
     fas fa-chevrons-right dark:text-darkmode-drawer-icon text-drawer-icon
@@ -133,16 +143,16 @@ bg-drawer-background text-white h-full shadow-drawer dark:shadow-darkmode-drawer
                 </button>
                 {true && <Sidebar
                     aria-label="Sidebar with multi-level dropdown example"
-                    className={`${isOpen ? "!w-48 sm:!w-64" : "!w-12 sm:!w-16"} [&>div]:bg-transparent [&>div]:p-0 px-2`}>
+                    className={`${isOpen ? "!w-64" : "!w-16"} [&>div]:bg-transparent [&>div]:p-0 px-2`}>
                     <div className="flex h-full flex-col justify-between py-2 dark:bg-darkmode-drawer-background bg-drawer-background">
                         <div className='pt-0'>
-                            <Sidebar.Items className='pl-0 ' >
+                            <SidebarItems className='pl-0 ' >
                                 {menuList}
-                            </Sidebar.Items>
+                            </SidebarItems>
                         </div>
                     </div>
                 </Sidebar>}
-            </DrawerFlowbite.Items>
+            </DrawerFlowbiteItems>
 
         </DrawerFlowbite>
     );

@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, type ReactElement } from 'react';
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import './DatePicker.css';
@@ -8,7 +8,7 @@ type DatePickerProps = {
     locale: LocaleApp;
     selected: string;
     minDate?: Date;
-    CustomInput?: JSX.Element;
+    CustomInput?: ReactElement;
     onSelect: (date: Date | null) => void;
     dateFormat?: string;
     filterDate?: (date: Date) => boolean;

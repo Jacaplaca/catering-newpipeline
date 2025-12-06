@@ -6,7 +6,7 @@ import { SessionProvider } from 'next-auth/react';
 import { type Session } from 'next-auth';
 import translate from '@root/app/lib/lang/translate';
 import Tabs from '@root/app/_components/ui/Tabs';
-import { Tabs as FlowbiteTabs } from 'flowbite-react';
+import { TabItem } from 'flowbite-react';
 import OrdersByDayTable from '@root/app/specific/components/Orders/ByDay/OrdersTable';
 import { OrderTableContextProvider } from '@root/app/specific/components/Orders/ByOrder/context';
 import useOrderTable from '@root/app/specific/components/Orders/ByOrder/useOrderTable';
@@ -37,27 +37,27 @@ const OrdersComponent: FunctionComponent<{
     return (
         <SessionProvider session={props.session}>
             <Tabs aria-label="Tabs with underline" variant="default" title={translate(props.dictionary, 'orders:title')}>
-                <FlowbiteTabs.Item active title={translate(props.dictionary, 'orders:orders_by_day')}>
+                <TabItem active title={translate(props.dictionary, 'orders:orders_by_day')}>
                     <OrderByDayTableContextProvider store={useOrderByDayTable(props)} >
                         <OrdersByDayTable />
                     </OrderByDayTableContextProvider>
-                </FlowbiteTabs.Item>
-                <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_day_meals')}>
+                </TabItem>
+                <TabItem title={translate(props.dictionary, 'orders:orders_by_day_meals')}>
                     <OrderByDayMealsTableContextProvider store={useOrderByDayMealsTable(props)} >
                         <OrdersByDayMealsTable />
                     </OrderByDayMealsTableContextProvider>
-                </FlowbiteTabs.Item>
-                <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_order')}>
+                </TabItem>
+                <TabItem title={translate(props.dictionary, 'orders:orders_by_order')}>
                     <OrderTableContextProvider store={useOrderTable(props)} >
                         <OrdersTable />
                     </OrderTableContextProvider>
-                </FlowbiteTabs.Item>
+                </TabItem>
                 {showForManager && (
-                    <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_client_and_month')}>
+                    <TabItem title={translate(props.dictionary, 'orders:orders_by_client_and_month')}>
                         <ByClientAndMonthTableContextProvider store={byClientAndMonthStore}>
                             <ByClientAndMonth dictionary={props.dictionary} />
                         </ByClientAndMonthTableContextProvider>
-                    </FlowbiteTabs.Item>
+                    </TabItem>
                 )}
             </Tabs>
         </SessionProvider>

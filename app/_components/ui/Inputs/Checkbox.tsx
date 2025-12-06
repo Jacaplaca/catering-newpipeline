@@ -36,22 +36,20 @@ const Checkbox: React.FC<Props> = ({
     }
 
     const customTheme = {
-        root: {
-            base: `${sizes[size]} rounded border ${checked ? "" : "hover:bg-neutral-100 dark:hover:bg-neutral-800"}`,
-            color: {
-                default: `
-                bg-input
-                dark:bg-darkmode-input
-                border-checkbox-border
-                dark:border-darkmode-checkbox-border
+        base: `${sizes[size]} rounded border ${checked ? "" : "hover:bg-neutral-100 dark:hover:bg-neutral-800"}`,
+        color: {
+            default: `
+            bg-input
+            dark:bg-darkmode-input
+            border-checkbox-border
+            dark:border-darkmode-checkbox-border
 
-                checked:bg-checkbox-checked
-                checked:focus:bg-checkbox-checked
-                hover:checked:bg-checkbox-checked
+            checked:bg-checkbox-checked
+            checked:focus:bg-checkbox-checked
+            hover:checked:bg-checkbox-checked
 
-                dark:checked:bg-darkmode-checkbox-checked
-                `,
-            }
+            dark:checked:bg-darkmode-checkbox-checked
+            `,
         }
     };
 

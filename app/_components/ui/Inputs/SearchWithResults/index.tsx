@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from "react";
+import { useState, useRef, type ReactElement } from "react";
 import t from '@root/app/lib/lang/translate';
 import { useOnClickOutside } from 'usehooks-ts'
 import SearchInput from '@root/app/_components/ui/Inputs/Search';
@@ -10,7 +10,7 @@ type SearchWithResultsProps = {
     loading?: boolean;
     placeholder?: string;
     minChars?: number;
-    FoundComponent?: JSX.Element;
+    FoundComponent?: ReactElement;
     isError?: boolean;
     ListComponent?: React.ReactNode;
     isFocused?: boolean;
@@ -32,7 +32,7 @@ const SearchWithResults = ({
     hideResults = false,
     inputClassName,
 }: SearchWithResultsProps) => {
-    const ref = useRef(null);
+    const ref = useRef<HTMLDivElement>(null);
     const [internalIsFocused, setInternalIsFocused] = useState(false);
     const [searchValue, setSearchValue] = useState('');
     const isFocused = externalIsFocused ?? internalIsFocused;
@@ -64,7 +64,7 @@ const SearchWithResults = ({
         handleBlur();
     }
 
-    useOnClickOutside(ref, handleClickOutside)
+    useOnClickOutside(ref as React.RefObject<HTMLElement>, handleClickOutside)
 
     const showResults = isFocused;
 
@@ -73,7 +73,7 @@ const SearchWithResults = ({
             className="relative z-auto"
             ref={ref}
         >
-            <div className={`relative ${isFocused ? 'z-[6]' : 'z-auto'}`}>
+            <div className={`relative ${isFocused ? 'z-6' : 'z-auto'}`}>
                 <SearchInput
                     isError={isError}
                     search={search}
@@ -95,7 +95,7 @@ const SearchWithResults = ({
             {!hideResults && (
                 <div
                     className={`
-                        z-[5]
+                        z-5
                         absolute top-[-20px] left-[-20px]
                     w-[calc(100%+40px)]
                     bg-white dark:bg-neutral-800

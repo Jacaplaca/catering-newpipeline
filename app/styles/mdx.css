@@ -1,0 +1,19 @@
+.content {
+  @apply max-w-4xl mx-auto;
+}
+
+.content h1 {
+  @apply text-4xl font-bold text-gray-900 mb-6;
+}
+
+.content h2 {
+  @apply text-3xl font-semibold text-gray-800 mb-4 mt-8;
+}
+
+.content p {
+  @apply text-gray-600 leading-relaxed mb-4;
+}
+
+.content table {
+  @apply min-w-full border-collapse border border-gray-300 mb-4;
+} 

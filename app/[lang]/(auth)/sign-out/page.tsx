@@ -3,11 +3,11 @@ import { type NextPage } from 'next';
 
 const signOutPage: NextPage<{
   params: Promise<{
-    lang: LocaleApp,
+    lang: string,
   }>;
 }> = async (props) => {
   const params = await props.params;
-  const lang = params.lang;
+  const lang = params.lang as LocaleApp;
 
   return <SignOutComponent lang={lang} />
 };

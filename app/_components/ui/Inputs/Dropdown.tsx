@@ -1,5 +1,5 @@
 "use client"
-import { type CSSProperties, useState, type ComponentType, useEffect } from 'react';
+import { type CSSProperties, useState, type ComponentType, useEffect, ReactElement } from 'react';
 import Select, { type GroupBase, type InputProps, type OptionProps, type PlaceholderProps, type SelectComponentsConfig, type SingleValueProps } from 'react-select'
 import { useTheme } from 'next-themes';
 import configTheme from '@root/config/theme';
@@ -43,7 +43,7 @@ const Dropdown = <T extends IOption>({
     styles,
     isSearchable = true,
     placeholder = '',
-}: Props<T>): JSX.Element => {
+}: Props<T>): ReactElement => {
     const [isFocused, setFocused] = useState(false);
     const { theme, resolvedTheme } = useTheme();
     const isDark = theme === 'dark' || resolvedTheme === 'dark';

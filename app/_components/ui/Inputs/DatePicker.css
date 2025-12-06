@@ -1,3 +1,6 @@
+@import "tailwindcss";
+@config "../../../../tailwind.config.ts";
+
 /* custom-datepicker.css */
 .react-datepicker {
   @apply p-3

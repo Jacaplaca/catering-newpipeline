@@ -1,4 +1,4 @@
-import "app/styles/main.scss";
+// import "app/styles/main.scss";
 import "app/styles/globals.css";
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { Inter } from "next/font/google";
@@ -15,11 +15,11 @@ const inter = Inter({
 
 export default async function RootLayout(props: {
   children: React.ReactNode;
-  params: Promise<{ lang: LocaleApp }>;
+  params: Promise<{ lang: string }>;
 }) {
   const { children } = props;
   const params = await props.params;
-  const lang = params?.lang || env.NEXT_PUBLIC_DEFAULT_LOCALE;
+  const lang = (params?.lang || env.NEXT_PUBLIC_DEFAULT_LOCALE) as LocaleApp;
 
   return (
     <html lang={lang} suppressHydrationWarning={true}>

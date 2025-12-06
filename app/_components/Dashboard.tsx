@@ -6,15 +6,12 @@ import { type DashboardMenuElement } from '@root/types';
 import { useEffect, useState, type FunctionComponent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBoolean } from 'usehooks-ts';
-import { useCheckSettings } from '@root/app/hooks/calls';
 
-const Dashboard: FunctionComponent<{ children: React.ReactNode, menu: DashboardMenuElement[], searchParams: Record<string, string> }> = ({ children, menu }) => {
+const Dashboard: FunctionComponent<{ children: React.ReactNode, menu: DashboardMenuElement[] }> = ({ children, menu }) => {
     const { value: isOpen, setTrue, setFalse, toggle } = useBoolean(false);
     const [selectedItem, setSelectedItem] = useState<string>('');
     const breakpoint = useBreakpoint();
     const router = useRouter();
-
-    const { hasFinishedSettings, checkFinishedSettingsRefetch } = useCheckSettings();
 
     useEffect(() => {
         if (breakpoint === 'sm' || breakpoint === 'xs') {
@@ -25,15 +22,11 @@ const Dashboard: FunctionComponent<{ children: React.ReactNode, menu: DashboardM
     }, [breakpoint, setFalse, setTrue])
 
 
-    const selectItem = async (key: string) => {
+    const selectItem = (key: string) => {
         setSelectedItem(key);
-        const newSearchParams = new URLSearchParams({ key });
-        let forceSettingsHere = !hasFinishedSettings
-        if (forceSettingsHere) {
-            const { data } = await checkFinishedSettingsRefetch();
-            forceSettingsHere = !data;
-        }
-        router.push(`?${forceSettingsHere ? "key=settings" : newSearchParams.toString()}`);
+        const newSearchParams = new URLSearchParams();
+        newSearchParams.set('key', key);
+        router.push(`?${newSearchParams.toString()}`);
     }
 
     return (
@@ -45,8 +38,10 @@ const Dashboard: FunctionComponent<{ children: React.ReactNode, menu: DashboardM
                 handleClick={selectItem}
                 selected={selectedItem}
             />
-            <div className='p-2 sm:p-6 w-full'>
-                {isOpen && breakpoint === 'xs' ? null : children}
+            <div className={`p-6 w-full`}>
+                <div className={`${isOpen ? 'ps-64' : 'ps-16'}`}>
+                    {isOpen && breakpoint === 'xs' ? null : children}
+                </div>
             </div>
         </div>
     )

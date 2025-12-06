@@ -2,7 +2,7 @@ import HeadCellSortable from '@root/app/_components/Table/HeadCellSortable';
 import Checkbox from '@root/app/_components/ui/Inputs/Checkbox';
 import translate from '@root/app/lib/lang/translate';
 import { type TableColumnType } from '@root/types';
-import { Label, Table } from 'flowbite-react';
+import { Label, TableHead, TableHeadCell } from 'flowbite-react';
 import { type FunctionComponent } from 'react';
 
 const TableColumns: FunctionComponent<{
@@ -93,48 +93,50 @@ const TableColumns: FunctionComponent<{
         if (!hasGroupedColumns) {
             // Simple single row header when no children exist
             return (
-                <Table.Head className="">
-                    {check && (
-                        <Table.HeadCell scope="col" className="px-4 py-3">
-                            {!hideCheck && <div className="flex items-center">
-                                <Checkbox
-                                    id="checkbox-all"
-                                    name="checkbox-all"
-                                    size={'md'}
-                                    onChange={check}
-                                    checked={isCheck}
-                                />
-                                <Label htmlFor="checkbox-all" className="sr-only">
-                                    Check all
-                                </Label>
-                            </div>}
-                        </Table.HeadCell>
-                    )}
-                    {headerStructure.map((item) =>
-                        item.children.map(({ key, title, sort, align, special, tooltip }) => (
-                            <HeadCellSortable
-                                key={key}
-                                name={key}
-                                sort={sort}
-                                sortName={sortName}
-                                sortDirection={sortDirection}
-                                align={align}
-                                special={special}
-                                tooltip={tooltip}
-                            >
-                                {translate(dictionary, title)}
-                            </HeadCellSortable>
-                        ))
-                    ).flat()}
-                </Table.Head>
+                <TableHead className="">
+                    <tr>
+                        {check && (
+                            <TableHeadCell scope="col" className="px-4 py-3">
+                                {!hideCheck && <div className="flex items-center">
+                                    <Checkbox
+                                        id="checkbox-all"
+                                        name="checkbox-all"
+                                        size={'md'}
+                                        onChange={check}
+                                        checked={isCheck}
+                                    />
+                                    <Label htmlFor="checkbox-all" className="sr-only">
+                                        Check all
+                                    </Label>
+                                </div>}
+                            </TableHeadCell>
+                        )}
+                        {headerStructure.map((item) =>
+                            item.children.map(({ key, title, sort, align, special, tooltip }) => (
+                                <HeadCellSortable
+                                    key={key}
+                                    name={key}
+                                    sort={sort}
+                                    sortName={sortName}
+                                    sortDirection={sortDirection}
+                                    align={align}
+                                    special={special}
+                                    tooltip={tooltip}
+                                >
+                                    {translate(dictionary, title)}
+                                </HeadCellSortable>
+                            ))
+                        ).flat()}
+                    </tr>
+                </TableHead>
             );
         }
 
         return (
-            <>
-                <Table.Head className="">
+            <TableHead className="">
+                <tr>
                     {check && (
-                        <Table.HeadCell scope="col" className="px-4 py-3" rowSpan={2}>
+                        <TableHeadCell scope="col" className="px-4 py-3" rowSpan={2}>
                             {!hideCheck && <div className="flex items-center">
                                 <Checkbox
                                     id="checkbox-all"
@@ -147,7 +149,7 @@ const TableColumns: FunctionComponent<{
                                     Check all
                                 </Label>
                             </div>}
-                        </Table.HeadCell>
+                        </TableHeadCell>
                     )}
                     {/* First row - parent headers and standalone columns */}
                     {headerStructure.map((item) => {
@@ -190,8 +192,8 @@ const TableColumns: FunctionComponent<{
                             );
                         }
                     })}
-                </Table.Head>
-                <Table.Head>
+                </tr>
+                <tr>
                     {/* Second row - child headers only, in the correct order */}
                     {headerStructure.map((item) => {
                         if (item.isGroup) {
@@ -212,8 +214,8 @@ const TableColumns: FunctionComponent<{
                         // For standalone columns, return empty array as they have rowSpan={2}
                         return [];
                     }).flat()}
-                </Table.Head>
-            </>
+                </tr>
+            </TableHead>
         )
     }
 

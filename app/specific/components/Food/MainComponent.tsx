@@ -8,7 +8,7 @@ import { type FunctionComponent } from 'react';
 import Tabs from '@root/app/_components/ui/Tabs';
 import translate from '@root/app/lib/lang/translate';
 // import { ByClientAndMonthTableContextProvider } from '@root/app/specific/components/Orders/ByClientAndMonth/context';
-import { Tabs as FlowbiteTabs } from 'flowbite-react';
+import { TabItem } from 'flowbite-react';
 import { FoodCategoryTableContextProvider } from '@root/app/specific/components/Food/Category/context';
 import useFoodCategoryTable from '@root/app/specific/components/Food/Category/useTable';
 import { type SettingParsedType } from '@root/types';
@@ -32,18 +32,18 @@ const FoodMainComponent: FunctionComponent<{
                 aria-label="Tabs with underline" variant="default"
                 title={translate(props.dictionary, 'food:title')}
             >
-                <FlowbiteTabs.Item active title={translate(props.dictionary, 'food:food_dishes')}>
+                <TabItem active title={translate(props.dictionary, 'food:food_dishes')}>
                     <FoodTableContextProvider store={useFoodTable(props)} >
                         <FoodTable />
                     </FoodTableContextProvider>
-                </FlowbiteTabs.Item>
-                <FlowbiteTabs.Item title={translate(props.dictionary, 'food:categories')}>
+                </TabItem>
+                <TabItem title={translate(props.dictionary, 'food:categories')}>
                     {/* <OrderTableContextProvider store={useOrderTable(props)} > */}
                     <FoodCategoryTableContextProvider store={useFoodCategoryTable(props)} >
                         <FoodCategoryTable />
                     </FoodCategoryTableContextProvider>
                     {/* </OrderTableContextProvider> */}
-                </FlowbiteTabs.Item>
+                </TabItem>
             </Tabs>
         </div>
     );

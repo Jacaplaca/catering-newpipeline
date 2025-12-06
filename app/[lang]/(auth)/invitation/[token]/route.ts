@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 type RouteProps = {
     params: Promise<{
         token: string;
-        lang: LocaleApp;
+        lang: string;
     }>;
 }
 
@@ -16,7 +16,7 @@ export async function GET(
     const { token, lang } = params;
 
     const url = makeHref({
-        lang,
+        lang: lang as LocaleApp,
         page: "sign-up",
         params: new URLSearchParams({
             invite: token.toLowerCase().trim()

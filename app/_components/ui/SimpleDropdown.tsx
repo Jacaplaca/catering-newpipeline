@@ -1,8 +1,11 @@
-import { Dropdown, type FlowbiteDropdownTheme } from 'flowbite-react';
-import { type DeepPartial } from 'flowbite-react/dist/types/types';
+import { Dropdown, type DropdownTheme } from 'flowbite-react';
 import { type ReactElement, type FunctionComponent } from 'react';
 
-const dropdownTheme = {
+type DeepPartial<T> = T extends object ? {
+    [P in keyof T]?: DeepPartial<T[P]>;
+} : T;
+
+const dropdownTheme: DeepPartial<DropdownTheme> = {
     arrowIcon: "ml-2 h-4 w-4",
     content: "py-1 focus:outline-none",
     floating: {
@@ -46,11 +49,17 @@ const dropdownTheme = {
 const SimpleDropdown: FunctionComponent<{
     label: React.ReactNode;
     children: React.ReactNode;
-    theme?: DeepPartial<FlowbiteDropdownTheme>
+    theme?: DeepPartial<DropdownTheme>;
     disabled?: boolean;
-    renderTrigger?: (theme: FlowbiteDropdownTheme) => ReactElement;
+    renderTrigger?: (theme: DropdownTheme) => ReactElement;
     dismissOnClick?: boolean;
-}> = ({ label, children, theme = {}, disabled, renderTrigger, dismissOnClick = false }) => {
+}> = ({ label, children, theme, disabled, renderTrigger, dismissOnClick = false }) => {
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+    const mergedTheme: any = {
+        ...dropdownTheme,
+        ...(theme || {})
+    };
 
     return (
         <Dropdown
@@ -58,10 +67,8 @@ const SimpleDropdown: FunctionComponent<{
             dismissOnClick={dismissOnClick}
             label={label}
             renderTrigger={renderTrigger}
-            theme={{
-                ...dropdownTheme,
-                ...theme
-            }}
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            theme={mergedTheme}
         >
             {children}
         </Dropdown>

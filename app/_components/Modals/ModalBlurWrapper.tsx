@@ -18,14 +18,14 @@ const ModalBlurWrapper: FunctionComponent<Props> = ({
   children,
   disallowBackdropClose
 }) => {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   const { keyPressed } = useKeyPressed();
   const leaveTimeout = 150;
 
   const [showComponent, setShowComponent] = useState(false);
   const [blurBackground, setBlurBackground] = useState(false);
 
-  useOnClickOutside(ref, disallowBackdropClose ? () => { return; } : onClose);
+  useOnClickOutside(ref as React.RefObject<HTMLElement>, disallowBackdropClose ? () => { return; } : onClose);
 
   useEffect(() => {
     if (isOpen) {
@@ -78,12 +78,11 @@ const ModalBlurWrapper: FunctionComponent<Props> = ({
             >
               <div
                 className={`
-                  fixed inset-0
-                  flex justify-center items-start
-                  px-2 sm:px-4 py-4 sm:py-8
+                  fixed
+                  flex justify-center items-center h-screen w-screen
+                  px-4
                   ${blurBackground ? 'bg-gray-200/10 dark:bg-gray-800/10 backdrop-blur-sm' : 'bg-transparent'}
                   transition-all duration-300
-                  overflow-y-auto
                   `}
               >
                 <Transition

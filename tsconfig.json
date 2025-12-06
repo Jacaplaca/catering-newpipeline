@@ -11,18 +11,32 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "checkJs": true,
-    "lib": ["dom", "dom.iterable", "ES2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2022"
+    ],
     "noEmit": true,
     "module": "CommonJS",
     "moduleResolution": "node",
-    "jsx": "preserve",
-    "plugins": [{ "name": "next" }],
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@root/*": ["./*"],
-      "app/*": ["./app/*"],
-      "server/*": ["./app/server/*"],
+      "@root/*": [
+        "./*"
+      ],
+      "app/*": [
+        "./app/*"
+      ],
+      "server/*": [
+        "./app/server/*"
+      ]
     }
   },
   "include": [
@@ -36,7 +50,17 @@
     "app/env.ts",
     "app/modules/SerpSim/components/Form/LanguagePicker.tsx",
     "app/modules/SerpSim/useAi.ts",
-    "middleware.ts"
-, "deployment/health-check.js", "app/server/api/routers/role.test.ts.disable", "app/lib/url/translatePath.test.ts.disable", "app/lib/url/makeHref.test.ts.disable", "app/server/lib/roles/assignRoleToUser.test.ts.disable", "app/server/api/routers/health.test.ts.disabled", "app/server/api/routers/contact.test.ts.disabled"      ],
-  "exclude": ["node_modules"]
+    "middleware.ts",
+    "deployment/health-check.js",
+    "app/server/api/routers/role.test.ts.disable",
+    "app/lib/url/translatePath.test.ts.disable",
+    "app/lib/url/makeHref.test.ts.disable",
+    "app/server/lib/roles/assignRoleToUser.test.ts.disable",
+    "app/server/api/routers/health.test.ts.disabled",
+    "app/server/api/routers/contact.test.ts.disabled",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

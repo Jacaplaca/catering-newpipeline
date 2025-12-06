@@ -8,7 +8,7 @@ import { db } from "server/db";
 type RouteProps = {
     params: Promise<{
         token: string;
-        lang: LocaleApp;
+        lang: string;
     }>;
 }
 
@@ -30,7 +30,7 @@ export async function GET(
     });
 
     if (!tokenExists) {
-        const url = makeHref({ lang, page: signInPage, params: new URLSearchParams({ tokenNotFound: "true" }) });
+        const url = makeHref({ lang: lang as LocaleApp, page: signInPage, params: new URLSearchParams({ tokenNotFound: "true" }) });
         return redirect(url);
     }
 
@@ -53,6 +53,6 @@ export async function GET(
     })
 
 
-    const url = makeHref({ lang, page: signInPage, params: new URLSearchParams({ emailVerified: "true" }) });
+    const url = makeHref({ lang: lang as LocaleApp, page: signInPage, params: new URLSearchParams({ emailVerified: "true" }) });
     return redirect(url);
 }

@@ -66,7 +66,7 @@ const Settings: FunctionComponent<{
 
             <SettingsWrapper
                 lang={lang}
-                pageName={pageName}
+                // pageName={pageName}
                 renderComponent={renderSettingsComponent}
                 clientId={clientId}
             />

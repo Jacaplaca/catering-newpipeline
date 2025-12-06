@@ -24,6 +24,7 @@ const config = {
     sassOptions: {
         includePaths: sassPaths,
     },
+    serverExternalPackages: ['pdfkit'],
     // experimental: {
     //     serverActions: true,
     //     serverComponentsExternalPackages: ['@react-pdf/renderer']

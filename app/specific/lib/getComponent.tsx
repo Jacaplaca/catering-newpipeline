@@ -15,6 +15,7 @@ import Exclusion from '@root/app/specific/components/Exclusion'
 import Meals from '@root/app/specific/components/Meals'
 import Documents from '@root/app/specific/components/PublicData/Client/Documents'
 import ActivityLog from '@root/app/specific/components/ActivityLog'
+import { type ReactElement } from 'react'
 
 const getComponent = ({
     key,
@@ -105,7 +106,7 @@ const getComponent = ({
             title: translate(dictionary, 'dashboard:item-activity-log-title'),
             component: <ActivityLog lang={lang} pageName={pageName} />,
         },
-    } as Record<string, { title: string, component: JSX.Element }>
+    } as Record<string, { title: string, component: ReactElement }>
 
     return { ...components[key] };
 }

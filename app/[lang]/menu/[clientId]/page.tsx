@@ -11,12 +11,12 @@ const pageName = 'menu';
 
 const menu: NextPage<{
   params: Promise<{
-    lang: LocaleApp;
+    lang: string;
     clientId: string;
   }>;
 }> = async (props) => {
   const params = await props.params;
-  const lang = params.lang;
+  const lang = params.lang as LocaleApp;
 
   const page = await getContentFromApi({ lang, key: pageName }) as Page;
   const { title, h1, description } = page;

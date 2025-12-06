@@ -1,7 +1,7 @@
 'use client';
 import getDaysOfWeeks from '@root/app/specific/lib/getDaysOfWeeks';
 import Tabs from '@root/app/_components/ui/Tabs';
-import { Tabs as FlowbiteTabs } from 'flowbite-react';
+import { TabItem } from 'flowbite-react';
 
 import { pl } from 'date-fns/locale/pl';
 import { registerLocale } from 'react-datepicker';
@@ -36,7 +36,7 @@ const DocumentsComponent: FunctionComponent<{
                     daysOfWeeks.map((day) => {
                         const { weekStart, weekEnd, weekObj, dateRange } = dateForWeekTabs(day);
                         return (
-                            <FlowbiteTabs.Item key={dateRange} title={dateRange}>
+                            <TabItem key={dateRange} title={dateRange}>
                                 <div className='flex flex-col gap-3'>
                                     <div
                                         className='text-xl font-medium mb-4'>
@@ -70,7 +70,7 @@ const DocumentsComponent: FunctionComponent<{
                                         </div>
                                     </div>
                                 </div>
-                            </FlowbiteTabs.Item>
+                            </TabItem>
                         )
                     })
                 }

@@ -3,7 +3,7 @@ import ListWrapper from '@root/app/_components/ui/Inputs/SearchWithResults/ListW
 import useVirtualizedList from '@root/app/hooks/useVirtualizedListl';
 import translate from '@root/app/lib/lang/translate';
 import { api } from '@root/app/trpc/react';
-import { type FunctionComponent } from 'react';
+import { type FunctionComponent, type RefObject } from 'react';
 import FoundResults from '@root/app/_components/ui/Inputs/SearchWithResults/Found';
 import { type VirtualItem } from '@tanstack/react-virtual';
 import HighlightText from '@root/app/_components/Table/HighlightText';
@@ -98,7 +98,7 @@ const ClientDropdown: FunctionComponent<{
 
     const { rowVirtualizer, items: clients, isLoading, isEmpty } = useVirtualizedList<ClientItem>({
         ...response,
-        parentRef: ref,
+        parentRef: ref as RefObject<HTMLElement>,
         Item,
         onResultClick,
         searchValue,
@@ -111,7 +111,7 @@ const ClientDropdown: FunctionComponent<{
         dictionary={dictionary}
         ListComponent={<ListWrapper
             totalHeight={rowVirtualizer.getTotalSize()}
-            parentRef={ref}
+            parentRef={ref as RefObject<HTMLDivElement>}
             isEmpty={isEmpty}
             isLoading={isLoading}
             dictionary={dictionary}

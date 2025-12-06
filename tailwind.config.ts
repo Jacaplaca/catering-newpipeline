@@ -168,8 +168,8 @@ module.exports = {
     },
   },
   plugins: [
-    require('flowbite/plugin'),
-    require("daisyui"),
+    // require('flowbite/plugin'),
+    // require("daisyui"),
     require("@tailwindcss/typography"),
     require("@tailwindcss/forms"),
   ],

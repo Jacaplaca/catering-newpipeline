@@ -3,13 +3,20 @@ import DashboardItemWrapper from '@root/app/_components/Dashboard/ItemWrapper';
 import getDictFromApi from '@root/app/lib/lang/getDictFromApi';
 import translate from '@root/app/lib/lang/translate';
 import { auth } from '@root/app/server/auth';
-import { type FunctionComponent } from 'react';
-const SettingsWrapper: FunctionComponent<{
-    lang: LocaleApp,
-    pageName: string,
-    clientId?: string,
-    renderComponent: (props: { roleId?: RoleType, dictionary: Record<string, string>, clientId?: string, lang: LocaleApp }) => JSX.Element | null
-}> = async ({ lang, renderComponent, clientId }) => {
+import { type ReactNode } from 'react';
+
+interface SettingsWrapperProps {
+    lang: LocaleApp;
+    clientId?: string;
+    renderComponent: (props: {
+        roleId?: RoleType;
+        dictionary: Record<string, string>;
+        clientId?: string;
+        lang: LocaleApp
+    }) => ReactNode;
+}
+
+const SettingsWrapper = async ({ lang, renderComponent, clientId }: SettingsWrapperProps) => {
     const dictionary = await getDictFromApi(lang, ["shared", "settings"]);
     const session = await auth();
 

@@ -1,13 +1,11 @@
 @use 'md' as md;
 
-// section style
 
-
-.menu-bg {
+@utility menu-bg {
   @apply dark:bg-darkmode-navigation-bg bg-navigation-bg;
 }
 
-.context-menu-big {
+@utility context-menu-big {
   @apply menu-bg shadow-big dark:shadow-darkmode-big;
 }
 
@@ -16,7 +14,7 @@
 }
 
 .context-menu {
-  @apply absolute right-0 mt-2 origin-top-right context-menu-big pt-4 px-4 w-[290px] pb-4;
+  @apply absolute right-0 mt-2 origin-top-right context-menu-big pt-2 px-2 w-[290px] pb-2;
   @apply rounded-2xl;
   @apply border-[1px] border-border dark:border-darkmode-border;
 }
@@ -28,12 +26,10 @@
   }
 }
 
-// container
 .container {
   @apply mx-auto max-w-[1320px] px-4;
 }
 
-// form style
 .form-input {
   @apply w-full rounded border-transparent bg-theme-light px-6 py-4 text-dark placeholder:text-light focus:border-primary focus:ring-transparent dark:border-darkmode-border dark:bg-darkmode-theme-light dark:text-darkmode-light;
 }
@@ -42,7 +38,6 @@
   @apply mb-4 block font-secondary text-xl font-normal text-dark dark:text-darkmode-light;
 }
 
-// social icons
 .social-icons {
   @apply space-x-4;
   li {
@@ -148,15 +143,12 @@
   p {
     @apply mb-2;
   }
-}
 
-.copy-button {
-  @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-secondary dark:hover:bg-darkmode-secondary-accent bg-secondary hover:bg-secondary-accent;
-}
+  .copy-button {
+    @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-secondary dark:hover:bg-darkmode-secondary-accent bg-secondary hover:bg-secondary-accent;
+  }
+  .copied-to-clipboard {
+    @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-success dark:text-text bg-success text-white;
+  }
 
-.copy-button-skeleton {
-  @apply  p-2 cursor-not-allowed rounded-md  bg-neutral-300 text-neutral-100 dark:bg-neutral-500 dark:text-neutral-200;
-}
-.copied-to-clipboard {
-  @apply  p-2 cursor-pointer rounded-md dark:bg-darkmode-success dark:text-text bg-success text-white;
 }

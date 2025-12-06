@@ -1,4 +1,3 @@
-import { HiX } from "react-icons/hi";
 import { type FunctionComponent, useMemo, useState, useEffect } from "react";
 import {
     DndContext,
@@ -98,7 +97,7 @@ const SortableSelectedItem: FunctionComponent<{
                     }}
                     className="p-1 rounded hover:bg-neutral-300/60 dark:hover:bg-neutral-600/60 transition-colors"
                 >
-                    <HiX className="h-3 w-3 shrink-0 text-neutral-800 dark:text-neutral-50 group-hover:scale-110 transition-all duration-200 self-start" />
+                    <i className="fas fa-times text-xs shrink-0 text-neutral-800 dark:text-neutral-50 group-hover:scale-110 transition-all duration-200 self-start" />
                 </button>
             </div>
         </div>

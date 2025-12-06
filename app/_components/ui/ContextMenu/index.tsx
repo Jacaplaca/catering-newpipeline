@@ -1,10 +1,10 @@
 
 import { Menu, Transition } from "@headlessui/react";
-import { Fragment, type FunctionComponent } from "react";
+import { Fragment, type ReactNode, type FunctionComponent } from "react";
 
 const ContextMenu: FunctionComponent<{
-    button: JSX.Element | null;
-    items?: JSX.Element[];
+    button: ReactNode | null;
+    items?: ReactNode[];
     children?: React.ReactNode;
     disabled?: boolean;
 }> = ({ button, items, children, disabled }) => {

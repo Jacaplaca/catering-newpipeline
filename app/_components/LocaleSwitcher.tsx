@@ -5,7 +5,7 @@ import { type ComponentType, type FunctionComponent } from 'react'
 import { type OptionProps, components, type SingleValueProps } from 'react-select'
 import Image from 'next/image'
 import { api } from "app/trpc/react";
-import { pickerData, type Locale } from '@root/i18n-config'
+import { i18n, pickerData, type Locale } from '@root/i18n-config'
 import Dropdown from '@root/app/_components/ui/Inputs/Dropdown'
 import { usePathname, useSearchParams } from 'next/navigation'
 import getDefaultPage from '@root/app/lib/url/getDefaultPage'
@@ -47,6 +47,7 @@ interface IOption {
 const SingleValueCompo = ({ ...props }: SingleValueProps<IOption>) => {
   const { data } = props;
   return (
+    // @ts-expect-error - SingleValue
     <SingleValue {...props} >
       {data && <div className='pr-1'>
         <Image
@@ -66,10 +67,10 @@ const SingleValueCompo = ({ ...props }: SingleValueProps<IOption>) => {
 };
 
 const CustomOption: ComponentType<OptionProps<IOption, false>> = ({ ...props }) => {
-
+  // @ts-expect-error - Option
   return <Option {...props}>
     <Link href={props.data.url} >
-      <div className='flex items-center gap-2 ml-[3px]'>
+      <div className='flex items-center gap-2'>
         <div
           style={{
             border: "1px solid darkgray",
@@ -90,7 +91,8 @@ const CustomOption: ComponentType<OptionProps<IOption, false>> = ({ ...props }) 
 
 const LocaleSwitcher: FunctionComponent<{
   lang: Locale,
-}> = ({ lang }) => {
+  className?: string
+}> = ({ lang, className }) => {
   const pathname = usePathname()
 
   const { langPath, page, rest } = splitPathname(pathname)
@@ -123,19 +125,24 @@ const LocaleSwitcher: FunctionComponent<{
       return { value: targetLang, label: label[targetLang as LocaleApp], icon, url }
     })
 
+  if (i18n.locales.length <= 1) {
+    return null;
+  }
 
   return (
-    <Dropdown<IOption>
-      options={translatedUrls}
-      value={lang}
-      onChange={() => { return }}
-      comps={{
-        Option: CustomOption,
-        SingleValue: SingleValueCompo
-      }}
-      isSearchable={false}
-      styles={styles}
-    />
+    <div className={className}>
+      <Dropdown<IOption>
+        options={translatedUrls}
+        value={lang}
+        onChange={() => { return }}
+        comps={{
+          Option: CustomOption,
+          SingleValue: SingleValueCompo
+        }}
+        isSearchable={false}
+        styles={styles}
+      />
+    </div>
   )
 }
 

@@ -1,4 +1,4 @@
-import { Table } from 'flowbite-react';
+import { TableBody, TableCell, TableRow } from 'flowbite-react';
 import { type FunctionComponent } from 'react';
 
 const TableContent: FunctionComponent<{
@@ -37,7 +37,7 @@ const TableContent: FunctionComponent<{
 
         const dataToRender = tableData.reduce((acc, { rows, className, key, blockClick }) => {
             const isExpanded = ExpandedRow && key === expandedRowId;
-            acc.push(<Table.Row
+            acc.push(<TableRow
                 key={`row-${key}`}
                 className={`
                 ${className ? className : ''} 
@@ -48,23 +48,23 @@ const TableContent: FunctionComponent<{
                 {rows.filter(filter).map(({ className, component }, index) => {
                     const isLastCell = index === rows.length - 1;
                     return (
-                        <Table.Cell key={`row-${key}-cell-${index}`}
+                        <TableCell key={`row-${key}-cell-${index}`}
                             className={`${className} border-e 
                         ${isLastCell ? 'border-transparent' : 'border-neutral-200/50 dark:border-neutral-700/20'}
                     `}>
                             {component}
-                        </Table.Cell>
+                        </TableCell>
                     )
                 })}
-            </Table.Row>);
+            </TableRow>);
             { isExpanded ? acc.push(<ExpandedRow key={`expanded-${key}`} />) : null; }
             return acc;
-        }, [] as JSX.Element[]);
+        }, [] as React.ReactNode[]);
 
         return (
-            <Table.Body className={`${className ? className : ""}`}>
+            <TableBody className={`${className ? className : ""}`}>
                 {dataToRender}
-            </Table.Body>
+            </TableBody>
         )
     }
 

@@ -6,6 +6,7 @@ import { type MealGroupsMap } from '@root/app/specific/components/Orders/ByDayMe
 import { type MealType, type OrderGroupedByDayCustomTable } from '@root/types/specific';
 import { mealGroup2orderField } from '@root/app/assets/maps/catering';
 import { format } from 'date-fns-tz';
+import { type ReactElement } from 'react';
 // import { type FC } from 'react';
 
 // const MealCount: FC<{ count: number }> = ({ count }) => {
@@ -51,7 +52,7 @@ const useOrderGroupedByDayDataGrid = ({
         const { id: dayId, deliveryDay } = row;
 
         const mealsTable: {
-            component: JSX.Element,
+            component: ReactElement,
             key: string
         }[] = [];
 

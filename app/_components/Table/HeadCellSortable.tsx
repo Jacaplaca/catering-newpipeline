@@ -1,6 +1,6 @@
 import Tooltip from '@root/app/_components/ui/Tooltip';
 import { type TableColumnType } from '@root/types';
-import { Table } from 'flowbite-react';
+import { Table, TableHeadCell } from 'flowbite-react';
 import { type FunctionComponent } from 'react';
 
 const Sort: FunctionComponent<{
@@ -42,7 +42,7 @@ const HeadCellSortable: FunctionComponent<{
     tooltip
 }) => {
         return (
-            <Table.HeadCell
+            <TableHeadCell
                 rowSpan={rowSpan}
                 colSpan={colSpan}
                 scope="col"
@@ -68,7 +68,7 @@ const HeadCellSortable: FunctionComponent<{
                         </span>
                     </Tooltip>
                 </div>
-            </Table.HeadCell>
+            </TableHeadCell>
         )
     }
 

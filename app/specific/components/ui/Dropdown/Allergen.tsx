@@ -2,7 +2,7 @@ import SearchWithResults from '@root/app/_components/ui/Inputs/SearchWithResults
 import ListWrapper from '@root/app/_components/ui/Inputs/SearchWithResults/ListWrapper';
 import useVirtualizedList from '@root/app/hooks/useVirtualizedListl';
 import { api } from '@root/app/trpc/react';
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, type RefObject } from "react";
 import Item from '@root/app/_components/ui/Inputs/SearchWithResults/Item';
 import SelectedDisplay from './SelectedDisplay';
 import useDropdownMultiple from '@root/app/specific/components/ui/Dropdown/useDropdownMultiple';
@@ -56,7 +56,7 @@ const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
 
     const { rowVirtualizer, items, isLoading, isEmpty } = useVirtualizedList<{ id: string, name: string }>({
         ...response,
-        parentRef: ref,
+        parentRef: ref as RefObject<HTMLElement>,
         Item,
         onResultClick,
         searchValue: searchValue,
@@ -88,7 +88,7 @@ const AllergenDropdown: FunctionComponent<AllergenDropdownProps> = ({
                 dictionary={dictionary}
                 ListComponent={<ListWrapper
                     totalHeight={rowVirtualizer.getTotalSize()}
-                    parentRef={ref}
+                    parentRef={ref as RefObject<HTMLDivElement>}
                     isEmpty={isEmpty}
                     isLoading={isLoading}
                     dictionary={dictionary}

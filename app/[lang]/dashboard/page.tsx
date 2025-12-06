@@ -21,14 +21,14 @@ const getDashboard = async (lang: LocaleApp) => {
 
 const page: NextPage<{
     params: Promise<{
-        lang: LocaleApp
+        lang: string
     }>;
     searchParams: Promise<Record<string, string>>;
 }> = async (props) => {
     const params = await props.params;
     const searchParams = await props.searchParams;
     const { key } = searchParams || {};
-    const lang = params.lang;
+    const lang = params.lang as LocaleApp;
     const dashboard = await getDashboard(lang);
 
     const allowedItems = dashboard.reduce((acc, { items }) => {
@@ -69,7 +69,7 @@ const page: NextPage<{
                 title: errorTitle
             }
         }
-        const { component, title } = getComponent({ key, lang, dictionary, searchParams }) as { component?: JSX.Element, title?: string } || {};
+        const { component, title } = getComponent({ key, lang, dictionary, searchParams }) as { component?: React.ReactElement, title?: string } || {};
         return {
             component: component ?? <Error />,
             title: title ?? errorTitle,
@@ -93,7 +93,7 @@ const page: NextPage<{
         >
             <Dashboard
                 menu={dashboard}
-                searchParams={searchParams}
+            // searchParams={searchParams}
             >
                 <ClientPickerWrapper
                     lang={lang}

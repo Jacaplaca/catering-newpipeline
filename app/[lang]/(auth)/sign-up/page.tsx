@@ -17,12 +17,12 @@ const pageName = 'sign-up';
 const signUp: NextPage<{
   searchParams: Promise<Record<string, string>>,
   params: Promise<{
-    lang: LocaleApp,
+    lang: string,
   }>;
 }> = async (props) => {
   const params = await props.params;
   const searchParams = await props.searchParams;
-  const lang = params.lang;
+  const lang = params.lang as LocaleApp;
   const inviteToken = searchParams.invite;
 
   const [dictionary, authSettings, page, authValidatorsErrors] = await Promise.all([

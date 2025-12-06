@@ -4,7 +4,7 @@ import { type OrderStatus } from '@prisma/client';
 import SimpleDropdown from '@root/app/_components/ui/SimpleDropdown';
 import { orderStatusDictionary } from '@root/app/assets/maps/catering';
 import Status from '@root/app/specific/components/ui/OrderStatusSelect/Status';
-import { Dropdown } from "flowbite-react";
+import { DropdownItem } from "flowbite-react";
 import { type FC } from 'react';
 
 const OrderStatusSelect: FC<{
@@ -24,22 +24,22 @@ const OrderStatusSelect: FC<{
             )}
         >
             <div className="p-1">
-                <Dropdown.Item
+                <DropdownItem
                     key="null"
                     onClick={() => changeStatus(null)}
                 >
                     <Status status={null} dictionary={dictionary} size='sm' />
-                </Dropdown.Item>
+                </DropdownItem>
                 {Object.keys(orderStatusDictionary).map(statusKey => {
                     if (omitStatus && statusKey === omitStatus) return null;
                     const currentStatus = statusKey as OrderStatus;
                     return (
-                        <Dropdown.Item
+                        <DropdownItem
                             key={statusKey}
                             onClick={() => changeStatus(currentStatus)}
                         >
                             <Status status={currentStatus} dictionary={dictionary} size='sm' />
-                        </Dropdown.Item>
+                        </DropdownItem>
                     );
                 })}
             </div>

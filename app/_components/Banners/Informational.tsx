@@ -1,5 +1,5 @@
 import translate from '@root/app/lib/lang/translate';
-import { Banner } from "flowbite-react";
+import { Banner, BannerCollapseButton } from "flowbite-react";
 import { type FC } from 'react';
 
 const InformationalBanner: FC<{
@@ -28,12 +28,12 @@ const InformationalBanner: FC<{
             {translate(dictionary, 'shared:learn_more')}
           </a>}
           {/* <Button href="#">Let&apos;s go</Button> */}
-          <Banner.CollapseButton
+          <BannerCollapseButton
             color="gray"
             className="border-0 bg-transparent px-0 text-primary-600 hover:underline enabled:hover:bg-transparent dark:text-primary-500 dark:enabled:hover:text-primary-500 [&>span]:px-0"
           >
             <i className="fa-solid fa-xmark-large " />
-          </Banner.CollapseButton>
+          </BannerCollapseButton>
         </div>
       </div>
     </Banner>

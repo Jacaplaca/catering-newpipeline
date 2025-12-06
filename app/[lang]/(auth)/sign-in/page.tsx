@@ -10,11 +10,11 @@ const pageName = 'sign-in';
 
 const signIn: NextPage<{
   params: Promise<{
-    lang: LocaleApp
+    lang: string
   }>;
 }> = async (props) => {
   const params = await props.params;
-  const lang = params.lang;
+  const lang = params.lang as LocaleApp;
 
   const page = await getContentFromApi({ lang, key: pageName });
   const { title, h1, description, content } = page as Page;

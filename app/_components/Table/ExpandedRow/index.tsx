@@ -1,5 +1,5 @@
 
-import { Table } from 'flowbite-react';
+import { TableRow, TableCell } from 'flowbite-react';
 import { type FunctionComponent } from 'react';
 
 const ExpandedRow: FunctionComponent<{
@@ -15,7 +15,7 @@ const ExpandedRow: FunctionComponent<{
 }) => {
 
         return (
-            <Table.Row
+            <TableRow
                 className={` flex-1 overflow-x-auto
             bg-neutral-50 dark:bg-neutral-800
             hover:bg-neutral-50 hover:dark:bg-neutral-800
@@ -25,12 +25,12 @@ const ExpandedRow: FunctionComponent<{
                 id="table-column-body-4"
                 aria-labelledby="table-column-header-4"
             >
-                <Table.Cell
+                <TableCell
                     className={`p-4 ${cellClassName ?? ''}`}
                     colSpan={colSpan}
                 > {children}
-                </Table.Cell>
-            </Table.Row>
+                </TableCell>
+            </TableRow>
         );
     }
 

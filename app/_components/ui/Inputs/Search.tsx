@@ -1,7 +1,7 @@
 'use client';
 
 import InputStandard from '@root/app/_components/ui/Inputs/Standard';
-import { useState, useRef, type FunctionComponent, useEffect } from 'react';
+import { useState, useRef, type FunctionComponent, useEffect, type ReactElement } from 'react';
 import { useDebounceValue, useEventListener } from 'usehooks-ts';
 
 const SearchInput: FunctionComponent<{
@@ -11,7 +11,7 @@ const SearchInput: FunctionComponent<{
     everyChar?: boolean
     debounce?: number
     loading?: boolean
-    resultComponent?: JSX.Element,
+    resultComponent?: ReactElement,
     isError?: boolean
     onFocus?: () => void;
     onBlur?: () => void;
@@ -23,12 +23,12 @@ const SearchInput: FunctionComponent<{
     const [debouncedValue, setDebouncedValue] = useDebounceValue(searchValue, debounce)
     const inputRef = useRef<HTMLInputElement>(null);
 
-    useEventListener('keydown', (event: Event & { key: string }) => {
+    useEventListener('keydown', (event: KeyboardEvent) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             handleSubmit();
         }
-    }, inputRef);
+    }, inputRef as unknown as React.RefObject<Document>);
 
     useEffect(() => {
         everyChar && search(debouncedValue);
@@ -89,7 +89,7 @@ const SearchInput: FunctionComponent<{
                     focus={onFocus}
                     blur={onBlur}
                 />
-                {((Boolean(everyChar) || Boolean(searchValue)) && !resultComponent?.props.value) &&
+                {((Boolean(everyChar) || Boolean(searchValue)) && !(resultComponent?.props as { value?: string })?.value) &&
                     <div className='absolute inset-y-0 end-0 flex items-center'>
                         {Boolean(searchValue) && <button
                             onClick={handleClear}

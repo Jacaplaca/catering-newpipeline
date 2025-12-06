@@ -7,7 +7,7 @@ import { db } from "server/db";
 type RouteProps = {
     params: Promise<{
         token: string;
-        lang: LocaleApp;
+        lang: string;
     }>;
 }
 
@@ -28,8 +28,8 @@ export async function GET(
     });
 
     if (!tokenExists) {
-        return redirect(makeHref({ lang, page: 'change-password', slugs: ['invalid-token'] }))
+        return redirect(makeHref({ lang: lang as LocaleApp, page: 'change-password', slugs: ['invalid-token'] }))
     }
-    const newHref = makeHref({ lang, page: 'change-password', slugs: [token] });
+    const newHref = makeHref({ lang: lang as LocaleApp, page: 'change-password', slugs: [token] });
     redirect(newHref)
 }

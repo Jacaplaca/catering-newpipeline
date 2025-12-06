@@ -3,7 +3,7 @@ import ListWrapper from '@root/app/_components/ui/Inputs/SearchWithResults/ListW
 import useVirtualizedList from '@root/app/hooks/useVirtualizedListl';
 import translate from '@root/app/lib/lang/translate';
 import { api } from '@root/app/trpc/react';
-import { type FunctionComponent } from 'react';
+import { type FunctionComponent, type RefObject } from 'react';
 import FoundResults from '@root/app/_components/ui/Inputs/SearchWithResults/Found';
 import Item from '@root/app/_components/ui/Inputs/SearchWithResults/Item';
 import useDropdown from '@root/app/specific/components/ui/Dropdown/useDropdown';
@@ -41,7 +41,7 @@ const FoodCategoryDropdown: FunctionComponent<{
 
     const { rowVirtualizer, items: clients, isLoading, isEmpty } = useVirtualizedList<{ id: string, name: string }>({
         ...response,
-        parentRef: ref,
+        parentRef: ref as RefObject<HTMLElement>,
         Item,
         onResultClick,
         searchValue,
@@ -56,7 +56,7 @@ const FoodCategoryDropdown: FunctionComponent<{
         dictionary={dictionary}
         ListComponent={<ListWrapper
             totalHeight={rowVirtualizer.getTotalSize()}
-            parentRef={ref}
+            parentRef={ref as RefObject<HTMLDivElement>}
             isEmpty={isEmpty}
             isLoading={isLoading}
             dictionary={dictionary}

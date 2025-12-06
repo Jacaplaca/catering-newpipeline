@@ -17,12 +17,12 @@ const pageName = "home"
 
 const Home: NextPage<{
   params: Promise<{
-    lang: LocaleApp
+    lang: string
   }>;
 }> = async (props) => {
   const session = await auth();
   const params = await props.params;
-  const lang = params.lang;
+  const lang = params.lang as LocaleApp;
 
   const mainPageRedirect = env.NEXT_PUBLIC_MAIN_PAGE_REDIRECT;
 

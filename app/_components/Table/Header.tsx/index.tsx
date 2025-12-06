@@ -3,12 +3,12 @@
 import SearchInput from '@root/app/_components/ui/Inputs/Search';
 import t from '@root/app/lib/lang/translate';
 import { Label } from "flowbite-react";
-import { type FunctionComponent } from 'react';
+import { type FunctionComponent, type ReactNode } from 'react';
 
 const TableHeader: FunctionComponent<{
     search?: (value: string) => void
     dictionary: Record<string, string>
-    children?: JSX.Element | JSX.Element[] | null
+    children?: ReactNode
     title?: string
     searchPlaceholder?: string
 }> = ({

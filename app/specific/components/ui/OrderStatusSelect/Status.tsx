@@ -2,7 +2,6 @@ import { OrderStatus } from '@prisma/client';
 import { orderStatusDictionary } from '@root/app/assets/maps/catering';
 import translate from '@root/app/lib/lang/translate';
 import { Badge, type BadgeSizes } from "flowbite-react";
-import { type DynamicStringEnumKeysOf } from 'flowbite-react/dist/types/types';
 import { type FC } from 'react';
 
 const statusColor: Record<OrderStatus | 'default', string> = {
@@ -15,7 +14,7 @@ const statusColor: Record<OrderStatus | 'default', string> = {
 const Status: FC<{
     status: OrderStatus | null,
     dictionary: Record<string, string>,
-    size?: DynamicStringEnumKeysOf<BadgeSizes>
+    size?: keyof BadgeSizes & string
 }> = ({ status, dictionary, size = 'xs' }) => {
     const colorClass = statusColor[status ?? 'default'];
 

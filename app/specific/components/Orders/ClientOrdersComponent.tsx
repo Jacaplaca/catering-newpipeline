@@ -7,7 +7,7 @@ import { type Session } from 'next-auth';
 import { OrderTableContextProvider } from '@root/app/specific/components/Orders/ByOrder/context';
 import useOrderTable from '@root/app/specific/components/Orders/ByOrder/useOrderTable';
 import Tabs from '@root/app/_components/ui/Tabs';
-import { Tabs as FlowbiteTabs } from 'flowbite-react';
+import { TabItem } from 'flowbite-react';
 import translate from '@root/app/lib/lang/translate';
 import { OrderByMonthTableContextProvider } from '@root/app/specific/components/Orders/ByMonth/context';
 import useOrderByMonthTable from '@root/app/specific/components/Orders/ByMonth/useOrderTable';
@@ -25,16 +25,16 @@ const ClientOrdersComponent: FunctionComponent<{
     return (
         <SessionProvider session={props.session}>
             <Tabs aria-label="Tabs with underline" variant="default" title={translate(props.dictionary, 'orders:title')}>
-                <FlowbiteTabs.Item active title={translate(props.dictionary, 'orders:orders_by_day')}>
+                <TabItem active title={translate(props.dictionary, 'orders:orders_by_day')}>
                     <OrderTableContextProvider store={useOrderTable(props)} >
                         <OrdersTable />
                     </OrderTableContextProvider>
-                </FlowbiteTabs.Item>
-                <FlowbiteTabs.Item title={translate(props.dictionary, 'orders:orders_by_month')}>
+                </TabItem>
+                <TabItem title={translate(props.dictionary, 'orders:orders_by_month')}>
                     <OrderByMonthTableContextProvider store={useOrderByMonthTable(props)} >
                         <OrdersByMonthTable />
                     </OrderByMonthTableContextProvider>
-                </FlowbiteTabs.Item>
+                </TabItem>
             </Tabs>
         </SessionProvider>
     );

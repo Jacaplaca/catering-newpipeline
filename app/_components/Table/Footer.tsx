@@ -126,7 +126,7 @@ const TableFooter: FunctionComponent<{
                             </span>
                         </div>}
                     </div>
-                    {isLoading ? null : <Pagination
+                    {isLoading || totalPages <= 0 ? null : <Pagination
                         currentPage={currentPage}
                         nextLabel=""
                         onPageChange={onChangePage}

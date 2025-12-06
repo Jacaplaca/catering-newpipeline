@@ -11,11 +11,11 @@ const pageName = 'reset-password';
 
 const ResetPassword: NextPage<{
   params: Promise<{
-    lang: LocaleApp
+    lang: string
   }>;
 }> = async (props) => {
   const params = await props.params;
-  const lang = params.lang;
+  const lang = params.lang as LocaleApp;
 
   const [dictionary, page] = await Promise.all([
     getDictFromApi(lang, "reset-password"),

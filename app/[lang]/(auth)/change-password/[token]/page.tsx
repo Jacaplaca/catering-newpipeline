@@ -13,12 +13,13 @@ const pageName = "change-password";
 
 const ChangePassword: NextPage<{
   params: Promise<{
-    lang: LocaleApp;
+    lang: string;
     token: string;
   }>;
 }> = async (props) => {
   const params = await props.params;
-  const { token, lang } = params;
+  const { token, lang: langParam } = params;
+  const lang = langParam as LocaleApp;
 
   const [dictionary, authErrors, authSettings, page] = await Promise.all([
     getDictFromApi(lang, "change-password"),

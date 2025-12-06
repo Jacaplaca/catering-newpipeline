@@ -1,21 +1,17 @@
 import { Label, Radio } from "flowbite-react";
 import { type FunctionComponent } from 'react';
 import SimpleDropdown from '@root/app/_components/ui/SimpleDropdown';
-import { Dropdown } from 'flowbite-react';
+import { DropdownItem } from 'flowbite-react';
 import translate from '@root/app/lib/lang/translate';
 import Checkbox from '@root/app/_components/ui/Inputs/Checkbox';
 import { type TableColumnType } from '@root/types';
 
 const theme = {
-    "root": {
-        "base": `h-5 w-5
-        border border-neutral-300 dark:border-neutral-600
-        dark:bg-neutral-700
-        text-darkmode-secondary
-        focus:ring-1
-        focus:ring-secondary dark:focus:bg-darkmode-secondary dark:focus:ring-secondary-accent`
+    base: `h-5 w-5 border border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 focus:ring-1`,
+    color: {
+        default: 'text-darkmode-secondary focus:ring-secondary dark:ring-offset-gray-800 dark:focus:ring-secondary-accent'
     }
-}
+};
 
 const FilterLabel: FunctionComponent<{
     id: string;
@@ -61,7 +57,7 @@ const ColumnFilter: FunctionComponent<{
         >
             {columns.map(({ key, title }) => {
                 return (
-                    <Dropdown.Item
+                    <DropdownItem
                         key={key}
                         onClick={() => toggleColumn(columns, key)}
                     >
@@ -75,11 +71,11 @@ const ColumnFilter: FunctionComponent<{
                                 labelStyle="py-1"
                             />
                         </div>
-                    </Dropdown.Item>
-                )
+                    </DropdownItem>
+                );
             })}
         </SimpleDropdown >
-    )
+    );
 }
 
 

@@ -1,12 +1,11 @@
 'use client';
 import getDaysOfWeeks from '@root/app/specific/lib/getDaysOfWeeks';
 import Tabs from '@root/app/_components/ui/Tabs';
-import { Tabs as FlowbiteTabs } from 'flowbite-react';
+import { TabItem } from 'flowbite-react';
 
 import { pl } from 'date-fns/locale/pl';
 import { registerLocale } from 'react-datepicker';
-import { format } from 'date-fns-tz';
-import { type FunctionComponent, useState } from 'react';
+import { type FunctionComponent } from 'react';
 import dateForWeekTabs from '@root/app/lib/date/dateForWeekTabs';
 import useFetchConsumersWeekMenu from '@root/app/specific/components/PublicData/Consumer/useFetchConsumerWeekMenu';
 import MenuView from '@root/app/specific/components/PublicData/Consumer/MenuView';
@@ -18,7 +17,7 @@ const ConsumerPublicData: FunctionComponent<{
     lang: LocaleApp
     id: string
     dictionary: Record<string, string>
-}> = ({ lang, id, dictionary }) => {
+}> = ({ id, dictionary }) => {
     const daysOfWeeks = getDaysOfWeeks('wednesday');
     const { data, isFetching, updateDay } = useFetchConsumersWeekMenu({ consumerId: id });
 
@@ -44,13 +43,13 @@ const ConsumerPublicData: FunctionComponent<{
                     daysOfWeeks.map((day) => {
                         const { dateRange } = dateForWeekTabs(day);
                         return (
-                            <FlowbiteTabs.Item key={dateRange} title={dateRange}>
+                            <TabItem key={dateRange} title={dateRange}>
                                 {isFetching ? <div className='flex justify-center items-center h-full p-4'>
                                     <i className='fas fa-spinner animate-spin text-4xl text-secondary-accent-accent dark:text-darkmode-secondary-accent-accent'></i>
                                 </div> : <div className='flex flex-col gap-3'>
                                     {data ? <MenuView data={data} dictionary={dictionary} /> : <div>{translate(dictionary, 'public-profile:no_menu')}</div>}
                                 </div>}
-                            </FlowbiteTabs.Item>
+                            </TabItem>
                         )
                     })
                 }
