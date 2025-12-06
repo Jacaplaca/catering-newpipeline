@@ -18,7 +18,7 @@ const CONFIG = {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         bucketName: process.env.AWS_S3_BUCKET,
-        prefix: process.env.S3_PREFIX ?? 'backups/test_service/daily' // Domyślny folder w buckecie
+        prefix: process.env.S3_PREFIX ?? 'backups/test_service_backup/daily' // Domyślny folder w buckecie
     },
     keep: parseInt(process.env.MAX_REMOTE_BACKUPS ?? '7')
 };
