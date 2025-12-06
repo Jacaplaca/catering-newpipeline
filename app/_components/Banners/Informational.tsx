@@ -29,7 +29,7 @@ const InformationalBanner: FC<{
           </a>}
           {/* <Button href="#">Let&apos;s go</Button> */}
           <BannerCollapseButton
-            color="gray"
+            color="neutral"
             className="border-0 bg-transparent px-0 text-primary-600 hover:underline enabled:hover:bg-transparent dark:text-primary-500 dark:enabled:hover:text-primary-500 [&>span]:px-0"
           >
             <i className="fa-solid fa-xmark-large " />

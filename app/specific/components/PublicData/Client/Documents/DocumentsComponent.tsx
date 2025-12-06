@@ -13,7 +13,7 @@ import translate from '@root/app/lib/lang/translate';
 import makeHref from '@root/app/lib/url/makeHref';
 import WeekMenuForClientPdf from '@root/app/specific/components/PublicData/Client/Documents/WeekMenuForClient';
 import dateForWeekTabs from '@root/app/lib/date/dateForWeekTabs';
-
+import { type Session } from 'next-auth';
 registerLocale('pl', pl);
 
 const transMap: Record<ClientFileType, string> = {
@@ -23,11 +23,12 @@ const transMap: Record<ClientFileType, string> = {
 };
 
 const DocumentsComponent: FunctionComponent<{
-    lang: LocaleApp
+    lang: LocaleApp,
+    session: Session | null
     clientId: string
     clientFiles: ClientFile[]
     dictionary: Record<string, string>
-}> = ({ clientFiles, dictionary, lang, clientId }) => {
+}> = ({ clientFiles, dictionary, lang, clientId, session }) => {
     const daysOfWeeks = getDaysOfWeeks('wednesday');
     return (
         <div>
@@ -53,7 +54,7 @@ const DocumentsComponent: FunctionComponent<{
                                                             href={makeHref({ lang, page: 'file', slugs: [s3Key] })} target='_blank'
                                                             className='flex gap-2 items-center hover:underline group'>
                                                             <div className='text-base font-medium'>{translate(dictionary, transMap[fileType])}</div>
-                                                            <i className="text-xl fa-solid fa-file-circle-check text-base text-neutral-500 group-hover:text-secondary-accent dark:text-secondary-accent-dark" />
+                                                            <i className="fa-solid fa-file-circle-check text-base text-neutral-500 group-hover:text-secondary-accent dark:text-secondary-accent-dark" />
                                                         </Link>
                                                     )
                                                 })
@@ -61,12 +62,12 @@ const DocumentsComponent: FunctionComponent<{
                                         </div>
                                         <div className='flex items-start gap-3'>
                                             <p>{translate(dictionary, 'documents:week_menu')}</p>
-                                            <WeekMenuForClientPdf
+                                            {session?.user ? <WeekMenuForClientPdf
                                                 clientId={clientId}
                                                 lang={lang}
                                                 dictionary={dictionary}
                                                 day={weekStart}
-                                            />
+                                            /> : `(${translate(dictionary, 'shared:you_have_to_be_logged')})`}
                                         </div>
                                     </div>
                                 </div>

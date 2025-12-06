@@ -94,8 +94,8 @@ const Message: React.FC<{
 
     return <Alert
         status={status}
-        className={`
-            dark:bg-neutral-900 bg-white text-text dark:text-darkmode-text 
+        className={`flex items-center justify-between gap-4 p-4 px-6 rounded-lg
+            dark:bg-neutral-900 bg-neutral-50 text-text dark:text-darkmode-text 
             border-border dark:border-darkmode-border shadow-small dark:shadow-darkmode-small ${className}
         ${animate ? `${animateClass[animate]} ${mainAnimateClass}` : ""}
         ${onClose ? 'cursor-pointer' : ""}

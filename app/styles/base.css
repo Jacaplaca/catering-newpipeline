@@ -23,7 +23,7 @@
 }
 
 .input-standard {
-  @apply p-2 w-full bg-input dark:bg-darkmode-input focus:outline-none; 
+  @apply w-full bg-input dark:bg-darkmode-input focus:outline-none; 
   @apply text-text dark:text-darkmode-text;
   @apply border-input-border dark:border-darkmode-input-border;
   @apply dark:focus:border-darkmode-secondary/50 focus:border-secondary-accent;

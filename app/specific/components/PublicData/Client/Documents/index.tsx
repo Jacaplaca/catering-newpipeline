@@ -3,12 +3,14 @@ import translate from '@root/app/lib/lang/translate';
 import DocumentsComponent from '@root/app/specific/components/PublicData/Client/Documents/DocumentsComponent';
 import { api } from '@root/app/trpc/server';
 import { type FunctionComponent } from 'react';
+import { auth } from '@root/app/server/auth';
 
 const Documents: FunctionComponent<{
     lang: LocaleApp,
     pageName: string,
     clientId?: string
 }> = async ({ lang, clientId }) => {
+    const session = await auth();
     const clientFiles = await api.specific.clientFiles.asClient({ clientId });
     const [
         dictionary,
@@ -26,6 +28,7 @@ const Documents: FunctionComponent<{
             clientFiles={clientFiles}
             dictionary={dictionary}
             lang={lang}
+            session={session}
         />
     )
 }

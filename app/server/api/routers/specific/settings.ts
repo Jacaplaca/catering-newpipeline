@@ -96,7 +96,7 @@ const updateManagerSettings = createCateringNotSettingsProcedure([RoleType.manag
 
 const updateClientSettings = createCateringNotSettingsProcedure([RoleType.client])
     .input(clientSettingsValidator)
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
         const { db } = ctx;
         const { clientId } = input;
         return db.client.update({

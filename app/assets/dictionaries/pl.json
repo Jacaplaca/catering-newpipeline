@@ -51,7 +51,8 @@
     "payment_expired_message_part1": "Twoja subskrypcja wygasła",
     "payment_expired_message_part2": "temu. Opłać fakturę, aby zachować ciągłość dostępu do usług.",
     "day_singular": "dzień",
-    "days_plural": "dni"
+    "days_plural": "dni",
+    "you_have_to_be_logged": "Aby przeglądać tę stronę, musisz być zalogowany."
   },
   "error": {
     "DEFAULT": "Coś poszło nie tak!. Powrót do Strony Głównej"

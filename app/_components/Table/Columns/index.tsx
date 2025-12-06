@@ -5,6 +5,10 @@ import { type TableColumnType } from '@root/types';
 import { Label, TableHead, TableHeadCell } from 'flowbite-react';
 import { type FunctionComponent } from 'react';
 
+const customTheme = {
+    base: "bg-neutral-50 px-6 py-3 group-first/head:first:rounded-tl-lg group-first/head:last:rounded-tr-lg dark:bg-neutral-800"
+}
+
 const TableColumns: FunctionComponent<{
     columns: TableColumnType[],
     check?: () => void;
@@ -96,7 +100,7 @@ const TableColumns: FunctionComponent<{
                 <TableHead className="">
                     <tr>
                         {check && (
-                            <TableHeadCell scope="col" className="px-4 py-3">
+                            <TableHeadCell theme={customTheme} scope="col" className="px-4 py-3">
                                 {!hideCheck && <div className="flex items-center">
                                     <Checkbox
                                         id="checkbox-all"
@@ -122,6 +126,7 @@ const TableColumns: FunctionComponent<{
                                     align={align}
                                     special={special}
                                     tooltip={tooltip}
+                                    theme={customTheme}
                                 >
                                     {translate(dictionary, title)}
                                 </HeadCellSortable>
@@ -167,6 +172,7 @@ const TableColumns: FunctionComponent<{
                                     colSpan={item.colSpan}
                                     rowSpan={1}
                                     tooltip={item.tooltip}
+                                    theme={customTheme}
                                 >
                                     {translate(dictionary, item.parentTitle)}
                                 </HeadCellSortable>
@@ -186,6 +192,7 @@ const TableColumns: FunctionComponent<{
                                     special={child.special}
                                     rowSpan={2}
                                     tooltip={item.tooltip}
+                                    theme={customTheme}
                                 >
                                     {translate(dictionary, child.title)}
                                 </HeadCellSortable>

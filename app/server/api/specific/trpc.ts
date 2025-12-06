@@ -95,7 +95,7 @@ export const createCateringNotSettingsProcedure = (allowedRoles: RoleType[]) => 
     return t.procedure
         .use(allowActiveApp)
         .use(timingMiddleware)
-        .use(enforceUserHasCatering({ allowedRoles, expectSettings: true }));
+        .use(enforceUserHasCatering({ allowedRoles, expectSettings: false }));
 };
 
 const optionalUserCatering = ({
