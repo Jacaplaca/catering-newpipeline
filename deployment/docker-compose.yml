@@ -49,8 +49,8 @@ services:
 
       volumes:
         - ../backups:/backups
-      depends_on:
-        - mongodb
+      # depends_on:
+      #   - mongodb
 # networks:
 #   default:
 #     name: "${DOCKER_NETWORK_NAME}_${BRANCH_NAME}"
