@@ -173,6 +173,11 @@ jobs:
           
           # TYMCZASOWO: Uruchamiamy tylko backup service
           sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d backup
+
+          # Sprzątanie starych obrazów (dangling images <none>)
+          # Usuwa tylko te obrazy, które nie są używane przez żaden kontener
+          echo "Pruning dangling images..."
+          sudo docker image prune -f
         '
 
 
