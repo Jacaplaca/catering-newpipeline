@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN ls -la
-RUN npm install --production --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 RUN echo "DEPS stage DATABASE_URL=${DATABASE_URL}"
 
 FROM dziewan/t3-app-base:22-alpine AS builder
