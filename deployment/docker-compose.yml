@@ -15,7 +15,42 @@ services:
     volumes:
       # "data_${APP_NAME}_${BRANCH_NAME}":
       - "data_t3_main:/app/.next/cache"
+  backup:
+      container_name: "${APP_NAME}_${BRANCH_NAME}_backup"
+      build:
+        context: ./backup-service
+        dockerfile: Dockerfile
+      restart: always
+      environment:
+        # --- DATABASE ---
+        # Pobieramy URL prosto z Twojego .env
+        # WAŻNE: Upewnij się, że w .env na serwerze host to 'mongodb', a nie 'localhost'!
+        - DATABASE_URL=${DATABASE_URL}
 
+        # --- AWS S3 (MAPOWANIE) ---
+        # Po lewej: Nazwa zmiennej wewnątrz kontenera backupu (standard AWS)
+        # Po prawej: Nazwa zmiennej w Twoim pliku .env (według env.ts)
+        - AWS_REGION=${S3_REGION}
+        - AWS_ACCESS_KEY_ID=${S3_KEY_ID}
+        - AWS_SECRET_ACCESS_KEY=${S3_KEY_SECRET}
+        - AWS_S3_BUCKET=${S3_BUCKET}
+        
+        # Opcjonalnie: Jeśli używasz niestandardowych endpointów (np. MinIO / Cloudflare R2)
+        # Jeśli nie używasz, możesz usunąć tę linię
+        # - AWS_ENDPOINT=${S3_SERVER_ENDPOINT} 
+
+        # --- KONFIGURACJA BACKUPU ---
+        # Możesz dodać te zmienne do .env lub zostawić tu wartości domyślne (po :- )
+        # - BACKUP_CRON=${BACKUP_CRON:-0 3 * * *}
+        - BACKUP_CRON=*/3 * * * *
+        - BACKUP_DIR=/backups
+        - MAX_LOCAL_BACKUPS=${BACKUP_KEEP:-7}
+        - APP_NAME=${APP_NAME}
+
+      volumes:
+        - ../backups:/backups
+      depends_on:
+        - mongodb
 # networks:
 #   default:
 #     name: "${DOCKER_NETWORK_NAME}_${BRANCH_NAME}"

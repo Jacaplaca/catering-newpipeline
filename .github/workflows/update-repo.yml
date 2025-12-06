@@ -127,13 +127,31 @@ jobs:
           fi
         '
 
+    # - name: Build Docker images
+    #   if: ${{ github.event.inputs.should_rebuild == 'yes' }}
+    #   run: |
+    #     ssh -o ServerAliveInterval=60 -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
+    #       STAGE=${{ github.event.inputs.stage }}
+    #       cd ~/sources/catering/$STAGE
+    #       sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
+    #     '
+
+    # - name: Restart Docker containers
+    #   if: ${{ github.event.inputs.should_rebuild == 'yes' }}
+    #   run: |
+    #     ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
+    #       STAGE=${{ github.event.inputs.stage }}
+    #       cd ~/sources/catering/$STAGE
+    #       sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d
+    #     '
     - name: Build Docker images
       if: ${{ github.event.inputs.should_rebuild == 'yes' }}
       run: |
         ssh -o ServerAliveInterval=60 -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
+          # ZMIANA: Dodano "backup" na końcu. Buduje TYLKO serwis backupu.
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build backup
         '
 
     - name: Restart Docker containers
@@ -142,7 +160,10 @@ jobs:
         ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d
+          # ZMIANA: Dodano "backup" na końcu.
+          # Docker uruchomi/zrestartuje tylko kontener backupu.
+          # Jeśli mongodb i app już działają, nie zostaną ruszone (chyba że backup od nich zależy i one leżą).
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d backup
         '
 
 
