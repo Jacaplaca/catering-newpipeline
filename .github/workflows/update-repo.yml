@@ -127,30 +127,26 @@ jobs:
           fi
         '
 
-    # - name: Build Docker images
-    #   if: ${{ github.event.inputs.should_rebuild == 'yes' }}
-    #   run: |
-    #     ssh -o ServerAliveInterval=60 -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-    #       STAGE=${{ github.event.inputs.stage }}
-    #       cd ~/sources/catering/$STAGE
-    #       sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
-    #     '
+    - name: Stop Backup Service
+      run: |
+        ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
+          STAGE=${{ github.event.inputs.stage }}
+          cd ~/sources/catering/$STAGE
+          echo "Stopping and removing backup service to free up resources..."
+          # Zatrzymujemy i usuwamy kontener backupu przed ciężkim buildem aplikacji
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml rm -s -f -v backup || true
+        '
 
-    # - name: Restart Docker containers
-    #   if: ${{ github.event.inputs.should_rebuild == 'yes' }}
-    #   run: |
-    #     ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-    #       STAGE=${{ github.event.inputs.stage }}
-    #       cd ~/sources/catering/$STAGE
-    #       sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d
-    #     '
     - name: Build Docker images
       if: ${{ github.event.inputs.should_rebuild == 'yes' }}
       run: |
         ssh -o ServerAliveInterval=60 -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
-          # ZMIANA: Dodano "backup" na końcu. Buduje TYLKO serwis backupu.
+          # Budujemy wszystkie serwisy (app oraz backup) - ZAKOMENTOWANE TYMCZASOWO
+          # sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
+          
+          # TYMCZASOWO: Budujemy tylko backup service (szybkie testy)
           sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build backup
         '
 
@@ -160,9 +156,10 @@ jobs:
         ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
-          # ZMIANA: Dodano "backup" na końcu.
-          # Docker uruchomi/zrestartuje tylko kontener backupu.
-          # Jeśli mongodb i app już działają, nie zostaną ruszone (chyba że backup od nich zależy i one leżą).
+          # Uruchamiamy/restartujemy całą infrastrukturę (app + backup) - ZAKOMENTOWANE TYMCZASOWO
+          # sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d
+          
+          # TYMCZASOWO: Uruchamiamy tylko backup service
           sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d backup
         '
 
