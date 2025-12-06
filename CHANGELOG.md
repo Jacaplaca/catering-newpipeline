@@ -1,3 +1,12 @@
+## [2.12.1](https://github.com/Jacaplaca/catering/compare/v2.12.0...v2.12.1) (2025-12-06)
+
+
+### Bug Fixes
+
+* styles-after-dependancies-update ([19bed87](https://github.com/Jacaplaca/catering/commit/19bed877a6a55bba79141f91144fd84031302abe))
+
+
+
 # [2.12.0](https://github.com/Jacaplaca/catering/compare/v2.11.0...v2.12.0) (2025-12-05)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * add client to dayMenuPdf ([afb0bf4](https://github.com/Jacaplaca/catering/commit/afb0bf4f492a93bb4a74e261c1f4aff1b859a1c7))
-
-
-
-## [2.10.1](https://github.com/Jacaplaca/catering/compare/v2.10.0...v2.10.1) (2025-10-20)
-
-
-### Bug Fixes
-
-* no client id ([7297570](https://github.com/Jacaplaca/catering/commit/7297570bd53bce4eeb2c760dae9c10575f1c4423))
 
 
 
