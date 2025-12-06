@@ -5,6 +5,18 @@ const config = {
     project: true,
   },
   plugins: ["@typescript-eslint"],
+  overrides: [
+    {
+      files: ["deployment/backup-service/**/*.js"],
+      extends: ["plugin:@typescript-eslint/disable-type-checked"],
+      rules: {
+        "@typescript-eslint/no-var-requires": "off",
+      },
+      parserOptions: {
+        project: null,
+      },
+    },
+  ],
   extends: [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended-type-checked",
