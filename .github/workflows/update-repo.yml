@@ -132,9 +132,19 @@ jobs:
         ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
+          
+          echo "=== BEFORE STOP: Checking for running backup containers ==="
+          sudo docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}" | grep backup || echo "No backup container running currently."
+
           echo "Stopping and removing backup service to free up resources..."
-          # Zatrzymujemy i usuwamy kontener backupu przed ciężkim buildem aplikacji
+          # Zatrzymujemy i usuwamy kontener backupu
           sudo docker compose --env-file .env -f ./deployment/docker-compose.yml rm -s -f -v backup || true
+          
+          echo "=== AFTER STOP: Checking if backup container is gone ==="
+          sudo docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}" | grep backup || echo "Confirmed: No backup container running."
+          
+          echo "Waiting 60 seconds for manual verification..."
+          sleep 60
         '
 
     - name: Build Docker images
@@ -147,7 +157,8 @@ jobs:
           # sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
           
           # TYMCZASOWO: Budujemy tylko backup service (szybkie testy)
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build backup
+          # Dodano --no-cache aby wymusić przebudowanie
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build --no-cache backup
         '
 
     - name: Restart Docker containers

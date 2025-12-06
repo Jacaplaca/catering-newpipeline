@@ -21,11 +21,11 @@ import initCleanupCronMenu from '@root/app/server/lib/cleanup/menu';
 import initCleanupCronOrders from '@root/app/server/lib/cleanup/orders';
 import initCleanupCronClientFiles from '@root/app/server/lib/cleanup/clientFiles';
 
-// void initAutoOrderCron();
-// void initBackupCron();
-// void initCleanupCronMenu();
-// void initCleanupCronOrders();
-// void initCleanupCronClientFiles();
+void initAutoOrderCron();
+void initBackupCron();
+void initCleanupCronMenu();
+void initCleanupCronOrders();
+void initCleanupCronClientFiles();
 
 // void '@root/app/server/lib/autoOrder';
 // void '@root/app/server/lib/makeBackup/backup';
