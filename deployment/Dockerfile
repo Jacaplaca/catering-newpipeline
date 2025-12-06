@@ -1,6 +1,6 @@
 # Zmieniamy bazę na Twój nowy obraz
 FROM dziewan/t3-app-base:22-alpine AS deps
-ENV NODE_ENV production
+
 ARG PORT
 ENV PORT ${PORT}
 WORKDIR /app
@@ -41,6 +41,7 @@ RUN npm run build
 
 FROM dziewan/t3-app-base:22-alpine AS runner
 WORKDIR /app
+ENV NODE_ENV production
 
 # Timezone config
 ENV TZ=Europe/Warsaw
