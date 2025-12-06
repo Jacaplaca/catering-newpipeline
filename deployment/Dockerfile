@@ -8,9 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN ls -la
-# Zmieniamy --production na --omit=dev (bo to nowszy standard i znika warning)
-# Dodajemy --legacy-peer-deps (żeby ignorował konflikt nodemailera)
-RUN npm install --omit=dev --legacy-peer-deps
+RUN npm install --production --legacy-peer-deps
 RUN echo "DEPS stage DATABASE_URL=${DATABASE_URL}"
 
 FROM dziewan/t3-app-base:22-alpine AS builder
