@@ -64,10 +64,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/.env ./.env
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder /app/deployment/health-check.mjs ./health-check.mjs
-# Kopiujemy wersję aplikacji
+# Kopiujemy wersję aplikacji (opcjonalnie, dla celów informacyjnych)
 COPY --from=builder /app/.version ./.version
-# Ustawiamy APP_VERSION jako zmienną środowiskową, czytając z pliku
-RUN export APP_VERSION=$(cat .version) && echo "APP_VERSION=$APP_VERSION" >> .env
 
 VOLUME ["/app/.next/cache"]
 

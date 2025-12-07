@@ -3,9 +3,14 @@
  * for Docker builds.
  */
 import path from "path";
+import { readFileSync } from "fs";
+
 // import("./app/env");
 
 const __dirname = path.resolve();
+const packageJsonPath = path.join(__dirname, "package.json");
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+
 const sassPaths = [
     path.join(__dirname, "./app/styles"),
 ]
@@ -22,6 +27,9 @@ export const images = {
 const config = {
     output: "standalone",
     images,
+    env: {
+        APP_VERSION: packageJson.version,
+    },
     sassOptions: {
         includePaths: sassPaths,
     },
