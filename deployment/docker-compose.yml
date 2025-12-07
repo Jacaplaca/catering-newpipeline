@@ -41,7 +41,7 @@ services:
 
         # --- KONFIGURACJA BACKUPU ---
         # Możesz dodać te zmienne do .env lub zostawić tu wartości domyślne (po :- )
-        - BACKUP_CRON=${BACKUP_CRON:-0 3 * * *}
+        - BACKUP_CRON=${BACKUP_CRON:-0 4 * * *}
         # - BACKUP_CRON=*/3 * * * *
         - BACKUP_DIR=/backups
         - MAX_LOCAL_BACKUPS=${BACKUP_KEEP:-7}
