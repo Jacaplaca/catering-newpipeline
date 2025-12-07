@@ -13,8 +13,6 @@ RUN echo "DEPS stage DATABASE_URL=${DATABASE_URL}"
 
 FROM dziewan/t3-app-base:22-alpine AS builder
 WORKDIR /app
-RUN mkdir -p /app/backups
-RUN mkdir -p /app/dump
 COPY --from=deps /app/node_modules ./node_modules
 
 # Add and extract fontawesome.tar
@@ -56,8 +54,6 @@ RUN adduser -S -u 1001 -G nodejs nextjs
 # -------------------------------------------------
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/backups ./backups
-COPY --from=builder --chown=nextjs:nodejs /app/dump ./dump
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.env ./.env
 COPY --from=builder /app/app ./app

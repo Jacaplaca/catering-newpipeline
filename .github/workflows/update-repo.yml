@@ -151,12 +151,8 @@ jobs:
         ssh -o ServerAliveInterval=60 -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
-          # Budujemy wszystkie serwisy (app oraz backup) - ZAKOMENTOWANE TYMCZASOWO
-          # sudo docker compose --env-file .env -f ./deployment/docker-compose.yml build
-          
-          # TYMCZASOWO: Budujemy tylko backup service (szybkie testy)
-          # Dodano --no-cache oraz -p catering_$STAGE dla poprawnej nazwy obrazu
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE build --no-cache backup
+          # Budujemy wszystkie serwisy (app oraz backup)
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE build
         '
 
     - name: Restart Docker containers
@@ -165,11 +161,8 @@ jobs:
         ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
           STAGE=${{ github.event.inputs.stage }}
           cd ~/sources/catering/$STAGE
-          # Uruchamiamy/restartujemy całą infrastrukturę (app + backup) - ZAKOMENTOWANE TYMCZASOWO
-          # sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d
-          
-          # TYMCZASOWO: Uruchamiamy tylko backup service
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d backup
+          # Uruchamiamy/restartujemy całą infrastrukturę (app + backup)
+          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d
 
           # Sprzątanie starych obrazów (dangling images <none>)
           # Usuwa tylko te obrazy, które nie są używane przez żaden kontener

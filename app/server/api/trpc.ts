@@ -14,13 +14,10 @@ import { ZodError } from "zod";
 // import { getServerAuthSession } from '@root/app/server/auth';
 import { db } from '@root/app/server/db';
 import { settings } from '@root/config/config';
-import '@root/app/server/lib/makeBackup/backup';
 import { getSetting } from '@root/app/server/cache/settings';
 import { getTranslation } from '@root/app/server/cache/translations';
 import { env } from '@root/app/env';
 import { auth } from '@root/app/server/auth';
-
-// void dbBackup();
 
 /**
  * 1. CONTEXT
