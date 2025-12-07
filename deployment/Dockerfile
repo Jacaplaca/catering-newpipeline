@@ -15,6 +15,11 @@ FROM dziewan/t3-app-base:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 
+# Pobieramy wersję z package.json wcześnie, aby była dostępna dla builda
+COPY package.json ./
+RUN node -e "console.log(require('./package.json').version)" > .version
+RUN export APP_VERSION=$(cat .version) && echo "APP_VERSION=$APP_VERSION" >> .env
+
 # Add and extract fontawesome.tar
 COPY --from=deps /usr/local/share/fontawesome.tar /tmp/fontawesome.tar
 RUN ls -la /tmp && \
@@ -35,9 +40,8 @@ RUN npx prisma generate
 RUN npx prisma db push
 RUN npm run db:init
 RUN npm run db:update
-# Pobieramy wersję z package.json i zapisujemy do pliku
-RUN node -e "console.log(require('./package.json').version)" > .version
-RUN npm run build
+# Build korzysta ze zmiennych, upewnijmy się że APP_VERSION jest dostępna jeśli potrzebna
+RUN export APP_VERSION=$(cat .version) && npm run build
 
 FROM dziewan/t3-app-base:22-alpine AS runner
 WORKDIR /app
