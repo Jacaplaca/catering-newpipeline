@@ -143,9 +143,6 @@ jobs:
           
           echo "=== AFTER STOP: Checking if backup container is gone ==="
           sudo docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}" | grep backup || echo "Confirmed: No backup container running."
-          
-          echo "Waiting 60 seconds for manual verification..."
-          sleep 60
         '
 
     - name: Build Docker images
