@@ -35,6 +35,8 @@ RUN npx prisma generate
 RUN npx prisma db push
 RUN npm run db:init
 RUN npm run db:update
+# Pobieramy wersję z package.json i zapisujemy do pliku
+RUN node -e "console.log(require('./package.json').version)" > .version
 RUN npm run build
 
 FROM dziewan/t3-app-base:22-alpine AS runner
@@ -58,6 +60,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/.env ./.env
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder /app/deployment/health-check.mjs ./health-check.mjs
+# Kopiujemy wersję aplikacji
+COPY --from=builder /app/.version ./.version
+# Ustawiamy APP_VERSION jako zmienną środowiskową, czytając z pliku
+RUN export APP_VERSION=$(cat .version) && echo "APP_VERSION=$APP_VERSION" >> .env
 
 VOLUME ["/app/.next/cache"]
 

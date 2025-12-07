@@ -132,7 +132,7 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    APP_VERSION: process.env.npm_package_version,
+    APP_VERSION: process.env.APP_VERSION || process.env.npm_package_version,
     DATABASE_URL: getDbUrl(),
     MONGO_INITDB_DATABASE_USERNAME: process.env.MONGO_INITDB_DATABASE_USERNAME,
     MONGO_INITDB_DATABASE_PASSWORD: process.env.MONGO_INITDB_DATABASE_PASSWORD,
