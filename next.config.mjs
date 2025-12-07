@@ -20,6 +20,7 @@ export const images = {
 
 /** @type {import("next").NextConfig} */
 const config = {
+    output: "standalone",
     images,
     sassOptions: {
         includePaths: sassPaths,
