@@ -10,6 +10,7 @@ import getFileName from '@root/app/server/api/routers/specific/libs/consumerFood
 import generatePDF from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/generate';
 import { getDayMenuPdfValid } from '@root/app/validators/specific/consumerFood';
 import groupDataByConsumer from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/groupDataByConsumer';
+import logger from '@root/app/lib/logger';
 
 
 
@@ -17,6 +18,11 @@ const dayMenuPdf = createOptionalCateringProcedure([RoleType.kitchen, RoleType.m
     .input(getDayMenuPdfValid)
     .query(async ({ input, ctx }) => {
         const { dayId, lang, clientId, week, perCustomer } = input;
+
+        // User logging
+        const userEmail = ctx?.session?.user?.email ?? 'Unknown (Client Link)';
+        const userId = ctx?.session?.user?.id ?? 'Unknown';
+        logger.info(`Generating Day Menu PDF | User: ${userEmail} (${userId}) | Day: ${dayId} | Week: ${week} | Client: ${clientId}`);
 
         let cateringId = null;
 
@@ -76,7 +82,8 @@ const dayMenuPdf = createOptionalCateringProcedure([RoleType.kitchen, RoleType.m
             // return returnPdfForFront({ pdfPromises: [{ fileName, pdfPromise }], fileName });
             return returnPdfForFront(pdf);
         } catch (error) {
-            console.error('Błąd podczas generowania PDF:', error);
+            const userEmail = ctx?.session?.user?.email ?? 'Unknown';
+            logger.error(`Error generating Day Menu PDF | User: ${userEmail} | Error: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
         }
 

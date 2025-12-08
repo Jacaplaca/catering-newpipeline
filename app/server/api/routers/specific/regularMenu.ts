@@ -21,6 +21,7 @@ import getDayFoodData from '@root/app/server/api/routers/specific/libs/getDayFoo
 import groupDataByConsumer from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/groupDataByConsumer';
 import transformMenuForConsumer from '@root/app/server/api/routers/specific/libs/regularMenu/transformMenuForConsumer';
 import getManyClientsForCount from '@root/app/server/api/routers/specific/libs/getManyClientsForCount';
+import logger from '@root/app/lib/logger';
 
 const create = createCateringProcedure([RoleType.manager, RoleType.dietician])
   .input(regularMenuCreateValidator)
@@ -657,6 +658,8 @@ const getConsumerWeekMenu = publicProcedure
       clientId = consumer.clientId;
     }
 
+    logger.info(`Fetching Consumer Week Menu | ConsumerID: ${consumerId} | ClientID: ${clientId} | DayID: ${dayId}`);
+
     if (!cateringId || !clientId) {
       throw new Error('Catering not found');
     }
@@ -680,7 +683,7 @@ const getConsumerWeekMenu = publicProcedure
       return consumerData;
 
     } catch (error) {
-      console.error(error);
+      logger.error(`Error fetching Consumer Week Menu | ConsumerID: ${consumerId} | Error: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   });

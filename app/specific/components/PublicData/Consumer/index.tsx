@@ -19,7 +19,7 @@ const ConsumerPublicData: FunctionComponent<{
     dictionary: Record<string, string>
 }> = ({ id, dictionary }) => {
     const daysOfWeeks = getDaysOfWeeks('wednesday');
-    const { data, isFetching, updateDay } = useFetchConsumersWeekMenu({ consumerId: id });
+    const { data, isFetching, updateDay } = useFetchConsumersWeekMenu({ consumerId: id, initialDate: daysOfWeeks[0] });
 
     const onActiveTabChange = (tabIndex: number) => {
         const activeDay = daysOfWeeks[tabIndex];

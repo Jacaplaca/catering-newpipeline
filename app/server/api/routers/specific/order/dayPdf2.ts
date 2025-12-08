@@ -20,6 +20,7 @@ import returnPdfForFront from '@root/app/server/api/routers/specific/libs/pdf/re
 import { mealGroup2orderField } from '@root/app/assets/maps/catering';
 import getGroupedFoodData from '@root/app/server/api/routers/specific/libs/pdf/getGroupedFoodData';
 import cleanConsumerName from '@root/app/server/api/routers/specific/libs/consumerFoods/dayMenuPdf/cleanConsumerName';
+import logger from '@root/app/lib/logger';
 
 // PDF Configuration
 const pdfConfig = {
@@ -39,8 +40,10 @@ const pdfConfig = {
 const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getOrdersPdf2Valid)
     .query(async ({ input, ctx }) => {
-        const { session: { catering } } = ctx;
+        const { session: { catering, user } } = ctx;
         const { dayId, mealId, lang } = input;
+
+        logger.info(`Generating Day PDF (Order Summary) | User: ${user.email} (${user.id}) | Day: ${dayId} | Meal: ${mealId}`);
 
         const { consumerFoodByRoute, mealGroupName, orderIds, mealGroupId } = await getGroupedFoodData({ dayId, mealId, cateringId: catering.id, groupBy: 'byMeal' });
 
@@ -886,10 +889,9 @@ const dayPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, Rol
 
             return returnPdfForFront(newPromise);
         } catch (error) {
-            console.error('Błąd podczas generowania PDF:', error);
+            logger.error(`Error generating Day PDF | User: ${ctx.session.user.email} | Error: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
         }
-
     });
 
 export default dayPdf2;

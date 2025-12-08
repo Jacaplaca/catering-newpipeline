@@ -6,6 +6,7 @@ import populateEmailTemplate from '@root/app/lib/populateEmailTemplate';
 import { replaceVariables } from '@root/app/server/lib/replaceVariables';
 import { getSetting } from '@root/app/server/cache/settings';
 import { getDict } from '@root/app/server/cache/translations';
+import logger from '@root/app/lib/logger';
 
 export type CustomEmailSettings = {
     options: {
@@ -85,18 +86,26 @@ const sendMail = async ({ to, dynamicContext, templateName, lang, staticContext,
         ...context
     })
 
-    const result = await smtpTransport.sendMail({
-        to,
-        subject: subjectWithContext,
-        text: textWithContext,
-        html: richHtml,
-        from
-    })
-    console.log(result)
+    try {
+        const result = await smtpTransport.sendMail({
+            to,
+            subject: subjectWithContext,
+            text: textWithContext,
+            html: richHtml,
+            from
+        })
 
-    const failed = result.rejected.concat(result.pending).filter(Boolean)
-    if (failed.length) {
-        throw new Error(`Email(s) (${failed.join(", ")}) could not be sent`)
+        const failed = result.rejected.concat(result.pending).filter(Boolean)
+        if (failed.length) {
+            const errorMsg = `Email(s) (${failed.join(", ")}) could not be sent`;
+            logger.error(errorMsg);
+            throw new Error(errorMsg)
+        }
+
+        logger.info(`Email sent successfully to: ${to}, subject: ${subjectWithContext}`);
+    } catch (error) {
+        logger.error(`Failed to send email to: ${to}, error: ${error instanceof Error ? error.message : String(error)}`);
+        throw error;
     }
 }
 

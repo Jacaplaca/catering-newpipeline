@@ -11,12 +11,15 @@ import dayIdParser from '@root/app/server/api/routers/specific/libs/dayIdParser'
 import returnPdfForFront from '@root/app/server/api/routers/specific/libs/pdf/returnPdfForFront';
 import getGroupedFoodData from '@root/app/server/api/routers/specific/libs/pdf/getGroupedFoodData';
 import { type MealInConsumerDataItem } from '@root/app/server/api/routers/specific/libs/getGroupedConsumerFoodDataObject';
+import logger from '@root/app/lib/logger';
 
 const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getOrdersPdf2Valid)
     .query(async ({ input, ctx }) => {
-        const { session: { catering } } = ctx;
+        const { session: { catering, user } } = ctx;
         const { dayId, mealId } = input;
+
+        logger.info(`Generating Labels PDF | User: ${user.email} (${user.id}) | Day: ${dayId} | Meal: ${mealId}`);
 
         // Control variables
         const showRegularFood = false;
@@ -366,7 +369,7 @@ const labelsPdf2 = createCateringProcedure([RoleType.kitchen, RoleType.manager, 
             });
             return returnPdfForFront(newPromise);
         } catch (error) {
-            console.error('Error generating labels PDF:', error);
+            logger.error(`Error generating Labels PDF | User: ${ctx.session.user.email} | Error: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
         }
     });

@@ -7,6 +7,7 @@ import { OrderStatus } from '@prisma/client';
 import getClientSettings from '@root/app/server/api/routers/specific/libs/getUserSettings';
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
 import { getSetting } from '@root/app/server/cache/settings';
+import logger from '@root/app/lib/logger';
 
 // const withWeekend = 'cm414l1ud0008t48ia51eyqc9';
 // const withoutWeekend = 'cm6163n9v006hph0jthdwqc3h';
@@ -15,7 +16,7 @@ import { getSetting } from '@root/app/server/cache/settings';
 
 async function autoOrder() {
     // return;
-    // console.log('>>>>>>>>>>>>>>>>>>Auto order process started');
+    logger.info('>>>>>>>>>>>>>>>>>>Auto order process started');
     const clients = await db.client.findMany({
         where: { deactivated: { not: true } },
         include: { catering: true },

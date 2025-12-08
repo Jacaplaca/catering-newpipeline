@@ -4,11 +4,12 @@ import { db } from '@root/app/server/db';
 import getCutoffDate from '@root/app/server/lib/cutoffDate';
 import { s3deleteKeys } from '@root/app/server/s3/delete';
 import cron from 'node-cron';
+import logger from '@root/app/lib/logger';
 
 const isProduction = env.NODE_ENV === 'production';
 
 async function cleanupClientFiles() {
-        console.log('>>>>>>>>>>>>>>>>>>Client files cleanup process started');
+        logger.info('>>>>>>>>>>>>>>>>>>Client files cleanup process started');
         const oldMonths = await getSetting<number>('cleanup', 'client-files-old-months');
 
         if (oldMonths == null || oldMonths < 0) {
@@ -68,7 +69,7 @@ async function cleanupClientFiles() {
                 }>;
 
                 if (oldClientFiles.length === 0) {
-                        console.log(`ClientFiles cleanup: cutoff ${cutoffYear}-W${cutoffWeek}, no files to delete`);
+                        logger.info(`ClientFiles cleanup: cutoff ${cutoffYear}-W${cutoffWeek}, no files to delete`);
                         return;
                 }
 
@@ -93,10 +94,10 @@ async function cleanupClientFiles() {
                 const usedS3Keys = new Set(remainingFilesWithSameS3Keys.map(file => file.s3Key));
                 const safeToDeleteS3Keys = oldS3Keys.filter(s3Key => !usedS3Keys.has(s3Key));
 
-                console.log(`ClientFiles cleanup: cutoff ${cutoffYear}-W${cutoffWeek}`);
-                console.log(`Found ${oldClientFiles.length} client files to delete`);
-                console.log(`S3 keys safe to delete: ${safeToDeleteS3Keys.length}`);
-                console.log(`S3 keys NOT safe to delete: ${oldS3Keys.length - safeToDeleteS3Keys.length}`);
+                logger.info(`ClientFiles cleanup: cutoff ${cutoffYear}-W${cutoffWeek}`);
+                logger.info(`Found ${oldClientFiles.length} client files to delete`);
+                logger.info(`S3 keys safe to delete: ${safeToDeleteS3Keys.length}`);
+                logger.info(`S3 keys NOT safe to delete: ${oldS3Keys.length - safeToDeleteS3Keys.length}`);
 
                 // TODO: Delete old client files (commented for safety)
                 await db.clientFile.deleteMany({
@@ -106,27 +107,27 @@ async function cleanupClientFiles() {
                                 }
                         }
                 });
-                console.log(`Deleted ${oldClientFiles.length} client files`);
+                logger.info(`Deleted ${oldClientFiles.length} client files`);
 
                 // Delete safe S3 keys from S3 bucket
                 if (safeToDeleteS3Keys.length > 0) {
-                        console.log(`Deleting ${safeToDeleteS3Keys.length} files from S3 bucket`);
-                        console.log(`Sample S3 keys to delete:`, safeToDeleteS3Keys.slice(0, 5));
+                        logger.info(`Deleting ${safeToDeleteS3Keys.length} files from S3 bucket`);
+                        logger.info(`Sample S3 keys to delete: ${JSON.stringify(safeToDeleteS3Keys.slice(0, 5))}`);
 
                         try {
                                 await s3deleteKeys(safeToDeleteS3Keys);
-                                console.log(`Successfully deleted ${safeToDeleteS3Keys.length} files from S3`);
+                                logger.info(`Successfully deleted ${safeToDeleteS3Keys.length} files from S3`);
                         } catch (error) {
-                                console.error('Failed to delete S3 files:', error);
-                                console.error('All S3 keys that failed:', safeToDeleteS3Keys);
+                                logger.error(`Failed to delete S3 files: ${error}`);
+                                logger.error(`All S3 keys that failed: ${JSON.stringify(safeToDeleteS3Keys)}`);
                                 // Don't re-throw - we already deleted the DB records, continue execution
                         }
                 } else {
-                        console.log('No S3 files to delete');
+                        logger.info('No S3 files to delete');
                 }
 
         } catch (error) {
-                console.error('Error during client files cleanup operation:', error);
+                logger.error(`Error during client files cleanup operation: ${error}`);
         }
 }
 

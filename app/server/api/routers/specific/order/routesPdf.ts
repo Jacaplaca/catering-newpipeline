@@ -15,12 +15,15 @@ import getDayOrders from '@root/app/server/api/routers/specific/libs/getDayOrder
 import groupStandardOrdersByDay, { type RouteStandardDetails } from '@root/app/server/api/routers/specific/libs/groupStandardOrdersByDay';
 import getDayFoodData from '@root/app/server/api/routers/specific/libs/getDayFoodData';
 import { type TransformedClientWithConsumersData, type TransformedRouteWithConsumersData } from '@root/app/server/api/routers/specific/libs/getGroupedConsumerFoodDataObject';
+import logger from '@root/app/lib/logger';
 
 const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, RoleType.dietician])
     .input(getRoutesPdfValid)
     .query(async ({ input, ctx }) => {
-        const { session: { catering } } = ctx;
+        const { session: { catering, user } } = ctx;
         const { dayId, lang } = input;
+
+        logger.info(`Generating Routes PDF | User: ${user.email} (${user.id}) | Day: ${dayId}`);
 
         // Parse date parts from dayId
         const { year, month, day } = dayIdParser(dayId);
@@ -489,7 +492,7 @@ const routesPdf = createCateringProcedure([RoleType.kitchen, RoleType.manager, R
             return returnPdfForFront(newPromise);
 
         } catch (error) {
-            console.error('Error generating routes standard PDF:', error);
+            logger.error(`Error generating Routes PDF | User: ${ctx.session.user.email} | Error: ${error}`);
             throw error;
         }
     });

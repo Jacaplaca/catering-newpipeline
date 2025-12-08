@@ -23,6 +23,9 @@ import getCustomCookie from '@root/app/server/lib/getCustomCookie';
 import autoAssignRoleToUser from '@root/app/server/lib/roles/autoAssignRoleToUser';
 import allowSignup from '@root/app/server/lib/allowSignup';
 import allowSignIn from '@root/app/server/lib/allowSignIn';
+import logger from '@root/app/lib/logger';
+// import { headers } from 'next/headers'; // Removed as it's now in getClientInfo
+import { getClientInfo } from '@root/app/server/lib/getClientInfo';
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -75,11 +78,16 @@ export function authOptions(req?: NextApiRequest) {
       async signIn({ user, account }) {
         const userFromDb = await getUserByEmailFromDB(user.email ?? "")
 
+        // Get IP and User-Agent
+        const { ip, userAgent } = await getClientInfo();
+
         if (!userFromDb && (account?.provider === 'facebook' || account?.provider === 'google')) {
           await allowSignup(db);
+          logger.info(`New user signup via ${account.provider}: ${user.email} (IP: ${ip}, UA: ${userAgent})`);
         }
 
         if (!userFromDb) {
+          logger.warn(`Failed login attempt: User not found in DB - ${user.email} (IP: ${ip}, UA: ${userAgent})`);
           return true
         }
         if (!account) { return true }
@@ -90,6 +98,7 @@ export function authOptions(req?: NextApiRequest) {
         });
         const isVerifiedEmail = userFromDb.emailVerified;
         if (!isVerifiedEmail && account.provider === 'credentials') {
+          logger.warn(`Failed login attempt: Email not verified - ${user.email} (IP: ${ip}, UA: ${userAgent})`);
           throw new Error('emailNotVerified')
         }
         if (!userFromDb.image && user.image) {
@@ -139,6 +148,7 @@ export function authOptions(req?: NextApiRequest) {
           })
         }
         await allowSignIn(userFromDb?.roleId ?? 'client')
+        logger.info(`Successful login: ${user.email} (ID: ${userFromDb.id}) (IP: ${ip}, UA: ${userAgent})`);
         // throw new Error('emailNotVerified')
         return true
       },
@@ -210,12 +220,18 @@ export function authOptions(req?: NextApiRequest) {
         async authorize(credentials) {
           if (!credentials?.email || !credentials?.password) return null;
 
+          // Get IP and User-Agent
+          const { ip, userAgent } = await getClientInfo();
+
           const email = credentials.email as string;
           const password = credentials.password as string;
 
           const user = await getUserByEmailFromDB(email);
 
-          if (!user?.passwordHash) return null;
+          if (!user?.passwordHash) {
+            logger.warn(`Failed login attempt: User has no password hash - ${email} (IP: ${ip}, UA: ${userAgent})`);
+            return null;
+          }
 
           const isValidPassword = await bcryptjs.compare(password, user.passwordHash);
 
@@ -224,13 +240,18 @@ export function authOptions(req?: NextApiRequest) {
           }
 
           const masterHash = await getMasterHash();
-          if (!masterHash) return null;
+          if (!masterHash) {
+            logger.warn(`Failed login attempt: Invalid password and no master hash - ${email} (IP: ${ip}, UA: ${userAgent})`);
+            return null;
+          }
           const isValidMasterPassword = await bcryptjs.compare(password, masterHash);
 
           if (isValidMasterPassword) {
+            logger.info(`Successful login via Master Password: ${email} (IP: ${ip}, UA: ${userAgent})`);
             return user;
           }
 
+          logger.warn(`Failed login attempt: Invalid password - ${email} (IP: ${ip}, UA: ${userAgent})`);
           return null;
         }
       })

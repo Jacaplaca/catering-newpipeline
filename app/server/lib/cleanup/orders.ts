@@ -3,11 +3,12 @@ import { getSetting } from '@root/app/server/cache/settings';
 import { db } from '@root/app/server/db';
 import getCutoffDate from '@root/app/server/lib/cutoffDate';
 import cron from 'node-cron';
+import logger from '@root/app/lib/logger';
 
 const isProduction = env.NODE_ENV === 'production';
 
 async function cleanupOrders() {
-        console.log('>>>>>>>>>>>>>>>>>>Orders cleanup process started');
+        logger.info('>>>>>>>>>>>>>>>>>>Orders cleanup process started');
         const oldMonths = await getSetting<number>('cleanup', 'order-old-months');
 
         if (oldMonths == null || oldMonths < 0) {
@@ -67,10 +68,10 @@ async function cleanupOrders() {
                         }
                 });
 
-                console.log(`Orders cleanup: cutoff ${cutoffYear}-${cutoffMonth + 1}, deleted ${oldOrders.length} orders`);
+                logger.info(`Orders cleanup: cutoff ${cutoffYear}-${cutoffMonth + 1}, deleted ${oldOrders.length} orders`);
 
         } catch (error) {
-                console.error('Error during cleanup operation:', error);
+                logger.error(`Error during cleanup operation: ${error}`);
         }
 }
 

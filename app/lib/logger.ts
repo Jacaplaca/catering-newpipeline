@@ -2,6 +2,7 @@ import winston from 'winston';
 import 'winston-daily-rotate-file';
 import path from 'path';
 import util from 'util';
+import { env } from '@root/app/env';
 
 const logDir = path.join(process.cwd(), 'logs');
 
@@ -14,6 +15,10 @@ const fileRotateTransport = new winston.transports.DailyRotateFile({
   maxFiles: '31d',
   format: winston.format.combine(
     winston.format.timestamp(),
+    winston.format((info) => {
+      info.version = env.APP_VERSION;
+      return info;
+    })(),
     winston.format.json()
   )
 });

@@ -3,11 +3,12 @@ import { getSetting } from '@root/app/server/cache/settings';
 import { db } from '@root/app/server/db';
 import getCutoffDate from '@root/app/server/lib/cutoffDate';
 import cron from 'node-cron';
+import logger from '@root/app/lib/logger';
 
 const isProduction = env.NODE_ENV === 'production';
 
 async function cleanupMenu() {
-        console.log('>>>>>>>>>>>>>>>>>>Menu cleanup process started');
+        logger.info('>>>>>>>>>>>>>>>>>>Menu cleanup process started');
         const oldMonths = await getSetting<number>('cleanup', 'menu-old-months');
 
         if (oldMonths == null || oldMonths < 0) {
@@ -70,10 +71,10 @@ async function cleanupMenu() {
                         }
                 });
 
-                console.log(`Menu cleanup: cutoff ${cutoffYear}-${cutoffMonth + 1}, deleted ${oldMenus.length} regular menus`);
+                logger.info(`Menu cleanup: cutoff ${cutoffYear}-${cutoffMonth + 1}, deleted ${oldMenus.length} regular menus`);
 
         } catch (error) {
-                console.error('Error during menu cleanup operation:', error);
+                logger.error(`Error during menu cleanup operation: ${error instanceof Error ? error.message : String(error)}`);
         }
 }
 
