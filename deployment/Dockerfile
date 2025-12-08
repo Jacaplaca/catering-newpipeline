@@ -74,6 +74,7 @@ HEALTHCHECK --interval=1m --timeout=3s --start-period=30s CMD node ./health-chec
 # Fix uprawnień (Alpine rzadziej tego wymaga, ale dla pewności zostawiamy strukturę)
 USER root
 RUN mkdir -p /app/.npm && chown -R nextjs:nodejs /app/.npm
+RUN mkdir -p /app/logs && chown -R nextjs:nodejs /app/logs
 USER nextjs
 
 EXPOSE ${PORT}

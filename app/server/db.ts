@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { env } from "@root/app/env";
+import "@root/app/lib/logger"; // Initialize logger
 
 const createPrismaClient = () =>
   new PrismaClient({
