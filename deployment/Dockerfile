@@ -35,6 +35,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN ls -la
 RUN echo "BUILDER stage before db operations DATABASE_URL=${DATABASE_URL}"
 
+# WAŻNE: Upewnij się, że w schema.prisma jest binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+RUN npx prisma generate
+RUN npx prisma db push
+RUN npm run db:init
+RUN npm run db:update
 # Build korzysta ze zmiennych, upewnijmy się że APP_VERSION jest dostępna jeśli potrzebna
 RUN export APP_VERSION=$(cat .version) && npm run build
 
@@ -59,11 +64,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/.env ./.env
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder /app/deployment/health-check.mjs ./health-check.mjs
-# Kopiujemy skrypt entrypoint
-COPY --from=builder /app/deployment/entrypoint.sh ./entrypoint.sh
-# Nadajemy uprawnienia wykonywania (na wszelki wypadek, choć git update-index też pomaga)
-RUN chmod +x ./entrypoint.sh
-
 # Kopiujemy wersję aplikacji (opcjonalnie, dla celów informacyjnych)
 COPY --from=builder /app/.version ./.version
 
@@ -78,5 +78,4 @@ USER nextjs
 
 EXPOSE ${PORT}
 
-ENTRYPOINT ["./entrypoint.sh"]
 CMD ["node", "server.js"]
