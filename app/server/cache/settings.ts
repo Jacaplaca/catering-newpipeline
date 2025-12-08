@@ -6,9 +6,19 @@ import { getDefaultSetting, getDefaultSettings } from '@root/app/server/lib/defa
 import { type SettingParsedType, type SettingValue } from '@root/types';
 
 
-const settingsCache: Record<string, SettingValue> = {};
-const settingsGroupsCache: Record<string, Record<string, SettingValue>> = {};
-const settingsGroupsCacheWithPrivate: Record<string, Record<string, SettingValue>> = {};
+const globalForSettings = globalThis as unknown as {
+    settingsCache: Record<string, SettingValue> | undefined;
+    settingsGroupsCache: Record<string, Record<string, SettingValue>> | undefined;
+    settingsGroupsCacheWithPrivate: Record<string, Record<string, SettingValue>> | undefined;
+};
+
+const settingsCache: Record<string, SettingValue> = globalForSettings.settingsCache ?? {};
+const settingsGroupsCache: Record<string, Record<string, SettingValue>> = globalForSettings.settingsGroupsCache ?? {};
+const settingsGroupsCacheWithPrivate: Record<string, Record<string, SettingValue>> = globalForSettings.settingsGroupsCacheWithPrivate ?? {};
+
+globalForSettings.settingsCache = settingsCache;
+globalForSettings.settingsGroupsCache = settingsGroupsCache;
+globalForSettings.settingsGroupsCacheWithPrivate = settingsGroupsCacheWithPrivate;
 
 const refreshSettingsCache = async () => {
     const settings = await db.setting.findMany({

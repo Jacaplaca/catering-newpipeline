@@ -7,10 +7,16 @@ import { getDictionary } from '@root/scripts/lib/get-dictionary';
 import transformDictionaryJsonToList from '@root/scripts/lib/transformDictionaryJsonToList';
 
 
-const translationsCache: Record<LocaleApp, Record<string, string>> = i18n.locales.reduce((acc, lang) => {
+const globalForTranslations = globalThis as unknown as {
+    translationsCache: Record<LocaleApp, Record<string, string>> | undefined;
+};
+
+const translationsCache: Record<LocaleApp, Record<string, string>> = globalForTranslations.translationsCache ?? i18n.locales.reduce((acc, lang) => {
     acc[lang] = {};
     return acc;
 }, {} as Record<LocaleApp, Record<string, string>>);
+
+globalForTranslations.translationsCache = translationsCache;
 
 const getNamesOnly = (translations: Record<string, string>): Record<string, string> => {
     return Object.entries(translations).reduce((acc, [key, value]) => {
