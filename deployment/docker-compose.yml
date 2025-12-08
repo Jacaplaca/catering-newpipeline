@@ -12,6 +12,9 @@ services:
       - PORT=${PORT}
     # networks:
     #   - default
+    read_only: true
+    tmpfs:
+      - /tmp
     volumes:
       # "data_${APP_NAME}_${BRANCH_NAME}":
       - "data_t3_main:/app/.next/cache"
