@@ -13,6 +13,7 @@ const useClientFoods = (
         },
     }, {
         enabled: !!day,
+        refetchOnWindowFocus: false,
         // staleTime: Infinity, // Consider caching strategy
         // cacheTime: Infinity,
     });

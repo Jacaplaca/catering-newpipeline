@@ -2,7 +2,7 @@ import { useFoodMenuContext } from '@root/app/specific/components/FoodMenu/conte
 import { api } from '@root/app/trpc/react';
 import { type TableColumnType } from '@root/types';
 import { type ClientWithCommonAllergens } from '@root/types/specific';
-import { useState, useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 
 function useFetchOneWithCommonAllergens({
     columns,
@@ -26,6 +26,7 @@ function useFetchOneWithCommonAllergens({
             },
             {
                 enabled: !!clientId, // Only fetch when clientId is provided
+                refetchOnWindowFocus: false,
                 // placeholderData: placeholderData<ClientWithCommonAllergens>(limit, columns),
             },
         );

@@ -31,6 +31,7 @@ function useFetchConsumerDiets({
     const { data: clientIds, refetch: countRefetch, isFetching: countIsFetching } = api.specific.regularMenu.getClientWithCommonAllergensIds
         .useQuery({ day: day.day ?? { year: 0, month: 0, day: 0 }, sortName, sortDirection, searchValue, tagId, showColumns, consumerAllergenId, foodAllergenId, foodId },
             {
+                refetchOnWindowFocus: false,
                 // enabled: showColumns.length > 0,
             });
 
@@ -42,6 +43,7 @@ function useFetchConsumerDiets({
             searchValue, tagId, showColumns, consumerAllergenId, foodAllergenId, foodId, clientIds
         },
             {
+                refetchOnWindowFocus: false,
                 // enabled: clientIds?.length ? true : false,
                 placeholderData: placeholderData<ClientWithCommonAllergens>(limit, columns),
             },
