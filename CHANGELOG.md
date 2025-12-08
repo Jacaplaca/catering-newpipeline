@@ -1,3 +1,12 @@
+## [2.12.3](https://github.com/Jacaplaca/catering/compare/v2.12.2...v2.12.3) (2025-12-08)
+
+
+### Bug Fixes
+
+* logs-and-public-menu-no-delay ([80fcb1c](https://github.com/Jacaplaca/catering/commit/80fcb1c3a8e7b1cd910bb95e8d951bc788260cb3))
+
+
+
 ## [2.12.2](https://github.com/Jacaplaca/catering/compare/v2.12.1...v2.12.2) (2025-12-08)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * payment-reminder and activity log ([fac7d9d](https://github.com/Jacaplaca/catering/commit/fac7d9dd7ce4bcac55a1461b8afd1663b5e417fd))
-
-
-
-## [2.10.3](https://github.com/Jacaplaca/catering/compare/v2.10.2...v2.10.3) (2025-10-30)
-
-
-### Bug Fixes
-
-* date in consumer menu and in week days and all editable dates in menu ([bd5f74c](https://github.com/Jacaplaca/catering/commit/bd5f74c71f4bc57abf52b5190bcd647eaba48eb8))
 
 
 
