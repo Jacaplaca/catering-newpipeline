@@ -36,7 +36,16 @@ async function runBackup() {
     try {
         // 1. Dump (kompresja w locie)
         console.log('[Backup] Running mongodump...');
+        const startTime = Date.now();
         await execAsync(`mongodump --uri="${CONFIG.dbUrl}" --archive="${filePath}" --gzip`);
+        const endTime = Date.now();
+        
+        // Statystyki
+        const duration = ((endTime - startTime) / 1000).toFixed(2);
+        const stats = fs.statSync(filePath);
+        const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+
+        console.log(`[Backup] Dump created in ${duration}s. Size: ${fileSizeMB} MB`);
         
         // 2. Upload
         console.log('[Backup] Sending to S3...');
