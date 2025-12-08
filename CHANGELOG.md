@@ -1,3 +1,12 @@
+## [2.12.2](https://github.com/Jacaplaca/catering/compare/v2.12.1...v2.12.2) (2025-12-08)
+
+
+### Bug Fixes
+
+* cache-to-global ([52e782a](https://github.com/Jacaplaca/catering/commit/52e782a02b669cc3038fab5cda1c75b01a2d1d00))
+
+
+
 ## [2.12.1](https://github.com/Jacaplaca/catering/compare/v2.12.0...v2.12.1) (2025-12-06)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * date in consumer menu and in week days and all editable dates in menu ([bd5f74c](https://github.com/Jacaplaca/catering/commit/bd5f74c71f4bc57abf52b5190bcd647eaba48eb8))
-
-
-
-## [2.10.2](https://github.com/Jacaplaca/catering/compare/v2.10.1...v2.10.2) (2025-10-20)
-
-
-### Bug Fixes
-
-* add client to dayMenuPdf ([afb0bf4](https://github.com/Jacaplaca/catering/commit/afb0bf4f492a93bb4a74e261c1f4aff1b859a1c7))
 
 
 
