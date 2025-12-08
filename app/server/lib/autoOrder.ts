@@ -16,7 +16,7 @@ import logger from '@root/app/lib/logger';
 
 async function autoOrder() {
     // return;
-    logger.info('>>>>>>>>>>>>>>>>>>Auto order process started');
+    // logger.info('>>>>>>>>>>>>>>>>>>Auto order process started');
     const clients = await db.client.findMany({
         where: { deactivated: { not: true } },
         include: { catering: true },

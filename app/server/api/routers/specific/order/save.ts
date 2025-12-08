@@ -5,6 +5,7 @@ import { type Context, createCateringProcedure } from '@root/app/server/api/spec
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
 import getClientSettings from '@root/app/server/api/routers/specific/libs/getUserSettings';
+import logger from '@root/app/lib/logger';
 
 const save = async ({ ctx, input, status }: {
     ctx: Context,
@@ -157,11 +158,14 @@ const save = async ({ ctx, input, status }: {
             data = orderUpdateData
         }
 
+        logger.info(`Updating Order | User: ${user.email} (${user.id}) | Client: ${clientId} | Day: ${day.year}-${day.month + 1}-${day.day} | Status: ${status}`);
+
         return db.order.update({
             where: { id: existingOrder.id },
             data,
         });
     } else {
+        logger.info(`Creating New Order | User: ${user.email} (${user.id}) | Client: ${clientId} | Day: ${day.year}-${day.month + 1}-${day.day} | Status: ${status}`);
         return db.order.create({
             data: { ...orderPlaceData, ...orderUpdateData, ...beforeFirstDeadlineUpdateData },
         });
