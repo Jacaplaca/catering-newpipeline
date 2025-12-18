@@ -1,3 +1,12 @@
+## [2.12.4](https://github.com/Jacaplaca/catering/compare/v2.12.3...v2.12.4) (2025-12-18)
+
+
+### Bug Fixes
+
+* block to add duplicated order ([ca41005](https://github.com/Jacaplaca/catering/commit/ca4100534321d0503410b7ca1bad199f9cbbdea4))
+
+
+
 ## [2.12.3](https://github.com/Jacaplaca/catering/compare/v2.12.2...v2.12.3) (2025-12-08)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * client-category-and-new-filters-and-alpine ([738a683](https://github.com/Jacaplaca/catering/commit/738a683874ad3baafae299f8fd24fb9c4b821f87))
-
-
-
-# [2.11.0](https://github.com/Jacaplaca/catering/compare/v2.10.3...v2.11.0) (2025-11-21)
-
-
-### Features
-
-* payment-reminder and activity log ([fac7d9d](https://github.com/Jacaplaca/catering/commit/fac7d9dd7ce4bcac55a1461b8afd1663b5e417fd))
 
 
 
