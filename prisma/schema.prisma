@@ -603,6 +603,8 @@ model Order {
     @@index([deliveryDay.year])
     @@index([deliveryDay.month])
     @@index([deliveryDay.day])
+
+    @@unique([cateringId, clientId, deliveryDay.year, deliveryDay.month, deliveryDay.day])
 }
 
 model OrderConsumerBreakfast {

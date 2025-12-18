@@ -1,4 +1,4 @@
-const getTimeWithOffset = (offset?: "+12h" | "-12h" | "+1d" | "-1d" | "+2d" | '-2d' | '+3d' | "-3d") => {
+const getTimeWithOffset = (offset?: "+12h" | "-12h" | "+7h" | "-7h" | "+1d" | "-1d" | "+2d" | '-2d' | '+3d' | "-3d") => {
     const oneHour = 1000 * 60 * 60;
     const oneDay = oneHour * 24;
 
@@ -8,6 +8,12 @@ const getTimeWithOffset = (offset?: "+12h" | "-12h" | "+1d" | "-1d" | "+2d" | '-
         switch (offset) {
             case "+12h":
                 timeOffset = 12 * oneHour;
+                break;
+            case "+7h":
+                timeOffset = 7 * oneHour;
+                break;
+            case "-7h":
+                timeOffset = -7 * oneHour;
                 break;
             case "-12h":
                 timeOffset = -12 * oneHour;

@@ -27,7 +27,7 @@ const specificSettings = {
     "PRIVATE:backup:db-cron:STRING": "23 2 * * *",
     "PRIVATE:backup:daily-files-to-keep:NUMBER": 10,
     "PRIVATE:auto-order:should-auto-order:BOOLEAN": true,
-    "PRIVATE:auto-order:cron:STRING": "*/5 * * * *",
+    "PRIVATE:auto-order:cron:STRING": "*/10 * * * *",
 }
 
 export default specificSettings;

@@ -3,7 +3,7 @@ import { db } from '@root/app/server/db';
 import getCurrentTime from '@root/app/lib/date/getCurrentTime';
 // import isWorkingDay from '@root/app/specific/lib/isWorkingDay';
 import { getNextWorkingDay } from '@root/app/specific/lib/dayInfo';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 import getClientSettings from '@root/app/server/api/routers/specific/libs/getUserSettings';
 import getDeadlinesStatus from '@root/app/specific/lib/getDeadlinesStatus';
 import { getSetting } from '@root/app/server/cache/settings';
@@ -201,82 +201,92 @@ async function autoOrder() {
                 // console.log(`Lunch: ${JSON.stringify(lunch)}`);
                 // console.log(`Dinner: ${JSON.stringify(dinner)}`);
 
-                const newOrder = await db.order.create({
-                    data: {
-                        ...latestOrderData,
-                        deliveryDay: {
-                            year: nextWorkingDay.getFullYear(),
-                            month: nextWorkingDay.getMonth(),
-                            day: nextWorkingDay.getDate(),
+                try {
+                    const newOrder = await db.order.create({
+                        data: {
+                            ...latestOrderData,
+                            deliveryDay: {
+                                year: nextWorkingDay.getFullYear(),
+                                month: nextWorkingDay.getMonth(),
+                                day: nextWorkingDay.getDate(),
+                            },
+                            status: OrderStatus.in_progress,
+                            lunchStandardBeforeDeadline: latestOrderData.lunchStandard,
+                            dinnerStandardBeforeDeadline: latestOrderData.dinnerStandard,
+                            lunchDietCountBeforeDeadline: lunch.length,
+                            dinnerDietCountBeforeDeadline: dinner.length,
+                            sentToCateringAt: now,
                         },
-                        status: OrderStatus.in_progress,
-                        lunchStandardBeforeDeadline: latestOrderData.lunchStandard,
-                        dinnerStandardBeforeDeadline: latestOrderData.dinnerStandard,
-                        lunchDietCountBeforeDeadline: lunch.length,
-                        dinnerDietCountBeforeDeadline: dinner.length,
-                        sentToCateringAt: now,
-                    },
-                });
-
-                // console.log(`New order created: ${JSON.stringify(newOrder)}`);
-
-                const promises = [];
-
-                // Add breakfast data only if breakfast is a non-empty array
-                if (Array.isArray(breakfast) && breakfast.length > 0) {
-                    const newBreakfastPromise = db.orderConsumerBreakfast.createMany({
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        data: breakfast.map(({ id, ...rest }) => ({
-                            ...rest,
-                            orderId: newOrder.id,
-                        })),
                     });
-                    promises.push(newBreakfastPromise);
+
+                    // console.log(`New order created: ${JSON.stringify(newOrder)}`);
+
+                    const promises = [];
+
+                    // Add breakfast data only if breakfast is a non-empty array
+                    if (Array.isArray(breakfast) && breakfast.length > 0) {
+                        const newBreakfastPromise = db.orderConsumerBreakfast.createMany({
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            data: breakfast.map(({ id, ...rest }) => ({
+                                ...rest,
+                                orderId: newOrder.id,
+                            })),
+                        });
+                        promises.push(newBreakfastPromise);
+                    }
+
+                    // Add lunch data only if lunch is a non-empty array
+                    if (Array.isArray(lunch) && lunch.length > 0) {
+                        const newLunchPromise = db.orderConsumerLunch.createMany({
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            data: lunch.map(({ id, ...rest }) => ({
+                                ...rest,
+                                orderId: newOrder.id,
+                            })),
+                        });
+                        promises.push(newLunchPromise);
+
+                        const newLunchBeforeDeadlinePromise = db.orderConsumerLunchBeforeDeadline.createMany({
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            data: lunch.map(({ id, ...rest }) => ({
+                                ...rest,
+                                orderId: newOrder.id,
+                            })),
+                        });
+                        promises.push(newLunchBeforeDeadlinePromise);
+                    }
+
+                    // Add dinner data only if dinner is a non-empty array
+                    if (Array.isArray(dinner) && dinner.length > 0) {
+                        const newDinnerPromise = db.orderConsumerDinner.createMany({
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            data: dinner.map(({ id, ...rest }) => ({
+                                ...rest,
+                                orderId: newOrder.id,
+                            })),
+                        });
+                        promises.push(newDinnerPromise);
+
+                        const newDinnerBeforeDeadlinePromise = db.orderConsumerDinnerBeforeDeadline.createMany({
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            data: dinner.map(({ id, ...rest }) => ({
+                                ...rest,
+                                orderId: newOrder.id,
+                            })),
+                        });
+                        promises.push(newDinnerBeforeDeadlinePromise);
+                    }
+
+                    await Promise.all(promises);
+                } catch (error: unknown) {
+                    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                        if (error.code === 'P2002') {
+                            logger.warn(`[AutoOrder] Order for client ${client.id} on ${nextWorkingDayYear}-${nextWorkingDayMonth}-${nextWorkingDayDay} already exists. Skipping.`);
+                            continue;
+                        }
+                    }
+                    logger.error(`[AutoOrder] Error creating order for client ${client.id}`, error);
                 }
-
-                // Add lunch data only if lunch is a non-empty array
-                if (Array.isArray(lunch) && lunch.length > 0) {
-                    const newLunchPromise = db.orderConsumerLunch.createMany({
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        data: lunch.map(({ id, ...rest }) => ({
-                            ...rest,
-                            orderId: newOrder.id,
-                        })),
-                    });
-                    promises.push(newLunchPromise);
-
-                    const newLunchBeforeDeadlinePromise = db.orderConsumerLunchBeforeDeadline.createMany({
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        data: lunch.map(({ id, ...rest }) => ({
-                            ...rest,
-                            orderId: newOrder.id,
-                        })),
-                    });
-                    promises.push(newLunchBeforeDeadlinePromise);
-                }
-
-                // Add dinner data only if dinner is a non-empty array
-                if (Array.isArray(dinner) && dinner.length > 0) {
-                    const newDinnerPromise = db.orderConsumerDinner.createMany({
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        data: dinner.map(({ id, ...rest }) => ({
-                            ...rest,
-                            orderId: newOrder.id,
-                        })),
-                    });
-                    promises.push(newDinnerPromise);
-
-                    const newDinnerBeforeDeadlinePromise = db.orderConsumerDinnerBeforeDeadline.createMany({
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        data: dinner.map(({ id, ...rest }) => ({
-                            ...rest,
-                            orderId: newOrder.id,
-                        })),
-                    });
-                    promises.push(newDinnerBeforeDeadlinePromise);
-                }
-
-                await Promise.all(promises);
             }
 
         }

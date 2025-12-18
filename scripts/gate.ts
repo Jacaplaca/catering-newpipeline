@@ -18,7 +18,6 @@ async function gate(callBack: () => unknown, question: string) {
     const answer = await askQuestion(question);
 
     if (answer.toLowerCase() !== 'y') {
-        console.log('Action canceled');
         process.exit(1);
     }
 

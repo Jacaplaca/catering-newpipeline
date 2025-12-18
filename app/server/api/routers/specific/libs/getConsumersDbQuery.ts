@@ -121,7 +121,6 @@ const getConsumerDbQuery = ({
     const addAllergens = startWith('allergens') || id ? true : clientId ? true : false;
 
     if (addAllergens) {
-        console.log('allergens')
         pipeline.push({
             $lookup: {
                 from: 'ConsumerAllergen',

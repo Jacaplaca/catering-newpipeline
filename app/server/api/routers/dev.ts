@@ -31,17 +31,7 @@ export const devRouter = {
     // }),
     // removeClients: publicProcedure.query(async () => {
     //     await removeClientsExcept("cm34dgxuf000tqmfqens7pj2e", [
-    //         "cm60ohxqi004lph0jge25tz1e",
-    //         "cm60p84ch004uph0jsngzbcoe",
-    //         'cm6i4bb14002kp00j1fun97bm',
-    //         "cm6jtln20006pp00jyo1dxssi",
-    //         "cm6root82004jmv0ikfey1nnv",
-    //         "cm6rpc4us004pmv0ipsn0on9e",
-    //         "cm6s1v4va005umv0iyp16bt3x",
-    //         "cm6sa2eog006smv0ie0m0dckp",
-    //         "cm6ujo6u10026o00jwos11tub",
-    //         "cm6y4e162009up10jqf6m8afw",
-    //         "cm71myfpa00rssj0i0y69d95w"
+    //         "cm60ohxqi004lph0jge25tz1e"
     //     ]);
     //     return { success: true };
     // }),
