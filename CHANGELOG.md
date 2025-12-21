@@ -1,3 +1,12 @@
+## [2.12.5](https://github.com/Jacaplaca/catering/compare/v2.12.4...v2.12.5) (2025-12-21)
+
+
+### Bug Fixes
+
+* expand orders ([4b3cac6](https://github.com/Jacaplaca/catering/commit/4b3cac626339e77b14739c0094534dd3900df5c5))
+
+
+
 ## [2.12.4](https://github.com/Jacaplaca/catering/compare/v2.12.3...v2.12.4) (2025-12-18)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * styles-after-dependancies-update ([19bed87](https://github.com/Jacaplaca/catering/commit/19bed877a6a55bba79141f91144fd84031302abe))
-
-
-
-# [2.12.0](https://github.com/Jacaplaca/catering/compare/v2.11.0...v2.12.0) (2025-12-05)
-
-
-### Features
-
-* client-category-and-new-filters-and-alpine ([738a683](https://github.com/Jacaplaca/catering/commit/738a683874ad3baafae299f8fd24fb9c4b821f87))
 
 
 
