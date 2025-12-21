@@ -37,11 +37,11 @@ const OrdersComponent: FunctionComponent<{
     return (
         <SessionProvider session={props.session}>
             <Tabs aria-label="Tabs with underline" variant="default" title={translate(props.dictionary, 'orders:title')}>
-                {/* <TabItem active title={translate(props.dictionary, 'orders:orders_by_day')}>
+                <TabItem active title={translate(props.dictionary, 'orders:orders_by_day')}>
                     <OrderByDayTableContextProvider store={useOrderByDayTable(props)} >
                         <OrdersByDayTable />
                     </OrderByDayTableContextProvider>
-                </TabItem> */}
+                </TabItem>
                 <TabItem title={translate(props.dictionary, 'orders:orders_by_day_meals')}>
                     <OrderByDayMealsTableContextProvider store={useOrderByDayMealsTable(props)} >
                         <OrdersByDayMealsTable />

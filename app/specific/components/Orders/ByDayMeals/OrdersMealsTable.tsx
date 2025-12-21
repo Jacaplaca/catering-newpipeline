@@ -31,7 +31,7 @@ const OrdersByDayMealsTable: FunctionComponent = () => {
         message
     } = useOrderByDayMealsTableContext();
 
-    const clickable = false;
+    const clickable = true;
 
     return (
         <div className='relative'>
