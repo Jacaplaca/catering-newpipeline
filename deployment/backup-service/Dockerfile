@@ -1,7 +1,7 @@
 FROM node:22-alpine
 
-# Tylko mongodump
-# Instalujemy toolsy, a potem usuwamy te niepotrzebne, aby odchudzić warstwę
+# Only mongodump.
+# Install tools, then remove the ones we don't need to keep the image smaller.
 RUN apk add --no-cache mongodb-tools && \
     rm -f /usr/bin/mongoimport \
           /usr/bin/mongoexport \
@@ -15,7 +15,7 @@ WORKDIR /app
 
 COPY package.json ./
 
-# Instalacja tylko dependencies produkcyjnych + czyszczenie cache npm
+# Install production dependencies only + clean npm cache.
 RUN npm install --omit=dev && \
     npm cache clean --force
 

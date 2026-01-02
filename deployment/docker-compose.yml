@@ -1,65 +1,95 @@
 services:
   app:
-    container_name: "${APP_NAME}_${BRANCH_NAME}"
-    image: "${APP_NAME}_${BRANCH_NAME}_img"
+    container_name: "${APP_NAME}"
+    image: "${APP_NAME}_img"
     build:
       context: ../
       dockerfile: deployment/Dockerfile
     restart: always
     ports:
       - "${PORT}:${PORT}"
+    env_file:
+      - ../.env
     environment:
-      - PORT=${PORT}
-    # networks:
-    #   - default
+      TZ: ${TZ}
+      PORT: ${PORT}
+      HOST: 0.0.0.0
+      HOSTNAME: 0.0.0.0
+    networks:
+      - default
+
+    # Security
     read_only: true
     tmpfs:
       - /tmp
+      - /app/.npm
+
     volumes:
-      # "data_${APP_NAME}_${BRANCH_NAME}":
-      - "data_t3_main:/app/.next/cache"
-      - "../logs:/app/logs"
+      - next_cache:/app/.next/cache
+      - ../logs:/app/logs
+
+  dbtools:
+    container_name: "${APP_NAME}_dbtools"
+    image: "${APP_NAME}_dbtools_img"
+    build:
+      context: ../
+      dockerfile: deployment/Dockerfile
+      target: dbtools
+    restart: "no"
+    env_file:
+      - ../.env
+    environment:
+      TZ: ${TZ}
+      HOST: 0.0.0.0
+      HOSTNAME: 0.0.0.0
+    networks:
+      - default
+    profiles:
+      - tools
+
   backup:
-      container_name: "${APP_NAME}_${BRANCH_NAME}_backup"
-      build:
-        context: ./backup-service
-        dockerfile: Dockerfile
-      restart: always
-      environment:
-        # --- DATABASE ---
-        # Pobieramy URL prosto z Twojego .env
-        # WAŻNE: Upewnij się, że w .env na serwerze host to 'mongodb', a nie 'localhost'!
-        - DATABASE_URL=${DATABASE_URL}
+    container_name: "${APP_NAME}_backup"
+    image: "${APP_NAME}_backup_img"
+    build:
+      context: ./backup-service
+      dockerfile: Dockerfile
+    restart: always
+    profiles:
+      - backup
+    depends_on:
+      app:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      TZ: ${TZ}
 
-        # --- AWS S3 (MAPOWANIE) ---
-        # Po lewej: Nazwa zmiennej wewnątrz kontenera backupu (standard AWS)
-        # Po prawej: Nazwa zmiennej w Twoim pliku .env (według env.ts)
-        - AWS_REGION=${S3_REGION}
-        - AWS_ACCESS_KEY_ID=${S3_KEY_ID}
-        - AWS_SECRET_ACCESS_KEY=${S3_KEY_SECRET}
-        - AWS_S3_BUCKET=${S3_BUCKET}
-        
-        # Opcjonalnie: Jeśli używasz niestandardowych endpointów (np. MinIO / Cloudflare R2)
-        # Jeśli nie używasz, możesz usunąć tę linię
-        # - AWS_ENDPOINT=${S3_SERVER_ENDPOINT} 
+      # Database
+      DATABASE_URL: ${DATABASE_URL}
 
-        # --- KONFIGURACJA BACKUPU ---
-        # Możesz dodać te zmienne do .env lub zostawić tu wartości domyślne (po :- )
-        - BACKUP_CRON=${BACKUP_CRON:-0 4 * * *}
-        # - BACKUP_CRON=*/3 * * * *
-        - BACKUP_DIR=/backups
-        - MAX_LOCAL_BACKUPS=${BACKUP_KEEP:-7}
-        - APP_NAME=${APP_NAME}
+      # S3
+      AWS_REGION: ${S3_REGION}
+      AWS_ACCESS_KEY_ID: ${S3_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${S3_KEY_SECRET}
+      AWS_S3_BUCKET: ${S3_BUCKET}
+      AWS_ENDPOINT: ${S3_SERVER_ENDPOINT}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
 
-      volumes:
-        - ../backups:/backups
-      # depends_on:
-      #   - mongodb
-# networks:
-#   default:
-#     name: "${DOCKER_NETWORK_NAME}_${BRANCH_NAME}"
-#     external: true
+      # Backup config
+      BACKUP_CRON: ${BACKUP_CRON:-0 4 * * *}
+      BACKUP_DRY_RUN: ${BACKUP_DRY_RUN:-false}
+      BACKUP_DIR: /backups
+      MAX_REMOTE_BACKUPS: ${BACKUP_KEEP:-7}
+      APP_NAME: ${APP_NAME}
+
+    volumes:
+      - ../backups:/backups
+
+networks:
+  default:
+    name: "${DOCKER_NETWORK_NAME}"
+    external: true
 
 volumes:
-  # "data_${APP_NAME}_${BRANCH_NAME}":
-  "data_t3_main":
+  next_cache:
+    name: "${CACHE_VOLUME_NAME}"

@@ -1,73 +1,56 @@
-import http from 'http'
-import dotenv from 'dotenv'
-import fs from 'fs'
+#!/usr/bin/env node
+import http from 'http';
 
-const host         = 'localhost';
-const envConfig    = (() => {
-  try {
-    return dotenv.parse(fs.readFileSync('./.env'));
-  } catch (error) {
-    console.error('Error loading .env file in health-check.js');
-    process.exit(1);
-  }
-})();
-const port         = envConfig.PORT;
+// Pobieramy port z ENV, jeśli brak - domyślnie 3000
+const PORT = process.env.PORT || 3000;
+// Next.js w Dockerze często słucha na 0.0.0.0 lub localhost
+const HOST = process.env.HOST || '127.0.0.1';
+const TIMEOUT = 3000;
 
-console.log("🚀 ~ port:", port)
+// Sprawdzamy czy uruchomiono z flagą --debug
+const isDebug = process.argv.includes('--debug');
 
 const options = {
-    host,
-    port,
-    path: '/api/trpc/health.check',
-    timeout: 2000
+  host: HOST,
+  port: PORT,
+  path: '/', // Możesz zmienić na /api/health jeśli masz taki endpoint
+  method: 'GET',
+  timeout: TIMEOUT
 };
 
-let protocol = http;
-
-if (process.argv.slice(2).includes(('--debug'))) {
-    console.log('DEBUG MODE');
-    console.log('OPTIONS', options);
-    console.log('ENV process', process.env)
-    console.log('ENV file', envConfig)
-
-    const request = protocol.request(options, (res) => {
-        console.log('STATUS', res.statusCode);
-        // console.log('HEADERS', JSON.stringify(res.headers));
-        res.setEncoding('utf8');
-        res.on('data', (chunk) => {
-            console.log('BODY', chunk);
-        });
-    });
-
-    request.setTimeout(options.timeout, () => {
-        console.error('Timeout exceeded in health-check.js');
-        process.exit(1);
-    });
-
-    request.on('error', function (err) {
-        console.log('ERROR', err);
-    });
-    request.end();
-} else {
-    const request = protocol.request(options, (res) => {
-        if (res.statusCode === 200) {
-            process.exit(0);
-        } else {
-            process.exit(1);
-        }
-    });
-
-    request.setTimeout(options.timeout, () => {
-        console.error('Timeout exceeded in health-check.js');
-        process.exit(1);
-    });
-
-    request.on('error', function (err) {
-        console.log('ERROR');
-        process.exit(1);
-    });
-    request.end();
+if (isDebug) {
+  console.log('--- HEALTH CHECK DEBUG ---');
+  console.log(`Target: http://${HOST}:${PORT}/`);
+  console.log('ENV PORT:', process.env.PORT);
+  console.log('Effective PORT:', PORT);
 }
 
+const req = http.request(options, (res) => {
+  if (isDebug) {
+    console.log(`Response Status: ${res.statusCode}`);
+  }
 
+  if (res.statusCode === 200) {
+    if (isDebug) console.log('Check PASSED');
+    process.exit(0);
+  } else {
+    console.error(`Health check failed: status code ${res.statusCode}`);
+    process.exit(1);
+  }
+});
 
+req.on('timeout', () => {
+  console.error(`Health check timeout (${TIMEOUT}ms)`);
+  req.destroy();
+  process.exit(1);
+});
+
+req.on('error', (err) => {
+  console.error('Health check connection error:', err.message);
+  if (isDebug) {
+    console.error('Full Error:', err);
+  }
+  process.exit(1);
+});
+
+req.end();
