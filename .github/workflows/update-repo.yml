@@ -1,10 +1,10 @@
-name: Update Repository
+name: Deploy to Stage
 
 on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'Environment stage'
+        description: 'Environment stage (ignored if Custom Stage Name is set)'
         required: true
         type: choice
         options:
@@ -12,8 +12,28 @@ on:
           - demo
           - prod
         default: 'test'
+      custom_stage_name:
+        description: 'Custom Stage Name (overrides selection above, e.g. client_x)'
+        required: false
+        type: string
       should_rebuild:
-        description: 'Should rebuild?'
+        description: 'Should rebuild Docker images?'
+        required: true
+        type: choice
+        options:
+          - "yes"
+          - "no"
+        default: "yes"
+      should_git_pull:
+        description: 'Should pull from Git?'
+        required: true
+        type: choice
+        options:
+          - "yes"
+          - "no"
+        default: "yes"
+      should_docker_version:
+        description: 'Should create versioned Docker image?'
         required: true
         type: choice
         options:
@@ -24,158 +44,131 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      # Base configuration
+      # Use custom_stage_name if provided, otherwise use the selected stage option
+      STAGE: ${{ github.event.inputs.custom_stage_name != '' && github.event.inputs.custom_stage_name || github.event.inputs.stage }}
+      SHOULD_REBUILD: ${{ github.event.inputs.should_rebuild }}
+      SHOULD_GIT_PULL: ${{ github.event.inputs.should_git_pull }}
+      SHOULD_DOCKER_VERSION: ${{ github.event.inputs.should_docker_version }}
+      REPO_BASE_NAME: ${{ github.event.repository.name }}
+      # Connection variables - change source here to propagate everywhere
+      SSH_USER: ${{ vars.USER || secrets.USER }}
+      SSH_HOST: ${{ vars.HOST || secrets.HOST }}
+      # APP_ROOT is the base directory containing all stages and config files (.env.prod, .env.test)
+      APP_ROOT: /home/${{ vars.USER || secrets.USER }}/my_project/apps/${{ github.event.repository.name }}
+
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        ref: main
+      uses: actions/checkout@v4
 
-    - name: Setup SSH
+    - name: Setup Environment Variables
+      run: |
+        echo "Setting up environment variables for stage: $STAGE"
+
+        # Define target deployment directory: e.g., .../repo_name/test
+        echo "DEPLOY_DIR=$APP_ROOT/$STAGE" >> $GITHUB_ENV
+
+        # Define Docker Compose project name to allow side-by-side deployments
+        # e.g., repo_name_test, repo_name_prod
+        echo "PROJECT_NAME=${REPO_BASE_NAME}_${STAGE}" >> $GITHUB_ENV
+
+        # Define named volume for cache to avoid conflicts
+        echo "CACHE_VOLUME_NAME=data_${REPO_BASE_NAME}_${STAGE}" >> $GITHUB_ENV
+
+    - name: Setup SSH Keys
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        # SSH_HOST and SSH_USER are inherited from job env
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/catering_key
-        chmod 600 ~/.ssh/catering_key
-        ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan "$SSH_HOST" >> ~/.ssh/known_hosts
 
-    - name: Configure Git
+    - name: Make local scripts executable
+      run: chmod -R +x .github/scripts/
+
+    - name: Pull latest changes via SSH
+      env:
+        # Construct the URL using the alias format expected by the server's SSH config
+        REPO_URL: git@github.com-${{ github.event.repository.name }}:${{ github.repository }}.git
       run: |
-        git config --global user.email "dziewanowski@gmail.com"
-        git config --global user.name "Jacaplaca"
-        git remote set-url origin https://Jacaplaca:${{ secrets.GIT_REPO_TOKEN }}@github.com/Jacaplaca/catering
+        ssh -i ~/.ssh/deploy_key "${{ env.SSH_USER }}@${{ env.SSH_HOST }}" \
+          "REPO_URL='${{ env.REPO_URL }}' \
+           APP_ROOT='${{ env.APP_ROOT }}' \
+           DEPLOY_DIR='${{ env.DEPLOY_DIR }}' \
+           STAGE='${{ env.STAGE }}' \
+           SHOULD_GIT_PULL='${{ env.SHOULD_GIT_PULL }}' \
+           bash -c '
+             set -e
+             set -x
+             
+             echo \"Deploying to stage: \$STAGE\"
+             echo \"Target directory: \$DEPLOY_DIR\"
+             echo \"Repository URL: \$REPO_URL\"
+             
+             # Pre-flight check: Verify configuration file exists
+             ENV_SOURCE=\"\$APP_ROOT/.env.\$STAGE\"
+             if [ ! -f \"\$ENV_SOURCE\" ]; then
+               echo \"❌ Critical Error: Configuration file \$ENV_SOURCE does not exist on the server.\"
+               echo \"Please create .env.\$STAGE in \$APP_ROOT before deploying.\"
+               exit 1
+             fi
 
-    - name: Prepare environment
+             # Ensure deployment directory exists
+             mkdir -p \"\$DEPLOY_DIR\"
+             cd \"\$DEPLOY_DIR\"
+
+             # Clone or Pull
+             if [ \"\$SHOULD_GIT_PULL\" = \"no\" ]; then
+                echo \"Skipping git pull/clone as requested.\"
+                if [ ! -d \".git\" ]; then
+                   echo \"❌ Critical Error: Git repository not found in \$DEPLOY_DIR but git pull was disabled.\"
+                   exit 1
+                fi
+             else
+                 if [ ! -d \".git\" ]; then
+                   echo \"Directory exists but is not a git repository. Cleaning up...\"
+                   # Remove everything in the directory to allow fresh clone
+                   if [ \"\$(ls -A)\" ]; then
+                     rm -rf ./* .[^.]*
+                   fi
+                   
+                   echo \"Cloning repository...\"
+                   git clone \"\$REPO_URL\" .
+                 else
+                   echo \"Pulling latest changes...\"
+                   git remote set-url origin \"\$REPO_URL\"
+                   git fetch origin
+                   git reset --hard origin/main
+                 fi
+             fi
+
+             echo \"Setting up .env from \$ENV_SOURCE\"
+             cp \"\$ENV_SOURCE\" .env
+             echo \"✅ Copied \$ENV_SOURCE to .env\"
+             
+             # Ensure scripts are executable on remote
+             if [ -d \".github/scripts\" ]; then
+                chmod -R +x .github/scripts/
+             fi
+           '"
+
+    - name: Deploy (remote driver)
       run: |
-        ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-          cd ~/sources/catering
-          STAGE=${{ github.event.inputs.stage }}
-          TARGET_DIR="$STAGE"
-          ENV_FILE=".env.${STAGE}"
+        ssh -i ~/.ssh/deploy_key "${{ env.SSH_USER }}@${{ env.SSH_HOST }}" \
+          "REPO_NAME='${{ env.PROJECT_NAME }}' \
+           SHOULD_REBUILD='${{ env.SHOULD_REBUILD }}' \
+           SHOULD_DOCKER_VERSION='${{ env.SHOULD_DOCKER_VERSION }}' \
+           APP_DIR='${{ env.APP_ROOT }}' \
+           DEPLOY_DIR='${{ env.DEPLOY_DIR }}' \
+           CACHE_VOLUME_NAME='${{ env.CACHE_VOLUME_NAME }}' \
+           bash '${{ env.DEPLOY_DIR }}/.github/scripts/deploy_remote.sh'"
 
-          if [ ! -d "$TARGET_DIR" ]; then
-            mkdir "$TARGET_DIR"
-          fi
-
-          if [ ! -f "$TARGET_DIR/.env" ]; then
-            if [ -f "$ENV_FILE" ]; then
-              cp "$ENV_FILE" "$TARGET_DIR/.env"
-            else
-              cp .env "$TARGET_DIR/.env"
-            fi
-          fi
-
-          if [ ! -d "$TARGET_DIR/public" ]; then
-            mkdir "$TARGET_DIR/public"
-          fi
-
-          if [ ! -d "$TARGET_DIR/logs" ]; then
-            mkdir "$TARGET_DIR/logs"
-          fi
-          # Nadajemy uprawnienia 777 dla folderu logs, aby kontener (user nextjs) mógł tam pisać
-          sudo chmod 777 "$TARGET_DIR/logs"
-
-          # if [ ! -d "$TARGET_DIR/public/fontawesome" ]; then
-          #   tar -xf fontawesome.tar -C "$TARGET_DIR/public"
-          # fi
-
-          ls -la "$TARGET_DIR"
-        '
-
-    - name: Pull latest changes
+    - name: Display Container Startup Logs (Entrypoint)
+      if: always()
       run: |
-        ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-          STAGE=${{ github.event.inputs.stage }}
-          cd ~/sources/catering/$STAGE
-          git config --global user.email "dziewanowski@gmail.com"
-          git config --global user.name "Jacaplaca"
-          git remote set-url origin https://Jacaplaca:${{ secrets.GIT_REPO_TOKEN }}@github.com/Jacaplaca/catering
-          
-          if [ ! -d ".git" ]; then
-            git init
-            git remote add origin https://Jacaplaca:${{ secrets.GIT_REPO_TOKEN }}@github.com/Jacaplaca/catering
-          fi
-          sudo git fetch origin
-          sudo git reset --hard origin/main
-        '
-
-    - name: Check Database Status
-      run: |
-        ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-          STAGE=${{ github.event.inputs.stage }}
-          cd ~/sources/catering/$STAGE
-          
-          DATABASE_URL=$(grep "^DATABASE_URL=" .env | cut -d "=" -f2- | tr -d "\"")
-          echo "Extracted DATABASE_URL (masked):"
-          echo "$DATABASE_URL" | sed "s/:[^@]*@/:*****@/"
-          
-          echo "Attempting database connection..."
-          
-          RESULT=$(docker exec mongodb mongosh "$DATABASE_URL" --eval "
-            const settingsCount = db.Setting.countDocuments();
-            if (settingsCount > 0) {
-              print(\"DATABASE_STATUS=initialized\");
-              db.Setting.updateOne(
-                { group: \"app\", name: \"active\" },
-                { \$set: { value: \"false\" } }
-              );
-              print(\"Setting updated successfully\");
-            } else {
-              print(\"DATABASE_STATUS=empty\");
-            }
-          ")
-          
-          echo "MongoDB command result:"
-          echo "$RESULT"
-          
-          if echo "$RESULT" | grep -q "DATABASE_STATUS=initialized"; then
-            echo "✅ Database is initialized"
-          else
-            echo "❌ Database is empty or not initialized"
-          fi
-        '
-
-    - name: Stop Backup Service
-      run: |
-        ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-          STAGE=${{ github.event.inputs.stage }}
-          cd ~/sources/catering/$STAGE
-          
-          echo "=== BEFORE STOP: Checking for running backup containers ==="
-          sudo docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}" | grep backup || echo "No backup container running currently."
-
-          echo "Stopping and removing backup service to free up resources..."
-          # Zatrzymujemy i usuwamy kontener backupu
-          # WAŻNE: Dodano -p catering_$STAGE, aby trafić we właściwy projekt (inaczej szukałby w "deployment")
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE rm -s -f -v backup || true
-          
-          echo "=== AFTER STOP: Checking if backup container is gone ==="
-          sudo docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}" | grep backup || echo "Confirmed: No backup container running."
-        '
-
-    - name: Build Docker images
-      if: ${{ github.event.inputs.should_rebuild == 'yes' }}
-      run: |
-        ssh -o ServerAliveInterval=60 -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-          STAGE=${{ github.event.inputs.stage }}
-          cd ~/sources/catering/$STAGE
-          # Budujemy wszystkie serwisy (app oraz backup)
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE build
-        '
-
-    - name: Restart Docker containers
-      if: ${{ github.event.inputs.should_rebuild == 'yes' }}
-      run: |
-        ssh -i ~/.ssh/catering_key ${{ secrets.USER }}@${{ secrets.HOST }} '
-          STAGE=${{ github.event.inputs.stage }}
-          cd ~/sources/catering/$STAGE
-          # Uruchamiamy/restartujemy całą infrastrukturę (app + backup)
-          sudo docker compose --env-file .env -f ./deployment/docker-compose.yml -p catering_$STAGE up -d
-
-          # Sprzątanie starych obrazów (dangling images <none>)
-          # Usuwa tylko te obrazy, które nie są używane przez żaden kontener
-          echo "Pruning dangling images..."
-          sudo docker image prune -f
-        '
-
-
-
-
+        echo "Fetching logs for container project ${{ env.PROJECT_NAME }}..."
+        ssh -i ~/.ssh/deploy_key "${{ env.SSH_USER }}@${{ env.SSH_HOST }}" \
+          "docker compose --env-file ${{ env.DEPLOY_DIR }}/.env -f ${{ env.DEPLOY_DIR }}/deployment/docker-compose.yml -p ${{ env.PROJECT_NAME }} --profile backup logs --tail=100"

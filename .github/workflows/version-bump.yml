@@ -11,13 +11,13 @@ on:
 jobs:
   version-bump:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ secrets.GIT_REPO_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Check if version bump needed
       id: check
@@ -33,7 +33,7 @@ jobs:
       if: steps.check.outputs.skip != 'true'
       uses: TriPSs/conventional-changelog-action@v3
       with:
-        github-token: ${{ secrets.GIT_REPO_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         git-message: 'chore(release): {version} [skip ci]'
         output-file: 'CHANGELOG.md'
         version-file: './package.json'
@@ -41,6 +41,4 @@ jobs:
         skip-on-empty: true
         skip-version-file: false
         skip-commit: false
-        git-user-name: 'Jacaplaca'
-        git-user-email: 'dziewanowski@gmail.com'
         tag-prefix: 'v'
