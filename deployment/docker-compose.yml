@@ -46,6 +46,9 @@ services:
       - default
     profiles:
       - tools
+    volumes:
+      - ../scripts:/app/scripts
+      - ../prisma:/app/prisma
 
   backup:
     container_name: "${APP_NAME}_backup"
