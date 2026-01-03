@@ -8,6 +8,8 @@ echo "--- Check DB (Remote) Script START ---"
 echo "Using REPO_NAME: ${REPO_NAME:?REPO_NAME environment variable is required}"
 echo "Using DEPLOY_DIR: ${DEPLOY_DIR:?DEPLOY_DIR environment variable is required}"
 
+TOOLS_SERVICE_NAME="dbtools"
+
 require_env_file ".env" "Error: .env file not found in $DEPLOY_DIR. Cannot check database."
 
 echo "Extracting DATABASE_URL from .env file..."
@@ -54,7 +56,17 @@ if echo "$RESULT" | grep -q "DATABASE_STATUS=initialized"; then
     echo "ℹ️ Setting status: No update performed or required."
   fi
 elif echo "$RESULT" | grep -q "DATABASE_STATUS=empty"; then
-  echo "⚠️ Database is empty or collection \"Setting\" not found."
+  echo "⚠️ Database is empty. Starting initialization (Schema Push + Seed)..."
+
+  echo "Pushing database schema (Prisma)..."
+  docker compose --env-file .env -f ./deployment/docker-compose.yml -p "$REPO_NAME" --profile tools run --rm --no-deps "$TOOLS_SERVICE_NAME" \
+    npx prisma db push --skip-generate
+
+  echo "Seeding database (db:init)..."
+  docker compose --env-file .env -f ./deployment/docker-compose.yml -p "$REPO_NAME" --profile tools run --rm --no-deps "$TOOLS_SERVICE_NAME" \
+    npm run db:init
+
+  echo "✅ Database initialized and seeded successfully."
 else
   echo "❌ Failed to determine database status or execute command. Check Docker/MongoDB logs on the server."
 fi
